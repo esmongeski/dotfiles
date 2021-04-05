@@ -1,2 +1,2 @@
-# mybashprofile
-My personal bash profile
+# My dot files
+It's my dot files!
