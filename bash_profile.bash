@@ -5,7 +5,22 @@
 # I wanted to use this, but never really ended up doing it. Decent for quick aliases if you're just trying stuff out in the shell.
 alias a='alias'
 
+# Shortcuts for local config files. Usually I make these files point at something in this repo on any given machine I'm working on
+alias vlv='vim ~/.vimrc'
+alias ele='emacs ~/.emacs'
+alias vle='vim ~/.emacs'
+alias vlbp='vim ~/.bash_profile'
+alias slbp='echo "sourcing LOCAL bash profile"; . ~/.bash_profile'
 
+# Shortcuts for config files in this directory. These require the aliases used to be defined locally so this can figure out the path
+alias ee='emacs `path_to_dot_emacs`'
+# TODO these don't work yet
+alias ve='echo `path_to_dot_emacs`; vim `path_to_dot_emacs`'
+alias vv='echo `path_to_vimrc`; vim `path_to_vimrc`'
+# TODO these don't work yet
+
+alias sbp='echo "sourcing bash profile"; . `path_to_bash_profile`' # this is great when adding new stuff here
+alias vbp='vim `path_to_bash_profile`'  #same as above
 
 # Stolen from @dubennett https://github.com/dusbennett/terminal-commands/blob/master/shell/.profile
 alias cd..='cd ..'
@@ -32,17 +47,12 @@ alias g='git'
 alias unstage="g reset HEAD"
 alias gpush='echo "ted you typed too fast"; g push;'
 
-# Oh man someday I'll get emacs orgmode working and this will be relevant
-alias ve='vim ~/.emacs'
-
 # Git add and commit with message
 function gca(){
   g add .; git commit -m "$*";
 }
 
 alias gp='g push'
-alias sbp='echo "sourcing bash profile"; . `path_to_bash_profile`' # this is great when adding new stuff here
-alias vbp='vim `path_to_bash_profile`'  #same as above
 
 # Some git repos still use master - this lets me not think which is which
 function gcm {
