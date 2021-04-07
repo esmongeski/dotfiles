@@ -1,1 +1,3 @@
-:set rnu
+set nocompatible
+
+set rnu
