@@ -54,6 +54,11 @@ function gca(){
 
 alias gp='g push'
 
+function echoAndEval {
+	echo $1
+	eval $1
+}
+
 # Some git repos still use master - this lets me not think which is which
 function gcm {
         RESULT=`git rev-parse --verify main`
