@@ -8,3 +8,5 @@ M-x org-agenda - agenda view (can't remember it though)
 C-c . - insert date
 ## Describe function
 C-h f
+## Describe keybind
+C-h k
