@@ -10,5 +10,5 @@ C-c . - insert date
 C-h f
 ## Describe keybind
 C-h k
-## Cycle nested thing
+## Cycle nested thing (org-cycle)
 TAB but in "INSERT" mode in vim. Weird with org-evil.
