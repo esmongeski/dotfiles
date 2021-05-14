@@ -18,8 +18,8 @@ alias ee='emacs $PATH_TO_EDITABLE_DOT_EMACS'
 alias ve='echo $PATH_TO_EDITABLE_DOT_EMACS; emacs $PATH_TO_EDITABLE_DOT_EMACS'
 alias vv='echo `path_to_vimrc`; vim `path_to_vimrc`'
 
-alias sbp='echo "sourcing bash profile"; . `path_to_bash_profile`' # this is great when adding new stuff here
-alias vbp='vim `path_to_bash_profile`'  #same as above
+alias sbp='echo "sourcing bash profile"; . $PATH_TO_EDITABLE_BASH_PROFILE' # this is great when adding new stuff here
+alias vbp='vim $PATH_TO_EDITABLE_BASH_PROFILE'  #same as above
 
 # Stolen from @dubennett https://github.com/dusbennett/terminal-commands/blob/master/shell/.profile
 alias cd..='cd ..'
