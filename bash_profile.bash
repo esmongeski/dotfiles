@@ -36,6 +36,9 @@ alias vv='echo `path_to_vimrc`; vim `path_to_vimrc`'
 alias sbp='echo "sourcing bash profile"; . $PATH_TO_EDITABLE_BASH_PROFILE' # this is great when adding new stuff here
 alias vbp='vim $PATH_TO_EDITABLE_BASH_PROFILE'  #same as above
 
+# This file path should be the same across machines :fingers-crossed:
+alias inbox='emacs ~/Dropbox/IFTTT/SMS/inbox.org'
+
 # Stolen from @dubennett https://github.com/dusbennett/terminal-commands/blob/master/shell/.profile
 alias cd..='cd ..'
 ## a quick way to get out of current directory ##
