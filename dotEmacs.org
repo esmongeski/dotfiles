@@ -1,9 +1,9 @@
 * Package things!
 #+BEGIN_SRC emacs-lisp
 (require 'package)
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
 (package-initialize)
-
+;;(require 'use-package)
 #+END_SRC
 
 * Extra Plugins
@@ -45,7 +45,12 @@
 (setq org-log-done 'note)
 #+END_SRC
 
-* Colors!!!!
+* Colors!!!! And display things
 #+BEGIN_SRC emacs-lisp
 (load-theme 'manoj-dark)
+(setq org-ellipsis "⤵")
+;;(use-package org-bullets
+;;  :init
+;;  (add-hook 'org-mode-hook 'org-bullets-mode))
+
 #+END_SRC
