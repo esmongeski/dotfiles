@@ -88,7 +88,7 @@ alias gdo='g diff origin/`cb`' # Use this after committing to a branch to diff w
 alias gms='g merge --squash' # Use this a lot
 alias gf='g fetch'
 
-
+alias emacs='emacs -nw' # no window for emacs
 
 
 # all this swap stuff was a thing I tried to use to make swapping between two branches easier. It ended up not being super great.
