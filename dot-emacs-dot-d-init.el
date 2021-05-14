@@ -9,3 +9,8 @@
 (when (not (package-installed-p 'use-package))
   (package-refresh-contents)
   (package-install 'use-package))
+
+;; set to the current directory to find all the other stuff
+(setq user-init-file (or load-file-name (buffer-file-name)))
+(setq user-emacs-directory (file-name-directory user-init-file))
+(load (concat user-emacs-directory "./.emacs"))
