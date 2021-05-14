@@ -13,11 +13,10 @@ alias vlbp='vim ~/.bash_profile'
 alias slbp='echo "sourcing LOCAL bash profile"; . ~/.bash_profile'
 
 # Shortcuts for config files in this directory. These require the aliases used to be defined locally so this can figure out the path
-alias ee='emacs `path_to_dot_emacs`'
-# TODO these don't work yet
-alias ve='echo `path_to_dot_emacs`; vim `path_to_dot_emacs`'
+alias ee='emacs $PATH_TO_EDITABLE_DOT_EMACS'
+# Gotcha, this is now an org file usually so use emacs
+alias ve='echo $PATH_TO_EDITABLE_DOT_EMACS; emacs $PATH_TO_EDITABLE_DOT_EMACS'
 alias vv='echo `path_to_vimrc`; vim `path_to_vimrc`'
-# TODO these don't work yet
 
 alias sbp='echo "sourcing bash profile"; . `path_to_bash_profile`' # this is great when adding new stuff here
 alias vbp='vim `path_to_bash_profile`'  #same as above

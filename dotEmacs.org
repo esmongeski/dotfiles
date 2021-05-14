@@ -1,4 +1,3 @@
-
 * Package things!
 #+BEGIN_SRC emacs-lisp
 (require 'package)
@@ -37,10 +36,13 @@
  ;; (require 'cl)
 #+END_SRC
 
-* Todo cycling
+* Todo customization - states and donetime/note
 #+BEGIN_SRC emacs-lisp
 (setq org-todo-keywords
      '((sequence "TODO" "WAITING" "IN-PROGRESS" "|" "DONE" "|" "SOMEDAY")))
+
+(setq org-log-done 'time)
+(setq org-log-done 'note)
 #+END_SRC
 
 * Colors!!!!
