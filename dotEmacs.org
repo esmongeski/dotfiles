@@ -20,7 +20,9 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(org-agenda-files (quote ("~/org/todo.org")))
+ '(org-agenda-files                                                                                                                                                                                        
+   (quote                                                                                                                                                                                                  
+    ("~/Dropbox/org/maryThings.org" "~/Dropbox/org/personal.org" "~/Dropbox/org/homeProjects.org")))
  '(package-selected-packages
    (quote
     (org-evil monitor dash powerline-evil ## org-link-minor-mode org-mobile-sync evil))))
@@ -34,6 +36,11 @@
  ;; (add-to-list 'load-path "~/.emacs.d/vendor/emacs-powerline")
  ;; (require 'powerline)
  ;; (require 'cl)
+
+(setq org-refile-targets '((nil :maxlevel . 9)
+                                (org-agenda-files :maxlevel . 9)))
+(setq org-outline-path-complete-in-steps nil)         ; Refile in a single go
+(setq org-refile-use-outline-path t)                  ; Show full paths for refiling
 #+END_SRC
 
 * Todo customization - states and donetime/note

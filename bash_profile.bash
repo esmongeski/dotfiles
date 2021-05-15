@@ -38,6 +38,7 @@ alias vbp='vim $PATH_TO_EDITABLE_BASH_PROFILE'  #same as above
 
 # This file path should be the same across machines :fingers-crossed:
 alias inbox='emacs ~/Dropbox/IFTTT/SMS/inbox.org'
+alias ptodos="emacs ~/Dropbox/org/personal.org"
 
 # Stolen from @dubennett https://github.com/dusbennett/terminal-commands/blob/master/shell/.profile
 alias cd..='cd ..'
