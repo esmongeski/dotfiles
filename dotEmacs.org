@@ -17,18 +17,14 @@
 ** Variables - org agenda files, which will some day pull dates, but are also used for how things refile. Packages, which I guess says which packages are installed? 
 #+BEGIN_SRC emacs-lisp 
 (custom-set-variables                                                                                                                                                                                      
- ;; custom-set-variables was added by Custom.                                                                                                                                                              
- ;; If you edit it by hand, you could mess it up, so be careful.                                                                                                                                           
- ;; Your init file should contain only one such instance.                                                                                                                                                  
- ;; If there is more than one, they won't work right.                                                                                                                                                      
- '(org-agenda-files                                                                                                                                                                                        
-   (quote                                                                                                                                                                                                  
-    ("~/Dropbox/org/enviornmentConfigAndLearning.org" "~/Dropbox/org/personalProjects.org" "~/Dropbox/org/actionItems.org" "~/Dropbox/org/funThings.org" "~/Dropbox/org/maryThings.org" "~/Dropbox/org/per\
-sonal.org" "~/Dropbox/org/homeProjects.org")))                                                                                                                                                             
- '(package-selected-packages                                                                                                                                                                               
-   (quote                                                                                                                                                                                                  
-    (helm-org org-evil monitor dash powerline-evil ## org-link-minor-mode org-mobile-sync evil))))   
- ;; If there is more than one, they won't work right.
+ '(org-agenda-files
+   (quote
+    ("~/Dropbox/org/personalProjects.org" "~/Dropbox/org/actionItems.org" "~/Dropbox/org/funThings.org" "~/Dropbox/org/maryThings.org" "~/Dropbox/org/homeProjects.org" "~/Dropbox/org/enviornmentConfigAndLearning.org")))
+ '(package-selected-packages
+   (quote
+    (helm-org org-evil monitor dash powerline-evil ## org-link-minor-mode org-mobile-sync evil))))
+
+(setq org-startup-indented t)
 #+END_SRC
 ** No clue what custom-set-faces is to be honest.
 #+BEGIN_SRC emacs-lisp
@@ -47,17 +43,20 @@ sonal.org" "~/Dropbox/org/homeProjects.org")))
 #+BEGIN_SRC emacs-lisp
 (setq org-refile-targets '((nil :maxlevel . 1)
                                 (org-agenda-files :maxlevel . 1)))
-(setq org-outline-path-complete-in-steps nil)         ; Refile in a single go
-(setq org-refile-use-outline-path t)                  ; Show full paths for refiling
+;; hmmmm maybe ignore for now so I just get files???
+;;(setq org-outline-path-complete-in-steps nil)         ; Refile in a single go
+(setq org-refile-use-outline-path 'file)                  
 #+END_SRC
 
 * Todo customization - states and donetime/note
 #+BEGIN_SRC emacs-lisp
 (setq org-todo-keywords
-     '((sequence "TODO" "WAITING" "IN-PROGRESS" "|" "DONE" "|" "SOMEDAY")))
+     '((sequence "TODO" "WAITING" "IN-PROGRESS" "|" "DONE" "OBSOLOTE" "|" "SOMEDAY")))
 
 (setq org-log-done 'time)
 (setq org-log-done 'note)
+
+(setq org-archive-location "~/Dropbox/org/archive.org::")
 #+END_SRC
 
 * Colors!!!! And other nice displays - change the ... to a return thingy, make nice bullet icons.

@@ -45,7 +45,8 @@ alias orglearning='emacs ~/Dropbox/org/enviornmentConfigAndLearning.org'
 alias marythings='emacs ~/Dropbox/org/maryThings.org'
 alias media='emacs ~/Dropbox/org/media.org'
 alias alist='emacs ~/Dropbox/org/actionItems.org'
-alias funThings='emacs ~/Dropbox/org/funThings.org'
+alias funthings='emacs ~/Dropbox/org/funThings.org'
+alias homeprojects='emacs ~/Dropbox/org/homeProjects.org'
 
 # Stolen from @dubennett https://github.com/dusbennett/terminal-commands/blob/master/shell/.profile
 alias cd..='cd ..'
