@@ -38,7 +38,14 @@ alias vbp='vim $PATH_TO_EDITABLE_BASH_PROFILE'  #same as above
 
 # This file path should be the same across machines :fingers-crossed:
 alias inbox='emacs ~/Dropbox/IFTTT/SMS/inbox.org'
-alias ptodos="emacs ~/Dropbox/org/personal.org"
+alias ptodos="emacs ~/Dropbox/org/personalProjects.org"
+alias cdo='cd ~/Dropbox/org'
+alias lso='ls | grep -v "~"' # dropbox has a bunch of junky backup files. ignore them. maybe make this a function replacing ls
+alias orglearning='emacs ~/Dropbox/org/enviornmentConfigAndLearning.org'
+alias marythings='emacs ~/Dropbox/org/maryThings.org'
+alias media='emacs ~/Dropbox/org/media.org'
+alias alist='emacs ~/Dropbox/org/actionItems.org'
+alias funThings='emacs ~/Dropbox/org/funThings.org'
 
 # Stolen from @dubennett https://github.com/dusbennett/terminal-commands/blob/master/shell/.profile
 alias cd..='cd ..'
