@@ -3,8 +3,7 @@
 # Heyo this is my bash profile. I make a toooon of personal scripts for ease of use.
 
 # Env vars this depends on - need to be set in local bash profile.
-# This is a poor man's form of dependency injection enforcement in bash.
-# Maybe there's a better way to futz with env vars that should be defined
+# This is a poor man's form of dependency injection enforcement in bash.  # Maybe there's a better way to futz with env vars that should be defined
 # Elsewhere, but I don't know it
 function checkEnvAndDefault() {
 	if [ -z `printenv $1` ];
@@ -15,8 +14,6 @@ function checkEnvAndDefault() {
 }
 checkEnvAndDefault "PATH_TO_DOTFILES_REPO"
 checkEnvAndDefault "PATH_TO_EDITABLE_DOT_EMACS"
-checkEnvAndDefault "PATH_TO_EDITABLE_BASH_PROFILE"
-
 
 # I wanted to use this, but never really ended up doing it. Decent for quick aliases if you're just trying stuff out in the shell.
 alias a='alias'
@@ -28,13 +25,12 @@ alias vlbp='vim ~/.bash_profile'
 alias slbp='echo "sourcing LOCAL bash profile"; . ~/.bash_profile'
 
 # Shortcuts for config files in this directory. These require the aliases used to be defined locally so this can figure out the path
-alias ee='emacs $PATH_TO_EDITABLE_DOT_EMACS'
 # Gotcha, this is now an org file usually so use emacs
-alias ve='echo $PATH_TO_EDITABLE_DOT_EMACS; emacs $PATH_TO_EDITABLE_DOT_EMACS'
+alias ve='echoAndEval "emacs $PATH_TO_DOTFILES_REPO/dotEmacs.org"'
 alias vv='echo `path_to_vimrc`; vim `path_to_vimrc`'
 
-alias sbp='echo "sourcing bash profile"; . $PATH_TO_EDITABLE_BASH_PROFILE' # this is great when adding new stuff here
-alias vbp='vim $PATH_TO_EDITABLE_BASH_PROFILE'  #same as above
+alias sbp='echo "sourcing bash profile"; . $PATH_TO_DOTFILES_REPO/bash_profile.bash' # this is great when adding new stuff here
+alias vbp='vim $PATH_TO_DOTFILES_REPO/bash_profile.bash'  #same as above
 
 # This file path should be the same across machines :fingers-crossed:
 alias inbox='emacs ~/Dropbox/org/inbox.org'
