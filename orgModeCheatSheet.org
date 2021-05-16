@@ -14,6 +14,7 @@ C-h k
 TAB but in "INSERT" mode in vim. Weird with org-evil.
 *  New checkbox
 M-S-Ret OR C-c C-x M
+
 [[https://emacs.stackexchange.com/questions/26699/keycode-for-shift-return-on-os-x-iterm2][Fix For Mac]]
 *  Archive
 C-c C-x C-a
