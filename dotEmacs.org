@@ -19,7 +19,7 @@
 (custom-set-variables                                                                                                                                                                                      
  '(org-agenda-files
    (quote
-    ("~/Dropbox/org/personalProjects.org" "~/Dropbox/org/actionItems.org" "~/Dropbox/org/funThings.org" "~/Dropbox/org/maryThings.org" "~/Dropbox/org/homeProjects.org" "~/Dropbox/org/enviornmentConfigAndLearning.org")))
+    ("~/Dropbox/org/personalProjects.org" "~/Dropbox/org/actionItems.org" "~/Dropbox/org/funThings.org" "~/Dropbox/org/maryThings.org" "~/Dropbox/org/homeProjects.org" "~/Dropbox/org/enviornmentConfigAndLearning.org" "~/Dropbox/org/workStuff.org")))
  '(package-selected-packages
    (quote
     (helm-org org-evil monitor dash powerline-evil ## org-link-minor-mode org-mobile-sync evil))))
@@ -49,9 +49,12 @@
 #+END_SRC
 
 * Todo customization - states and donetime/note
+Ongoing thing to figure out what states I want. log-done enables timestamp and prompts for a note. Archive location is what you'd expect.
+
+More details [[https://orgmode.org/manual/Tracking-TODO-state-changes.html][Here]]
 #+BEGIN_SRC emacs-lisp
 (setq org-todo-keywords
-     '((sequence "TODO" "WAITING" "IN-PROGRESS" "|" "DONE" "OBSOLOTE" "|" "SOMEDAY")))
+     '((sequence "TODO" "WAITING" "IN-PROGRESS" "|" "DONE" "OBSOLOTE")))
 
 (setq org-log-done 'time)
 (setq org-log-done 'note)
@@ -68,4 +71,35 @@
        :init
        (add-hook 'org-mode-hook (lambda ()
                            (org-bullets-mode 1))))
+#+END_SRC
+* Custom Key Bindings
+This first one is to get a different one for org-refile. I want it as C-r C-f (rf -> refile)
+
+First thing to do is to set "C-r" as a possible prefix.
+#+BEGIN_SRC emacs-lisp
+(define-prefix-command 'ring-map)
+(global-set-key (kbd "C-r") 'ring-map)
+#+END_SRC
+
+Next thing to do is to remove "C-r" from the evil map (apparently it's redo, which I never use).
+
+Then we do the actual "C-r C-f" bind.
+#+BEGIN_SRC emacs-lisp
+(define-key evil-normal-state-map (kbd "C-r") nil)
+(global-set-key (kbd "C-r C-f") 'org-refile)
+
+#+END_SRC
+
+Another one - archive. I'm gonna do "C-r C-a" for "refile - archive", and because I have "C-r" as a prefix now.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "C-r C-a") 'org-archive-subtree)
+#+END_SRC
+
+For some reason, terminals (terminal emulators?) don't set S-M-RET, but just M-RET. This goes to org-insert-todo-heading, which I basically always want to use. So bind M-RET to that.
+
+#+BEGIN_SRC emacs-lisp
+(define-key org-mode-map (kbd "M-RET") nil)
+(global-set-key (kbd "M-RET") 'org-insert-todo-heading)
+
 #+END_SRC

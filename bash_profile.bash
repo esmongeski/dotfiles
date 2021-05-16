@@ -37,7 +37,7 @@ alias sbp='echo "sourcing bash profile"; . $PATH_TO_EDITABLE_BASH_PROFILE' # thi
 alias vbp='vim $PATH_TO_EDITABLE_BASH_PROFILE'  #same as above
 
 # This file path should be the same across machines :fingers-crossed:
-alias inbox='emacs ~/Dropbox/IFTTT/SMS/inbox.org'
+alias inbox='emacs ~/Dropbox/org/inbox.org'
 alias ptodos="emacs ~/Dropbox/org/personalProjects.org"
 alias cdo='cd ~/Dropbox/org'
 alias lso='ls | grep -v "~"' # dropbox has a bunch of junky backup files. ignore them. maybe make this a function replacing ls
@@ -47,6 +47,7 @@ alias media='emacs ~/Dropbox/org/media.org'
 alias alist='emacs ~/Dropbox/org/actionItems.org'
 alias funthings='emacs ~/Dropbox/org/funThings.org'
 alias homeprojects='emacs ~/Dropbox/org/homeProjects.org'
+alias workstuff='emacs ~/Dropbox/org/workStuff.org'
 
 # Stolen from @dubennett https://github.com/dusbennett/terminal-commands/blob/master/shell/.profile
 alias cd..='cd ..'
