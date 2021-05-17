@@ -1,16 +1,24 @@
 * Package things!
+This is a bit of fumbling to try and get this all to work on a new computer from zero with minimal manual intervention.
+
+The key is package-refresh-contents - however, it's super slow. The t argument makes it run asynchronously. This means I might have to open emacs multiple times on a new computer to get this working.
+
+Apparently the call to package-initialize isn't always required? I don't fully understand what it does yet.
 #+BEGIN_SRC emacs-lisp
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
-(package-initialize)
-;;(require 'use-package)
+  (require 'package)
+  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
+  ;;(package-initialize)
+  ;;(package-refresh-contents t)
+  (require 'use-package)
 #+END_SRC
 
 * Extra Plugins
 #+BEGIN_SRC emacs-lisp
-(require 'org-evil)
-(require 'evil)
-(evil-mode 1)
+  (package-install 'org-evil)
+  (require 'org-evil)
+  (package-install 'evil)
+  (require 'evil)
+  (evil-mode 1)
 #+END_SRC
 
 * Custom variables (I don't really remember what this is)
@@ -19,12 +27,13 @@
 (custom-set-variables                                                                                                                                                                                      
  '(org-agenda-files
    (quote
-    ("~/Dropbox/org/personalProjects.org" "~/Dropbox/org/actionItems.org" "~/Dropbox/org/funThings.org" "~/Dropbox/org/maryThings.org" "~/Dropbox/org/homeProjects.org" "~/Dropbox/org/enviornmentConfigAndLearning.org" "~/Dropbox/org/workStuff.org")))
+    ("~/Dropbox/org/personalProjects.org" "~/Dropbox/org/funThings.org" "~/Dropbox/org/homeProjects.org" "~/Dropbox/org/workStuff.org")))
  '(package-selected-packages
    (quote
-    (helm-org org-evil monitor dash powerline-evil ## org-link-minor-mode org-mobile-sync evil))))
+    (org-bullets helm-org org-evil monitor dash powerline-evil ## org-link-minor-mode org-mobile-sync evil))))
 
 (setq org-startup-indented t)
+(setq org-startup-folded t)
 #+END_SRC
 ** No clue what custom-set-faces is to be honest.
 #+BEGIN_SRC emacs-lisp
