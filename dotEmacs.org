@@ -112,3 +112,9 @@ For some reason, terminals (terminal emulators?) don't set S-M-RET, but just M-R
 (global-set-key (kbd "M-RET") 'org-insert-todo-heading)
 
 #+END_SRC
+
+* Scratch 
+This is a table
+| TEST | TEST2 |
+| a    | d     |
+| b    | c     |
