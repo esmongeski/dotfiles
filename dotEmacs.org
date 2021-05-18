@@ -7,7 +7,7 @@ Apparently the call to package-initialize isn't always required? I don't fully u
 #+BEGIN_SRC emacs-lisp
   (require 'package)
   (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
-  (package-initialize)
+  ;;(package-initialize)
 
   (unless (package-installed-p 'use-package)
     (package-refresh-contents)
@@ -78,11 +78,6 @@ More details [[https://orgmode.org/manual/Tracking-TODO-state-changes.html][Here
 #+END_SRC
 Custom priorities
 #+BEGIN_SRC emacs-lisp
-;;(setq   org-enable-priority-commands t
-;;    org-highest-priority 10
-;;    org-default-priority 5
-;;    org-lowest-priority 1
-;;)
 #+END_SRC
 
 * Colors!!!! And other nice displays - change the ... to a return thingy, make nice bullet icons.
