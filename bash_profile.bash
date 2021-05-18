@@ -132,7 +132,7 @@ function rm {
 }
 
 # command line COLORS!
-export PS1="\[\e[32;40m\]\u\[\e[m\]@\[\e[31;40m\]\h\[\e[m\]\[\e[36;40m\]\w\[\e[m\]\[\e[35;40m\] (\$(cb))\[\e[m\] $ "
+export PS1="\[\e[m\]\[\e[36;40m\]\w\[\e[m\]\[\e[35;40m\] (\$(cb))\[\e[m\] $ "
 
 # count the files in a directory
 function countfiles {
