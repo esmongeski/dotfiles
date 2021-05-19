@@ -24,3 +24,8 @@ I made it C-r C-a
 Usually - C-c C-w
 
 I made it C-r C-f
+
+*  Switch window
+This is just an emacs thing, but whatever.
+
+C-x o (NOT C-x C-o)
