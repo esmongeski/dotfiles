@@ -25,10 +25,6 @@ This brings back the old "<s" shortcut for source blocks. Unfortunately it has d
 
 * Extra Plugins
 #+BEGIN_SRC emacs-lisp
-  ;;(package-install 'org-evil)
-  ;;(require 'org-evil)
-  ;;(package-install 'evil)
-  ;;(require 'evil)
   (use-package org-evil)
   (use-package evil) 
   (evil-mode 1)
