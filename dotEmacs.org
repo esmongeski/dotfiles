@@ -24,6 +24,7 @@ This brings back the old "<s" shortcut for source blocks. Unfortunately it has d
 #+end_src
 
 * Extra Plugins
+Evil, because I am a vim user at heart.
 #+BEGIN_SRC emacs-lisp
   (use-package org-evil)
   (use-package evil) 
@@ -31,7 +32,7 @@ This brings back the old "<s" shortcut for source blocks. Unfortunately it has d
 #+END_SRC
 
 * Custom variables (I don't really remember what this is)
-** Variables - org agenda files, which will some day pull dates, but are also used for how things refile. Packages, which I guess says which packages are installed? 
+Variables - org agenda files, which will some day pull dates, but are also used for how things refile. Packages, which I guess says which packages are installed? 
 #+BEGIN_SRC emacs-lisp 
 (custom-set-variables                                                                                                                                                                                      
  '(org-agenda-files
@@ -44,7 +45,7 @@ This brings back the old "<s" shortcut for source blocks. Unfortunately it has d
 (setq org-startup-indented t)
 (setq org-startup-folded t)
 #+END_SRC
-** No clue what custom-set-faces is to be honest.
+No clue what custom-set-faces is to be honest.
 #+BEGIN_SRC emacs-lisp
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -57,12 +58,10 @@ This brings back the old "<s" shortcut for source blocks. Unfortunately it has d
  ;; (require 'powerline)
  ;; (require 'cl)
 #+END_SRC
-** Refile config. I found this on reddit, but I think this says "take the stuff from org-agenda-files and go one level deep in the trees to find targets". It works.
+Refile config. I found this on reddit, but I think this says "take the stuff from org-agenda-files and go one level deep in the trees to find targets". It works.
 #+BEGIN_SRC emacs-lisp
 (setq org-refile-targets '((nil :maxlevel . 1)
                                 (org-agenda-files :maxlevel . 1)))
-;; hmmmm maybe ignore for now so I just get files???
-;;(setq org-outline-path-complete-in-steps nil)         ; Refile in a single go
 (setq org-refile-use-outline-path 'file)                  
 #+END_SRC
 
@@ -116,14 +115,6 @@ Another one - archive. I'm gonna do "C-r C-a" for "refile - archive", and becaus
 
 #+BEGIN_SRC emacs-lisp
 (global-set-key (kbd "C-r C-a") 'org-archive-subtree)
-#+END_SRC
-
-For some reason, terminals (terminal emulators?) don't set S-M-RET, but just M-RET. This goes to org-insert-todo-heading, which I basically always want to use. So bind M-RET to that.
-
-#+BEGIN_SRC emacs-lisp
-;;(define-key org-mode-map (kbd "M-RET") nil)
-;;(global-set-key (kbd "M-RET") 'org-insert-todo-heading)
-
 #+END_SRC
 
 * Debugging
