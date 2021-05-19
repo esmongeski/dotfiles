@@ -128,5 +128,5 @@ For some reason, terminals (terminal emulators?) don't set S-M-RET, but just M-R
 * Debugging
 Trying to see what this does on startup so I can optimize my init/dotfiles.
 #+begin_src emacs-lisp
-(setq message-log-max t)
+;;(setq message-log-max t)
 #+end_src
