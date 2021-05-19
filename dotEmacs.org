@@ -81,6 +81,7 @@ More details [[https://orgmode.org/manual/Tracking-TODO-state-changes.html][Here
 #+END_SRC
 Custom priorities
 #+BEGIN_SRC emacs-lisp
+(setq org-lowest-priority 74)
 #+END_SRC
 
 * Colors!!!! And other nice displays - change the ... to a return thingy, make nice bullet icons.
