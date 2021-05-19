@@ -15,15 +15,22 @@ Apparently the call to package-initialize isn't always required? I don't fully u
 
   (eval-when-compile
     (require 'use-package))
-  
+
 #+END_SRC
+
+This brings back the old "<s" shortcut for source blocks. Unfortunately it has different casing than before, but that's not worth the time to fix (probably easy though).
+#+begin_src emacs-lisp
+(require 'org-tempo)
+#+end_src
 
 * Extra Plugins
 #+BEGIN_SRC emacs-lisp
-  (package-install 'org-evil)
-  (require 'org-evil)
-  (package-install 'evil)
-  (require 'evil)
+  ;;(package-install 'org-evil)
+  ;;(require 'org-evil)
+  ;;(package-install 'evil)
+  ;;(require 'evil)
+  (use-package org-evil)
+  (use-package evil) 
   (evil-mode 1)
 #+END_SRC
 
@@ -122,8 +129,8 @@ For some reason, terminals (terminal emulators?) don't set S-M-RET, but just M-R
 
 #+END_SRC
 
-* Scratch 
-This is a table
-| TEST | TEST2 |
-| a    | d     |
-| b    | c     |
+* Debugging
+Trying to see what this does on startup so I can optimize my init/dotfiles.
+#+begin_src emacs-lisp
+(setq message-log-max t)
+#+end_src
