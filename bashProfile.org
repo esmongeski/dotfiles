@@ -1,0 +1,140 @@
+* Hello There
+
+Heyo this is my bash profile. I make a toooon of personal scripts for ease of use.
+* External config checking
+Env vars this depends on - need to be set in local bash profile.
+This is a poor man's form of dependency injection enforcement in bash.
+Maybe there's a better way to futz with env vars that should be defined elsewhere, but I don't know it.
+#+begin_src bash
+function checkEnvAndDefault() {
+	if [ -z `printenv $1` ];
+	then
+		echo "you should probably export $1 in the local bash profile"
+		export `echo $1`="YOUFORGOTTOSETTHIS"
+	fi
+}
+#+end_src
+
+And these are the vars I want defined by the local system.
+
+#+begin_src bash
+checkEnvAndDefault "PATH_TO_DOTFILES_REPO"
+checkEnvAndDefault "PATH_TO_EDITABLE_DOT_EMACS"
+#+end_src
+* EchoAndEval
+Utility function to spit out a thing to STDOUT and then evaluate it. Useful because I want to see what my aliases are doing in many cases.
+#+begin_src bash
+function echoAndEval {
+	echo $1
+	eval $1
+}
+#+end_src
+* Aliases (aliaii?)
+Here's something that never panned out:
+#+begin_src bash
+alias a='alias'
+#+end_src
+
+** Local dotfiles
+Shortcuts to open local dotfiles. Generally, these files source something in this repo for ease of bootstrapping config on new machines.
+#+begin_src bash
+alias vlv='vim ~/.vimrc'
+alias vle='vim ~/.emacs.d/init.el'
+alias vlbp='vim ~/.bash_profile'
+alias slbp='echo "sourcing LOCAL bash profile"; . ~/.bash_profile'
+#+end_src
+** Dotfiles in this repo
+These require the aliases used to be defined locally so this can figure out the path.
+Some of them are of the form "vx" which in my brain is "vim x". I have cleverly redirected org files to emacs, even though I still type "ve" for "vim emacsconfig".
+#+begin_src bash
+alias ve='echoAndEval "emacs $PATH_TO_DOTFILES_REPO/dotEmacs.org"'
+alias vv='echo `path_to_vimrc`; vim `path_to_vimrc`'
+#+end_src
+
+Quick sourcing and vimming of this bash profile
+TODO - vbp point to this org file
+#+begin_src bash
+alias sbp='echo "sourcing bash profile"; . $PATH_TO_DOTFILES_REPO/bash_profile.bash'
+alias vbp='vim $PATH_TO_DOTFILES_REPO/bash_profile.bash'
+#+end_src
+** Common org files
+Dropbox paths are probably the same everywhere? Fingers crossed!
+#+begin_src bash
+alias inbox='emacs ~/Dropbox/org/inbox.org'
+alias ptodos='emacs ~/Dropbox/org/personalProjects.org'
+alias funthings='emacs ~/Dropbox/org/funThings.org'
+alias homeprojects='emacs ~/Dropbox/org/homeProjects.org'
+alias workstuff='emacs ~/Dropbox/org/workStuff.org'"
+#+end_src bash
+Quick navigation to my org directory, and quick ls that filters out whatever these `~` files are. They seem like backups, I don't care.
+#+begin_src bash
+alias cdo='cd ~/Dropbox/org'
+alias lso='ls | grep -v "~"'
+#+end_src
+** Quick backtracking
+[[https://github.com/dusbennett/terminal-commands/blob/master/shell/.profile][[Completely stolen from Dustin Bennett]]
+#+begin_src bash
+alias cd..='cd ..'
+alias ..='cd ..'
+alias ...='cd ../../'
+alias ....='cd ../../../'
+alias .....='cd ../../../../'
+alias .4='cd ../../../../'
+alias .5='cd ../../../../..'
+#+end_src
+** This directory!
+#+begin_src bash
+alias cddf='echoAndEval "cd $PATH_TO_DOTFILES_REPO"'
+#+end_src
+* Greppy things
+** Grep recursive directory ignore crap
+I always mess up "grep -r stuff ." and "grep -r . stuff"
+vendor is an exclusion of php libraries - I should probably add other libarary directories
+but I'm mostly writing php day to day
+#+begin_src bash
+function grd() {
+  grep -r -i --exclude-dir={vendor,.git,.idea} $1 . | grep -v vendor
+}
+#+end_src
+** Quickly ls and pipe into grep
+#+begin_src bash
+alias lsg='ls | grep'
+#+end_src
+* Git stuff
+Hook to add interesting things - at one point Ben Doherty wrapped git in timing to prove how awful our main repo was. I don't have the timing anymore, but did get used to typing "g" instead of "git"
+#+begin_src bash
+alias g='git'
+#+end_src
+Sometimes, I fuck up with git, because it's git and it's kinda complicated sometimes. These help recover from said fuckups.
+#+begin_src bash
+alias unstage="g reset HEAD"
+  alias gpush='echo "ted you typed too fast"; g push;'
+#+end_src
+Git add and commit with message - gotta shortcut this. Didn't end up using `gp` as much, but oh well!
+#+begin_src bash
+function gca(){
+  g add .; git commit -m "$*";
+}
+alias gp='g push'
+#+end_src
+Ok so, to get a little political, sometimes there are movements to change the language we use. And sometimes, people don't like it because changing language introduces cognitive tax, which is like, kinda understandable.
+And to get more political, I think it's important to empathize with people that feel that way, even if you would prefer they change their language (which believe me, I frequently do, and in moments of impatience, wish people would just think a little harder).
+I do believe language shapes how we think, and changing it can change how we think, and that's important.
+This is a bit rambly, but tl;dr this all kinda manifests in this next function. I appreciate the move from master->main in git lexicon. But working in an environment that is inconsistent on which
+represents the "branch with the closest-to-production-code" is a frequent, albeit minor, inconvenience (i.e. a cognitive tax). So I made this function to figure it out for me.
+#+begin_src bash
+function gcm {
+        RESULT=`git rev-parse --verify main`
+        if [ -z $RESULT ];
+        then
+                echo "main is not a branch, checkin out master"
+                echoAndEval "g checkout master"
+        else
+                echo "main is a branch, checking it out"
+                echoAndEval "g checkout main"
+        fi
+}
+
+#+end_src
+* NEXT
+https://github.com/esmongeski/dotfiles/blob/main/bash_profile.bash#L97

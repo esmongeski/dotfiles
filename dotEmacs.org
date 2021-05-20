@@ -64,7 +64,15 @@ Refile config. I found this on reddit, but I think this says "take the stuff fro
                                 (org-agenda-files :maxlevel . 1)))
 (setq org-refile-use-outline-path 'file)                  
 #+END_SRC
-
+Adding sh (bash) to babel languages so I can tangle my bash profile.
+#+begin_src emacs-lisp
+  (org-babel-do-load-languages 'org-babel-load-languages
+      '(
+          (shell . t)
+      )
+  )
+(setq org-babel-default-header-args:bash '((:tangle . "yes")))
+#+end_src
 * Todo customization - states and donetime/note
 Ongoing thing to figure out what states I want. log-done enables timestamp and prompts for a note. Archive location is what you'd expect.
 
@@ -78,6 +86,7 @@ More details [[https://orgmode.org/manual/Tracking-TODO-state-changes.html][Here
 
 (setq org-archive-location "~/Dropbox/org/archive.org::")
 #+END_SRC
+
 Custom priorities
 #+BEGIN_SRC emacs-lisp
 (setq org-lowest-priority 74)
