@@ -1,6 +1,11 @@
 * Hello There
 
-Heyo this is my bash profile. I make a toooon of personal scripts for ease of use.
+Heyo this is my bash profile. I make a toooon of personal scripts for ease of use
+* COLORS
+Make my prompt look like `workingDirectory (git_branch) $`
+#+begin_src bash
+export PS1="\[\e[m\]\[\e[36;40m\]\w\[\e[m\]\[\e[35;40m\] (\$(cb))\[\e[m\] $ "
+#+end_src
 * External config checking
 Env vars this depends on - need to be set in local bash profile.
 This is a poor man's form of dependency injection enforcement in bash.
@@ -64,8 +69,8 @@ alias inbox='emacs ~/Dropbox/org/inbox.org'
 alias ptodos='emacs ~/Dropbox/org/personalProjects.org'
 alias funthings='emacs ~/Dropbox/org/funThings.org'
 alias homeprojects='emacs ~/Dropbox/org/homeProjects.org'
-alias workstuff='emacs ~/Dropbox/org/workStuff.org'"
-#+end_src bash
+alias workstuff='emacs ~/Dropbox/org/workStuff.org'
+#+end_src
 Quick navigation to my org directory, and quick ls that filters out whatever these `~` files are. They seem like backups, I don't care.
 #+begin_src bash
 alias cdo='cd ~/Dropbox/org'
@@ -105,11 +110,49 @@ Hook to add interesting things - at one point Ben Doherty wrapped git in timing 
 #+begin_src bash
 alias g='git'
 #+end_src
+** gchlike
+This thing is super great. Give it a short string, and it greps your git branches for that string. If it finds exactly
+one match, it checks out that branch. Otherwise it tells you what it did find you can refine your query (or just copy
+the branch you want)
+#+begin_src bash
+function gchlike {
+    local MATCHES=`g branch | grep -i $1 | awk '{print $1;}'`
+    local MATCHCOUNT=`echo "$MATCHES" | wc -l`
+    if [ "$MATCHCOUNT" -gt 1 ]; then
+        echo "Too many branches!"
+        echo "$MATCHES"
+    elif [ "$MATCHES" == "" ]; then
+        echo "No branches!"
+    else
+        echo "checking out $MATCHES"
+        g checkout "$MATCHES"
+    fi
+}
+#+end_src
+** Mistakes
 Sometimes, I fuck up with git, because it's git and it's kinda complicated sometimes. These help recover from said fuckups.
 #+begin_src bash
 alias unstage="g reset HEAD"
-  alias gpush='echo "ted you typed too fast"; g push;'
+alias gpush='echo "ted you typed too fast"; g push;'
 #+end_src
+
+If you're in the middle of a pull or rebase and hit a conflict, this can back you out of it. The gitlab ci think wasn't checked out by checkout * for some reason.
+#+begin_src bash
+function idontwannamerge {
+    g reset HEAD;
+    g clean -f -d;
+    g checkout *
+    gc .gitlab-ci.yml
+}
+#+end_src
+
+More things along the line of "oh crap I shouldn't have committed". Ever commit to main, push, and get the "you can't do that" message? These are your friend.
+#+begin_src bash
+alias undocommitanddelete="g reset HEAD^; g checkout *; g clean -f -d"
+alias undocommit="g reset HEAD^"
+#+end_src
+
+** Core workflow 
 Git add and commit with message - gotta shortcut this. Didn't end up using `gp` as much, but oh well!
 #+begin_src bash
 function gca(){
@@ -135,7 +178,129 @@ function gcm {
                 echoAndEval "g checkout main"
         fi
 }
+#+end_src
+** Current branch
+Function to parse the current git branch. I totally stole this from somewhere on the internet (like any usage of sed you find in here).
+#+begin_src bash
+function parse_git_branch() {
+    git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'
+}
+alias cb='parse_git_branch'
+#+end_src
+** Various shortcuts
+List all git branches
+#+begin_src bash 
+alias brs='g branch -vv'
+#+end_src
+Git status, git checkout, git log, git log files, current branch name
+#+begin_src bash
+alias gs='g status'
+alias gc='g checkout'
+alias gl='g log'
+alias glf='gl --name-only'
+#+end_src
+Git diff, git diff staged files, git diff with remote branch, git merge squash, git fetch
+#+begin_src bash
+alias gd='g diff'
+alias gds='g diff --staged'
+alias gdo='g diff origin/`cb`'
+alias gms='g merge --squash'
+alias gf='g fetch'
+#+end_src
+** Branch swapping
+This was a failed experiment to quickly switch between two git branches, typically master (nowadays main) and the current working branch. Ended up not super useful.
+#+begin_src bash
+alias oswp="echo $OLDBRANCH; echo 'gswp to change, setswbranch to change oldbranch'"
+alias swbr="echo $OLDBRANCH"
+export OLDBRANCH=master
 
 #+end_src
-* NEXT
-https://github.com/esmongeski/dotfiles/blob/main/bash_profile.bash#L97
+** Removing the git index can be awful
+I was bitten by this once and it was a bad time. I'm not sure why it was something that would happen in my workflow, but I put this alias in to prevent me from doing it again.
+#+begin_src bash
+alias rgi='rm .git/index.lock'
+
+function rm {
+    if [ $1 == ".git/index" ]; then
+      echo "NOOOOOO"
+    else
+      command rm "$@"
+    fi
+}
+#+end_src
+* No window for emacs - really only relevant on ubuntu
+#+begin_src bash
+alias emacs='emacs -nw'
+
+#+end_src
+* Misc helper functions
+Spit out the current date
+#+begin_src bash
+alias shortdate='date +%Y-%m-%d' # get date in format YYYY-MM-DD
+alias sd='shortdate'
+#+end_src
+
+Count the files in a given directory
+#+begin_src bash 
+function countfiles {
+    ls -1 $1 | wc -l | tr -d '[:space:]'
+}
+#+end_src
+Echo out each line of an input
+#+begin_src bash
+function splitOutput {
+    for token in $1
+    do
+      echo $token
+    done
+}
+#+end_src
+Given a bunch of output, find anything prefixed with https and open it. This was for something specific but I don't remember what
+#+begin_src bash
+function findLinkAndOpen {
+    splitOutput "$1" | grep https | xargs open
+}
+#+end_src
+* partyify
+All credit to Sean Ezrol for this. Script that takes an image/gif and makes it have the party colors.
+#+begin_src bash
+function partyify {
+    while [[ $# -gt 1 ]]
+    do
+    key="$1"
+      case $key in
+      -i|--input-file)
+      INPUTFILE=$2
+      shift
+      ;;
+      -c|-color)
+      COLOR=$2
+      shift
+      ;;
+      -f|--fuzz)
+      FUZZ=$2
+      shift
+      ;;
+      -o|--output-file)
+      OUTPUTFILE=$2
+      shift
+      ;;
+      *)
+        # unknown arg
+      ;;
+    esac
+    shift
+    done
+
+    echo Input - "${INPUTFILE}"
+    party_colors=("#93FE90" "#8FB3FC" "#CF7CFA" "#EF4CEF" "#F1586A" "#F9D48D")
+    for i in "${!party_colors[@]}"
+    do
+      echo   magick convert "${INPUTFILE}" -fill "${party_colors[i]}" -fuzz "${FUZZ}"% -opaque "${COLOR}" party_temp-"$((i+1))".png
+      magick convert "${INPUTFILE}" -fill "${party_colors[i]}" -fuzz "${FUZZ}"% -opaque "${COLOR}" party_temp-"$((i+1))".png
+      echo Making party_temp-"$((i+1))".png, replacing "${COLOR}" with "${party_colors[i]}"
+    done
+    magick convert party_temp-%d.png[1-"${#party_colors[@]}"] -set delay 10 -loop 0 "${OUTPUTFILE}"
+    echo "${OUTPUTFILE} has been created."
+}
+#+end_src
