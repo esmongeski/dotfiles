@@ -31,6 +31,10 @@ Evil, because I am a vim user at heart.
   (evil-mode 1)
 #+END_SRC
 
+org-heading to extract org things as structured objects
+#+begin_src emacs-lisp
+;;(require 'org-element)
+#+end_src
 * Custom variables (I don't really remember what this is)
 Variables - org agenda files, which will some day pull dates, but are also used for how things refile. Packages, which I guess says which packages are installed? 
 #+BEGIN_SRC emacs-lisp 
@@ -130,4 +134,12 @@ Another one - archive. I'm gonna do "C-r C-a" for "refile - archive", and becaus
 Trying to see what this does on startup so I can optimize my init/dotfiles.
 #+begin_src emacs-lisp
 ;;(setq message-log-max t)
+#+end_src
+
+* Notion
+#+begin_src emacs-lisp
+(defun json-org-heading ()
+    "Encode current heading as json"
+    (json-encode (org-heading-components)))
+
 #+end_src
