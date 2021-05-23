@@ -78,7 +78,7 @@ alias cdo='cd ~/Dropbox/org'
 alias lso='ls | grep -v "~"'
 #+end_src
 ** Quick backtracking
-[[https://github.com/dusbennett/terminal-commands/blob/master/shell/.profile][[Completely stolen from Dustin Bennett]]
+[[https://github.com/dusbennett/terminal-commands/blob/master/shell/.profile][Completely stolen from Dustin Bennett]]
 #+begin_src bash
 alias cd..='cd ..'
 alias ..='cd ..'
@@ -92,6 +92,13 @@ alias .5='cd ../../../../..'
 #+begin_src bash
 alias cddf='echoAndEval "cd $PATH_TO_DOTFILES_REPO"'
 #+end_src
+** Bash debugging because why not.
+#+begin_src bash
+function debug {
+    echo $x
+}
+#+end_src
+
 * Greppy things
 ** Grep recursive directory ignore crap
 I always mess up "grep -r stuff ." and "grep -r . stuff"
@@ -229,6 +236,24 @@ function rm {
     fi
 }
 #+end_src
+** Rebase continue
+#+begin_src bash
+alias grbc='g add -uv; g rebase --continue'
+#+end_src
+** New branch
+#+begin_src bash
+alias newbr='g checkout -b'
+
+#+end_src
+** Push and open PR
+So I haven't used this for a while - push and immediately open the MR (PR nowadays). I should try this again.
+#+begin_src bash
+function pushAndOpenMR {
+    MR_RESULT=`g push`
+    echo "$MR_RESULT"
+    findLinkAndOpen "$MR_RESULT"
+}
+#+end_src
 * No window for emacs - really only relevant on ubuntu
 #+begin_src bash
 alias emacs='emacs -nw'
@@ -304,4 +329,79 @@ function partyify {
     magick convert party_temp-%d.png[1-"${#party_colors[@]}"] -set delay 10 -loop 0 "${OUTPUTFILE}"
     echo "${OUTPUTFILE} has been created."
 }
+#+end_src
+* Background SSH agent
+Start a background ssh agent
+#+begin_src bash
+SSH_ENV=$HOME/.ssh/environment
+function start_agent {
+  echo "Initialising new SSH agent..."
+  eval /usr/bin/ssh-agent | sed 's/^echo/#echo/' > ${SSH_ENV}
+  echo succeeded
+  chmod 600 ${SSH_ENV}
+  . ${SSH_ENV} > /dev/null
+  /usr/bin/ssh-add;
+}
+
+alias sag="start_agent"
+
+# Source SSH settings, if applicable
+if [ -f "${SSH_ENV}" ]; then
+    . ${SSH_ENV} > /dev/null
+    #ps ${SSH_AGENT_PID} doesn't work under cywgin
+    ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
+        start_agent;
+    }
+    else
+        start_agent;
+fi
+
+
+#+end_src
+* Org files
+These aren't always right, I should fix that
+#+begin_src bash
+
+alias todos="emacs ~/org/todo.org"
+alias ptodos="emacs ~/org/personal.org"
+alias itodos="emacs ~/org/inbox.org"
+#+end_src
+* Docker
+Aliases around cleaning up old containers
+#+begin_src bash
+alias d='docker'
+alias killcontainers='docker container stop $(docker ps -a -q)'
+alias rmcontainer='d container rm -f'
+alias dls='docker container ls'
+alias dps='d container ls'
+alias dlsa='d container ls -a'
+alias rmc='rmcontainer'
+alias drm='rmc'
+
+#+end_src
+Shortcut to bash into a container
+#+begin_src bash
+function dbashin {
+        d exec -it $1 bash
+}
+#+end_src
+Docker rm grep - remove containers that look like a certiain thing
+#+begin_src bash
+function drmg {
+        drm `dlsa | grep $1 | awk '{print $1;}'`
+}
+#+end_src
+* Because who can remember awk syntax
+Get the first column of output
+#+begin_src bash
+function firstColumn {
+        awk '{print $1;}' $1;
+}
+
+#+end_src
+* Bash autocomplete
+If it's there, source bash autocomplete
+#+begin_src bash
+[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion
+
 #+end_src
