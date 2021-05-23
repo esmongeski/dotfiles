@@ -58,10 +58,9 @@ alias vv='echo `path_to_vimrc`; vim `path_to_vimrc`'
 #+end_src
 
 Quick sourcing and vimming of this bash profile
-TODO - vbp point to this org file
 #+begin_src bash
 alias sbp='echo "sourcing bash profile"; . $PATH_TO_DOTFILES_REPO/bash_profile.bash'
-alias vbp='vim $PATH_TO_DOTFILES_REPO/bash_profile.bash'
+alias vbp='emacs $PATH_TO_DOTFILES_REPO/bashProfile.org'
 #+end_src
 ** Common org files
 Dropbox paths are probably the same everywhere? Fingers crossed!
@@ -363,8 +362,6 @@ These aren't always right, I should fix that
 #+begin_src bash
 
 alias todos="emacs ~/org/todo.org"
-alias ptodos="emacs ~/org/personal.org"
-alias itodos="emacs ~/org/inbox.org"
 #+end_src
 * Docker
 Aliases around cleaning up old containers
@@ -389,6 +386,55 @@ Docker rm grep - remove containers that look like a certiain thing
 #+begin_src bash
 function drmg {
         drm `dlsa | grep $1 | awk '{print $1;}'`
+}
+#+end_src
+* Kubernetes
+Shortcuts for interacting with pods
+#+begin_src bash
+checkEnvAndDefault "KUBE_NAMESPACE"
+
+function kods {
+	echoAndEval "kubectl get pods -n $KUBE_NAMESPACE"
+}
+
+function findpods {
+	echoAndEval "kubectl get pods --all-namespaces | grep $1"
+}
+
+#+end_src
+
+Set and change namespace
+#+begin_src bash
+
+alias skn='setkubenamespace'
+
+function setkubenamespace {
+	export KUBE_NAMESPACE=$1
+}
+#+end_src
+Logs and events
+#+begin_src bash
+function klogs {
+	klogswithnamespace $1 $KUBE_NAMESPACE
+}
+
+function klogswithnamespace {
+	echoAndEval "kubectl logs $1 --namespace $2"
+}
+
+function kevs {
+	echoAndEval "kubectl get events -n $KUBE_NAMESPACE"
+}
+#+end_src
+See k8s contexts
+#+begin_src bash
+function kc {
+      echoAndEval "kubectl config get-contexts"
+}
+function kcsc {
+	echo "kubectl config use-context $1";
+	kubectl config use-context $1;
+	kc
 }
 #+end_src
 * Because who can remember awk syntax
