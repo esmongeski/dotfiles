@@ -96,6 +96,15 @@ Custom priorities
 (setq org-lowest-priority 74)
 #+END_SRC
 
+Make checkbox/todo tracking recursive so I see everything under the subtree
+#+begin_src emacs-lisp
+(setq org-hierarchical-todo-statistics t)
+#+end_src
+
+Column view in org-agenda
+#+begin_src emacs-lisp
+(setq org-columns-default-format-for-agenda "%80ITEM(Task) %4PRIORITY(Priority)  %10TODO(Todo Status) %17Effort(Estimated Effort){:} %CLOCKSUM(Time Spent)")
+#+end_src
 * Colors!!!! And other nice displays - change the ... to a return thingy, make nice bullet icons.
 #+BEGIN_SRC emacs-lisp
 (load-theme 'manoj-dark)
