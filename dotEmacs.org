@@ -8,14 +8,15 @@ Apparently the call to package-initialize isn't always required? I don't fully u
   (require 'package)
   (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
   ;;(package-initialize)
-
   (unless (package-installed-p 'use-package)
     (package-refresh-contents)
     (package-install 'use-package))
-
   (eval-when-compile
     (require 'use-package))
-
+#+END_SRC
+Ubuntu specific (hopefully this doesn't break mac!) - this forces org to update to a later version.
+#+BEGIN_SRC emacs-lisp
+  (use-package org :ensure org-plus-contrib :pin org)
 #+END_SRC
 
 This brings back the old "<s" shortcut for source blocks. Unfortunately it has different casing than before, but that's not worth the time to fix (probably easy though).
@@ -41,7 +42,7 @@ Variables - org agenda files, which will some day pull dates, but are also used 
 (custom-set-variables                                                                                                                                                                                      
  '(org-agenda-files
    (quote
-    ("~/Dropbox/org/personalProjects.org" "~/Dropbox/org/funThings.org" "~/Dropbox/org/homeProjects.org" "~/Dropbox/org/workStuff.org")))
+    ("~/Dropbox/org/recurring.org" "~/Dropbox/org/personalProjects.org" "~/Dropbox/org/funThings.org" "~/Dropbox/org/homeProjects.org" "~/Dropbox/org/workStuff.org")))
  '(package-selected-packages
    (quote
     (org-bullets helm-org org-evil monitor dash powerline-evil ## org-link-minor-mode org-mobile-sync evil))))
@@ -151,4 +152,18 @@ Trying to see what this does on startup so I can optimize my init/dotfiles.
     "Encode current heading as json"
     (json-encode (org-heading-components)))
 
+#+end_src
+
+* Layout
+#+begin_src emacs-lisp
+(defadvice org-agenda (around split-vertically activate)
+  (let ((split-width-threshold 300))  ; or whatever width makes sense for you
+    ad-do-it))
+#+end_src
+
+* Ubuntu
+This is a hack because I probably have a bad config on my ubuntu machine. For some reason, ~string-empty-p~ isn't defined at runtime, but when I ~describe-function~ it, it shows up.
+This breaks org-agenda. Requring ~subr-x~ at startup fixes this.
+#+begin_src emacs-lisp
+(require 'subr-x)
 #+end_src

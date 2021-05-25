@@ -20,8 +20,6 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(org-agenda-files
-   '("~/Dropbox/org/personalProjects.org" "~/Dropbox/org/funThings.org" "~/Dropbox/org/homeProjects.org" "~/Dropbox/org/workStuff.org"))
  '(package-selected-packages
    '(org-bullets helm-org org-evil monitor dash powerline-evil ## org-link-minor-mode org-mobile-sync evil)))
 (custom-set-faces
