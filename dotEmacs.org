@@ -28,7 +28,7 @@ This brings back the old "<s" shortcut for source blocks. Unfortunately it has d
 Evil, because I am a vim user at heart.
 #+BEGIN_SRC emacs-lisp
   (use-package org-evil)
-  (use-package evil) 
+  (use-package evil)
   (evil-mode 1)
 #+END_SRC
 
@@ -38,7 +38,7 @@ org-heading to extract org things as structured objects
 #+end_src
 * Custom variables (I don't really remember what this is)
 Variables - org agenda files, which will some day pull dates, but are also used for how things refile. Packages, which I guess says which packages are installed? 
-#+BEGIN_SRC emacs-lisp 
+#+BEGIN_SRC emacs-lisp
 (custom-set-variables                                                                                                                                                                                      
  '(org-agenda-files
    (quote
@@ -67,7 +67,7 @@ Refile config. I found this on reddit, but I think this says "take the stuff fro
 #+BEGIN_SRC emacs-lisp
 (setq org-refile-targets '((nil :maxlevel . 1)
                                 (org-agenda-files :maxlevel . 1)))
-(setq org-refile-use-outline-path 'file)                  
+(setq org-refile-use-outline-path 'file)
 #+END_SRC
 Adding sh (bash) to babel languages so I can tangle my bash profile.
 #+begin_src emacs-lisp
@@ -84,7 +84,7 @@ Ongoing thing to figure out what states I want. log-done enables timestamp and p
 More details [[https://orgmode.org/manual/Tracking-TODO-state-changes.html][Here]]
 #+BEGIN_SRC emacs-lisp
 (setq org-todo-keywords
-     '((sequence "TODO" "WAITING" "IN-PROGRESS" "|" "DONE" "EXPORTED" "OBSOLOTE")))
+     '((sequence "TODO" "SOMEDAY" "WAITING" "IN-PROGRESS" "|" "DONE" "EXPORTED" "OBSOLOTE")))
 
 (setq org-log-done 'time)
 (setq org-log-done 'note)
@@ -105,6 +105,16 @@ Make checkbox/todo tracking recursive so I see everything under the subtree
 Column view in org-agenda
 #+begin_src emacs-lisp
 (setq org-columns-default-format-for-agenda "%80ITEM(Task) %4PRIORITY(Priority)  %10TODO(Todo Status) %17Effort(Estimated Effort){:} %CLOCKSUM(Time Spent)")
+#+end_src
+
+Org agenda todo - filter out things with dates so I schedule any dangling todos. Apparently I need all of these set - I tend to just slap dates on stuff so it'll show on the agenda,
+which is good enough for me.
+#+begin_src emacs-lisp
+  (setq org-agenda-todo-ignore-scheduled "all")
+  (setq org-agenda-todo-ignore-deadlines "all")
+  (setq org-agenda-todo-ignore-timestamp "all")
+  (setq org-agenda-todo-ignore-with-date "all")
+  (setq org-agenda-tags-todo-honor-ignore-options t)
 #+end_src
 * Colors!!!! And other nice displays - change the ... to a return thingy, make nice bullet icons.
 #+BEGIN_SRC emacs-lisp
