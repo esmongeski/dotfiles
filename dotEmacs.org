@@ -161,9 +161,22 @@ Trying to see what this does on startup so I can optimize my init/dotfiles.
     ad-do-it))
 #+end_src
 
+* Org capture setup
+Inbox directory
+#+begin_src emacs-lisp
+(setq org-default-notes-file "~/Dropbox/org/inbox.org")
+#+end_src
 * Ubuntu
 This is a hack because I probably have a bad config on my ubuntu machine. For some reason, ~string-empty-p~ isn't defined at runtime, but when I ~describe-function~ it, it shows up.
 This breaks org-agenda. Requring ~subr-x~ at startup fixes this.
 #+begin_src emacs-lisp
 (require 'subr-x)
+#+end_src
+Ubuntu specific (hopefully this doesn't break mac!) - this forces org to update to a later version.
+#+BEGIN_SRC emacs-lisp
+  (use-package org :ensure org-plus-contrib :pin org)
+#+END_SRC
+More hacks to force dependencies into place, hopefully.
+#+begin_src emacs-lisp
+(require 'org-macs)
 #+end_src

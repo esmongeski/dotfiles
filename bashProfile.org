@@ -2,6 +2,8 @@
 Heyo this is my bash profile. I make a toooon of personal scripts for ease of use.
 
 If you haven't already noticed, this is an org file, not a bash file. I use a couple scripts to [[./generateBashProfile.bash][complie this to bash]] and then [[./bash_profile.bash][execute it.]]
+
+[[file:org_rick.gif]]
 * COLORS
 Make my prompt look like ~workingDirectory (git_branch) $~
 #+begin_src bash
