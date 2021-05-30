@@ -1,0 +1,24 @@
+This is all vim shortcuts that work in evil mode
+* Windows
+:sp - open horizontal split
+:vp - open vertical split
+C-w w - cycle next window
+C-w W - cycle previous window
+Doesn't look like this works when an emacs buffer (i.e. org-agenda) is open
+
+* org-evil shortcuts
+All documented at https://github.com/GuiltyDolphin/org-evil but writing them here for the ones I know I'll use
+O - open heading in insert mode above
+o - open heading in insert mode below
+< - demote heading/demote list item
+> - promote heading/promote list item
+* Deletion
+d X DOWN - delete X lines down
+d X UP - delete X lines up
+
+* Mode toggling
+O/o - insert mode on previous/next line
+A - insert at end of line
+a - insert after cursor
+i - insert at cursor
+I - insert at beginning of line
