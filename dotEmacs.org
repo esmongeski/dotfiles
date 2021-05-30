@@ -39,16 +39,15 @@ org-heading to extract org things as structured objects
 * Custom variables (I don't really remember what this is)
 Variables - org agenda files, which will some day pull dates, but are also used for how things refile. Packages, which I guess says which packages are installed? 
 #+BEGIN_SRC emacs-lisp
-(custom-set-variables                                                                                                                                                                                      
- '(org-agenda-files
-   (quote
-    ("~/Dropbox/org/recurring.org" "~/Dropbox/org/personalProjects.org" "~/Dropbox/org/funThings.org" "~/Dropbox/org/homeProjects.org" "~/Dropbox/org/workStuff.org")))
- '(package-selected-packages
-   (quote
-    (org-bullets helm-org org-evil monitor dash powerline-evil ## org-link-minor-mode org-mobile-sync evil))))
-
-(setq org-startup-indented t)
-(setq org-startup-folded t)
+  (custom-set-variables
+   '(org-agenda-files
+     (quote
+      ("~/Dropbox/org/recurring.org" "~/Dropbox/org/homeProjects.org" "~/Dropbox/org/personalProjects.org" "~/Dropbox/org/funThings.org" "~/Dropbox/org/workStuff.org" "~/Dropbox/org/archive.org")))
+   '(package-selected-packages
+     (quote
+      (org-bullets helm-org org-evil monitor dash powerline-evil ## org-link-minor-mode org-mobile-sync evil))))
+  (setq org-startup-indented t)
+  (setq org-startup-folded t)
 #+END_SRC
 No clue what custom-set-faces is to be honest.
 #+BEGIN_SRC emacs-lisp
@@ -105,6 +104,16 @@ Make checkbox/todo tracking recursive so I see everything under the subtree
 Column view in org-agenda
 #+begin_src emacs-lisp
 (setq org-columns-default-format-for-agenda "%80ITEM(Task) %4PRIORITY(Priority)  %10TODO(Todo Status) %17Effort(Estimated Effort){:} %CLOCKSUM(Time Spent)")
+#+end_src
+
+Only one change from the default strategy, which is to use effort-up. The ordering on agenda is now "high priority first, low effort first, respect order of org-agenda-files".
+I think the fact that all my things in "recurring.org" are habits sort of circuvents "habit-down". But I don't mind for now.
+#+begin_src emacs-lisp
+  (setq org-agenda-sorting-strategy
+    '((agenda habit-down time-up priority-down effort-up category-keep)
+      (todo priority-down category-keep)
+      (tags priority-down category-keep)
+      (search category-keep)))
 #+end_src
 
 Org agenda todo - filter out things with dates so I schedule any dangling todos. Apparently I need all of these set - I tend to just slap dates on stuff so it'll show on the agenda,
@@ -190,3 +199,4 @@ More hacks to force dependencies into place, hopefully.
 #+begin_src emacs-lisp
 (require 'org-macs)
 #+end_src
+
