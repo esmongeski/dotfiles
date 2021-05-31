@@ -14,6 +14,11 @@ Apparently the call to package-initialize isn't always required? I don't fully u
   (eval-when-compile
     (require 'use-package))
 #+END_SRC
+Make use package always install if package is not installed.
+#+begin_src emacs-lisp
+(setq use-package-always-ensure t)
+#+end_src
+
 Ubuntu specific (hopefully this doesn't break mac!) - this forces org to update to a later version.
 #+BEGIN_SRC emacs-lisp
   (use-package org :ensure org-plus-contrib :pin org)
@@ -184,6 +189,14 @@ Trying to see what this does on startup so I can optimize my init/dotfiles.
 Inbox directory
 #+begin_src emacs-lisp
 (setq org-default-notes-file "~/Dropbox/org/inbox.org")
+#+end_src
+* Powerline
+#+begin_src emacs-lisp
+  (use-package powerline-evil
+    :ensure t
+    :config
+    (powerline-evil-center-color-theme))
+
 #+end_src
 * Ubuntu
 This is a hack because I probably have a bad config on my ubuntu machine. For some reason, ~string-empty-p~ isn't defined at runtime, but when I ~describe-function~ it, it shows up.
