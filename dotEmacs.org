@@ -193,7 +193,6 @@ Inbox directory
 * Powerline
 #+begin_src emacs-lisp
   (use-package powerline-evil
-    :ensure t
     :config
     (powerline-evil-center-color-theme))
 
