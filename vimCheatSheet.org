@@ -22,3 +22,8 @@ A - insert at end of line
 a - insert after cursor
 i - insert at cursor
 I - insert at beginning of line
+
+* Multiline text
+C-v enters visual block
+Select what you care about
+I "type stuff" ESC
