@@ -80,9 +80,10 @@ alias vbp='emacs $PATH_TO_DOTFILES_REPO/bashProfile.org'
 Dropbox paths are probably the same everywhere? Fingers crossed!
 #+begin_src bash
   alias inbox='emacs ~/Dropbox/org/inbox.org'
-  alias ptodos='emacs ~/Dropbox/org/personalProjects.org'
+  alias ptodos='emacs ~/Dropbox/org/homeProjects.org'
   alias funthings='emacs ~/Dropbox/org/funThings.org'
   alias homeprojects='emacs ~/Dropbox/org/homeProjects.org'
+  alias pproj='emacs ~/Dropbox/org/personalProjects.org'
   alias workstuff='emacs ~/Dropbox/org/workStuff.org'
   alias recurring='emacs ~/Dropbox/org/recurring.org'
 #+end_src
