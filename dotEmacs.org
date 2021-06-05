@@ -36,11 +36,18 @@ Evil, because I am a vim user at heart.
   (use-package evil)
   (evil-mode 1)
 #+END_SRC
+Evil bindings
+#+begin_src emacs-lisp
+(define-key evil-ex-map "e" 'find-file)
+
+#+end_src
+
 
 org-heading to extract org things as structured objects
 #+begin_src emacs-lisp
 ;;(require 'org-element)
 #+end_src
+
 * Custom variables (I don't really remember what this is)
 Variables - org agenda files, which will some day pull dates, but are also used for how things refile. Packages, which I guess says which packages are installed? 
 #+BEGIN_SRC emacs-lisp
