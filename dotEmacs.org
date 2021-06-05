@@ -140,6 +140,11 @@ which is good enough for me.
        (add-hook 'org-mode-hook (lambda ()
                            (org-bullets-mode 1))))
 #+END_SRC
+Line numbering - absolute and relative.
+#+begin_src emacs-lisp
+(global-display-line-numbers-mode)
+(setq display-line-numbers-type 'relative)
+#+end_src
 * Custom Key Bindings
 This first one is to get a different one for org-refile. I want it as C-r C-f (rf -> refile)
 
