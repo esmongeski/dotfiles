@@ -1,3 +1,22 @@
+* Extra Plugins
+Evil, because I am a vim user at heart.
+#+BEGIN_SRC emacs-lisp
+  (use-package org-evil)
+  (use-package evil)
+  (evil-mode 1)
+#+END_SRC
+Evil bindings
+#+begin_src emacs-lisp
+(define-key evil-ex-map "e" 'find-file)
+
+#+end_src
+
+
+org-heading to extract org things as structured objects
+#+begin_src emacs-lisp
+;;(require 'org-element)
+#+end_src
+
 * Package things!
 This is a bit of fumbling to try and get this all to work on a new computer from zero with minimal manual intervention.
 
@@ -27,25 +46,6 @@ Ubuntu specific (hopefully this doesn't break mac!) - this forces org to update 
 This brings back the old "<s" shortcut for source blocks. Unfortunately it has different casing than before, but that's not worth the time to fix (probably easy though).
 #+begin_src emacs-lisp
 (require 'org-tempo)
-#+end_src
-
-* Extra Plugins
-Evil, because I am a vim user at heart.
-#+BEGIN_SRC emacs-lisp
-  (use-package org-evil)
-  (use-package evil)
-  (evil-mode 1)
-#+END_SRC
-Evil bindings
-#+begin_src emacs-lisp
-(define-key evil-ex-map "e" 'find-file)
-
-#+end_src
-
-
-org-heading to extract org things as structured objects
-#+begin_src emacs-lisp
-;;(require 'org-element)
 #+end_src
 
 * Custom variables (I don't really remember what this is)
@@ -117,17 +117,22 @@ Column view in org-agenda
 #+begin_src emacs-lisp
 (setq org-columns-default-format-for-agenda "%80ITEM(Task) %4PRIORITY(Priority)  %10TODO(Todo Status) %17Effort(Estimated Effort){:} %CLOCKSUM(Time Spent)")
 #+end_src
+** Agenda Sorting
+Define a custom tiebreaker for priority - I baically want A on par with within 1 day, B on par with within 2 days, etc.
+#+begin_src emacs-lisp :tangle no
+      (setq org-agenda-cmp-user-defined (lambda (a b) (message (org-get-priority a))))
+#+end_src
 
 Only one change from the default strategy, which is to use effort-up. The ordering on agenda is now "high priority first, low effort first, respect order of org-agenda-files".
 I think the fact that all my things in "recurring.org" are habits sort of circuvents "habit-down". But I don't mind for now.
 #+begin_src emacs-lisp
   (setq org-agenda-sorting-strategy
-    '((agenda habit-down time-up priority-down effort-up category-keep)
+    '((agenda user-defined-up habit-down time-up priority-down effort-up category-keep)
       (todo priority-down category-keep)
       (tags priority-down category-keep)
       (search category-keep)))
 #+end_src
-
+** Curating todos
 Org agenda todo - filter out things with dates so I schedule any dangling todos. Apparently I need all of these set - I tend to just slap dates on stuff so it'll show on the agenda,
 which is good enough for me.
 #+begin_src emacs-lisp
