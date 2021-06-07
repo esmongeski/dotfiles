@@ -279,7 +279,7 @@ function pushAndOpenMR {
 #+end_src
 * No window for emacs - really only relevant on ubuntu
 #+begin_src bash
-alias emacs='emacs -nw'
+alias emacs='emacs --no-splash'
 
 #+end_src
 * Misc helper functions

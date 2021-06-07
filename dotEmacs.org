@@ -215,7 +215,17 @@ Stick backup files elsewhere. They screw up IFTTT's dropbox integration for some
 Start server
 #+begin_src emacs-lisp
 (server-start)
+#+end_src
 
+Wip - figuring this out
+#+begin_src emacs-lisp
+    (setq org-capture-templates
+      '(("p" "Personal" entry (file "~/Dropbox/org/inbox.org")
+         "* TODO %?\n   %i\n   %a")
+        ("w" "Work" entry (file "~/Dropbox/org/workStuff.org")
+         "* TODO %?\n   %i\n   %a")
+        ("s" "Stuff" entry (file "~/Dropbox/org/stuff.org")
+         "* TODO %?\n   %i\n   %a")))
 #+end_src
 * Powerline
 #+begin_src emacs-lisp
