@@ -207,6 +207,16 @@ Inbox directory
 #+begin_src emacs-lisp
 (setq org-default-notes-file "~/Dropbox/org/inbox.org")
 #+end_src
+Stick backup files elsewhere. They screw up IFTTT's dropbox integration for some reason.
+#+begin_src emacs-lisp
+(setq backup-directory-alist `(("." . "./.emacsSaves")))
+
+#+end_src
+Start server
+#+begin_src emacs-lisp
+(server-start)
+
+#+end_src
 * Powerline
 #+begin_src emacs-lisp
   (use-package powerline-evil

@@ -95,10 +95,9 @@ Dropbox paths are probably the same everywhere? Fingers crossed!
   alias workstuff='emacs ~/Dropbox/org/workStuff.org'
   alias recurring='emacs ~/Dropbox/org/recurring.org'
 #+end_src
-Quick navigation to my org directory, and quick ls that filters out whatever these `~` files are. They seem like backups, I don't care.
+Quick navigation to my org directory.
 #+begin_src bash
 alias cdo='cd ~/Dropbox/org'
-alias lso='ls | grep -v "~"'
 #+end_src
 ** Quick backtracking
 [[https://github.com/dusbennett/terminal-commands/blob/master/shell/.profile][Completely stolen from Dustin Bennett]]
