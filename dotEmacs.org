@@ -164,11 +164,10 @@ displayed - this fixes that.
   (setq display-line-numbers-width-start t)
 #+end_src
 ** Emphasis markers
-Hide emphasis markers to make things a bit prettier.
+WIP - Hide emphasis markers to make things a bit prettier.
 #+begin_src emacs-lisp
-(setq org-hide-emphasis-markers t)
 #+end_src
-
+*bold* /italic/ _underline_ =literal= ~code~ +strikethrough+
 * Custom Key Bindings
 This first one is to get a different one for org-refile. I want it as C-r C-f (rf -> refile)
 
