@@ -77,7 +77,7 @@ No clue what custom-set-faces is to be honest.
 Refile config. I found this on reddit, but I think this says "take the stuff from org-agenda-files and go one level deep in the trees to find targets". It works.
 #+BEGIN_SRC emacs-lisp
 (setq org-refile-targets '((nil :maxlevel . 1)
-                                (org-agenda-files :maxlevel . 1)))
+                                (org-agenda-files :maxlevel . 2)))
 (setq org-refile-use-outline-path 'file)
 #+END_SRC
 Adding sh (bash) to babel languages so I can tangle my bash profile.
@@ -154,8 +154,14 @@ which is good enough for me.
 #+END_SRC
 Line numbering - absolute and relative.
 #+begin_src emacs-lisp
-(global-display-line-numbers-mode)
-(setq display-line-numbers-type 'relative)
+  (global-display-line-numbers-mode)
+  (setq display-line-numbers-type 'relative)
+#+end_src
+This makes emacs figure out the max line numbers beforehand - for longer files
+with thousands of lines, there is a little bump that happens when line numbers are
+displayed - this fixes that.
+#+begin_src emacs-lisp
+  (setq display-line-numbers-width-start t)
 #+end_src
 * Custom Key Bindings
 This first one is to get a different one for org-refile. I want it as C-r C-f (rf -> refile)
@@ -221,11 +227,13 @@ Wip - figuring this out
 #+begin_src emacs-lisp
     (setq org-capture-templates
       '(("p" "Personal" entry (file "~/Dropbox/org/inbox.org")
-         "* TODO %?\n   %i\n   %a")
+         "* TODO %?\n")
         ("w" "Work" entry (file "~/Dropbox/org/workStuff.org")
-         "* TODO %?\n   %i\n   %a")
+         "* TODO %?\n")
+        ("t" "Things on my mind" entry (file "~/Dropbox/org/tList.org")
+         "* TODO %?\n" )
         ("s" "Stuff" entry (file "~/Dropbox/org/stuff.org")
-         "* TODO %?\n   %i\n   %a")))
+         "* TODO %?\n")))
 #+end_src
 * Powerline
 #+begin_src emacs-lisp

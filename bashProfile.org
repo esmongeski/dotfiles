@@ -93,6 +93,7 @@ Dropbox paths are probably the same everywhere? Fingers crossed!
   alias homeprojects='emacs ~/Dropbox/org/homeProjects.org'
   alias pproj='emacs ~/Dropbox/org/personalProjects.org'
   alias workstuff='emacs ~/Dropbox/org/workStuff.org'
+  alias winbox='workstuff'
   alias recurring='emacs ~/Dropbox/org/recurring.org'
 #+end_src
 Quick navigation to my org directory.
