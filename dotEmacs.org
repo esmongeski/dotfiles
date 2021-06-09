@@ -222,8 +222,7 @@ Start server
 #+begin_src emacs-lisp
 (server-start)
 #+end_src
-
-Wip - figuring this out
+Capture templates
 #+begin_src emacs-lisp
     (setq org-capture-templates
       '(("p" "Personal" entry (file "~/Dropbox/org/inbox.org")
