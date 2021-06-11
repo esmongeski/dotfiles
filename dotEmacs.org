@@ -95,7 +95,7 @@ Ongoing thing to figure out what states I want. log-done enables timestamp and p
 More details [[https://orgmode.org/manual/Tracking-TODO-state-changes.html][Here]]
 #+BEGIN_SRC emacs-lisp
 (setq org-todo-keywords
-     '((sequence "TODO" "SOMEDAY" "WAITING" "IN-PROGRESS" "|" "DONE" "EXPORTED" "OBSOLOTE")))
+     '((sequence "TODO(t)" "SOMEDAY(s)" "WAITING(w)" "IN-PROGRESS(i)" "|" "DONE(d)" "EXPORTED(e)" "OBSOLOTE(o)")))
 
 (setq org-log-done 'time)
 (setq org-log-done 'note)
