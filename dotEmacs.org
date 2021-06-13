@@ -310,3 +310,25 @@ Update: four *s seems to work to not use a header, which will work for me.
     (org-table-align)))
   
 #+end_src
+
+* Mermaid in org
+https://github.com/arnm/ob-mermaid
+Install this in "~/" or else!
+#+begin_src emacs-lisp
+  (use-package ob-mermaid)
+  (setq ob-mermaid-cli-path "~/node_modules/.bin/mmdc")
+#+end_src
+
+This is what this ends up looking like. Keeping it here as an example - this
+is just the thing that the [[https://mermaid-js.github.io/mermaid-live-editor/edit][mermaid live editor]] ships with.
+#+begin_src mermaid :file test.png
+graph TD
+    A[Christmas] -->|Get money| B(Go shopping)
+    B --> C{Let me think}
+    C -->|One| D[Laptop]
+    C -->|Two| E[iPhone]
+    C -->|Three| F[fa:fa-car Car]
+#+end_src
+
+#+RESULTS:
+[[file:test.png]]
