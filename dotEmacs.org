@@ -279,6 +279,8 @@ use todo states elsewhere.
 
 Update: Doesn't quite work the way I want, it renders kinda ugly in a huge block. If I'm indented far enough (5?)
 the todo states seem to work. Keeping because this is needed for the meeting minutes stuff below.
+
+Update: four *s seems to work to not use a header, which will work for me.
 #+begin_src emacs-lisp
   (require 'org-inlinetask) 
 #+end_src
