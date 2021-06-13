@@ -260,4 +260,51 @@ More hacks to force dependencies into place, hopefully.
 #+begin_src emacs-lisp
 (require 'org-macs)
 #+end_src
+* ODT Styles
+The default styles are gross. I use google docs all day erry day. This is an ODT file that has the headers for google docs.
 
+This seems to barf on multiline source blocks, but I don't use that for notes much, so that's ok (typically the last line
+of a source block is unstyled).
+#+begin_src emacs-lisp
+  (setq org-odt-styles-file (concat (getenv "PATH_TO_DOTFILES_REPO") "/gdocStyles.odt"))
+#+end_src
+Table of contents is ugly, and google doc styles do it for you anyway (in google docs)
+#+begin_src emacs-lisp
+  (setq org-export-with-toc nil)
+#+end_src
+
+So this is an attempt to make people in a meeting todos, and then use todos to quickly flag who is speaking
+as I'm taking notes. You can only do todo states on headers by default, so I'm using inlinetask to try and
+use todo states elsewhere.
+
+Update: Doesn't quite work the way I want, it renders kinda ugly in a huge block. If I'm indented far enough (5?)
+the todo states seem to work. Keeping because this is needed for the meeting minutes stuff below.
+#+begin_src emacs-lisp
+  (require 'org-inlinetask) 
+#+end_src
+** Meeting minutes
+[[https://lists.gnu.org/archive/html/emacs-orgmode/2019-10/msg00300.html][This]] seems interesting. Try it out.
+#+begin_src emacs-lisp
+(require 'org)
+(require 'dash)
+
+(defun org-actionitems-extract-entry ()
+  (-let* ((entries (org-entry-properties))
+          ((&alist "ITEM" "TODO" "DEADLINE") entries))
+    (list ITEM TODO DEADLINE)))
+
+(defun org-dblock-write:actionitems (params)
+  (let ((match (or (plist-get params :match) "/+TODO")))
+    (insert-before-markers "| What | Who | When |\n")
+    (insert-before-markers "|-\n")
+    (let* ((tasks (org-map-entries 'org-actionitems-extract-entry match))
+           (rows (-map (lambda (task)
+                         (->> task
+                              (-map (lambda (item) (or item "")))
+                              (apply 'format "| %s | %s | %s |")))
+                       tasks))
+           (table (string-join rows "\n")))
+      (insert-before-markers table))
+    (org-table-align)))
+  
+#+end_src
