@@ -10,13 +10,6 @@ Evil bindings
 (define-key evil-ex-map "e" 'find-file)
 
 #+end_src
-
-
-org-heading to extract org things as structured objects
-#+begin_src emacs-lisp
-;;(require 'org-element)
-#+end_src
-
 * Package things!
 This is a bit of fumbling to try and get this all to work on a new computer from zero with minimal manual intervention.
 
@@ -198,11 +191,15 @@ Trying to see what this does on startup so I can optimize my init/dotfiles.
 ;;(setq message-log-max t)
 #+end_src
 
-* Notion
+* TODO Notion
 #+begin_src emacs-lisp
-(defun json-org-heading ()
-    "Encode current heading as json"
-    (json-encode (org-heading-components)))
+      (require 'org-element)
+    ;; make a function that gets the org heading components as an alist mapped to the things in notion
+  ;; make a function that json encodes that
+;; make a function to call the api
+        (defun json-org-heading ()
+            "Encode current heading as json"
+            (message (org-heading-components)))
 
 #+end_src
 
