@@ -191,16 +191,34 @@ Trying to see what this does on startup so I can optimize my init/dotfiles.
 ;;(setq message-log-max t)
 #+end_src
 
-* TODO Notion
-#+begin_src emacs-lisp
-      (require 'org-element)
-    ;; make a function that gets the org heading components as an alist mapped to the things in notion
-  ;; make a function that json encodes that
-;; make a function to call the api
-        (defun json-org-heading ()
-            "Encode current heading as json"
-            (message (org-heading-components)))
+* IN-PROGRESS Notion
+This is an attempt to hit the [[https://developers.notion.com/docs/getting-started][notion api]] in order to dump tasks out of org into notion.
 
+My anticipated workflow is, while grooming my inbox, instead of refiling an item, I export it to Notion via POST.
+
+Then I mark the item EXPORTED (custom TODO state) and archive it.
+
+This is also the first elisp I'm writing on my own, so it's a learning experience.
+
+Thus far I've managed to extract the todo state and map it to the todo status I use in notion.
+
+Next, I need to format a payload with local secrets (api key) and hit the api. It looks like the preferred way to do this in emacs is [[http://tkf.github.io/emacs-request/][request.el]].
+#+begin_src emacs-lisp
+    (require 'org-element)
+    ;; make a function that gets the org heading components as an alist mapped to the things in notion
+    ;; make a function that json encodes that
+    ;; make a function to call the api
+    (defun org-todo-to-notion-todo (org-todo)
+      "map org todo status to notion status - you should change this to fit whatever todo statuses you have"
+      (plist-get '(TODO "To Do" IN-PROGRESSS "Doing" DONE "Done") (intern org-todo)))
+    
+    (defun org-heading-to-notion-json ()
+      "Encode current heading as json"
+      (let* ((ohc (org-heading-components))
+             (todo-state (nth 2 ohc))
+             (notion-todo-state (org-todo-to-notion-todo todo-state)))
+           (message notion-todo-state)))
+    
 #+end_src
 
 * Layout
