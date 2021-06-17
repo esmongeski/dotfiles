@@ -5,10 +5,6 @@ If you haven't already noticed, this is an org file, not a bash file. I use a co
 
 [[file:org_rick.gif]]
 * Terminal Prompt
-Make my prompt look like ~workingDirectory (git_branch) $~
-#+begin_src bash
-#export PS1="\[\e[m\]\[\e[36;40m\]\w\[\e[m\]\[\e[35;40m\] (\$(cb))\[\e[m\] $ "
-#+end_src
 Go powerline
 #+begin_src bash
   export GOPATH="$HOME/go"
