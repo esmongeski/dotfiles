@@ -336,7 +336,7 @@ Install this in "~/" or else!
 
 This is what this ends up looking like. Keeping it here as an example - this
 is just the thing that the [[https://mermaid-js.github.io/mermaid-live-editor/edit][mermaid live editor]] ships with.
-#+begin_src mermaid :file test.png
+#+begin_src mermaid :file mermaidTest.png
 graph TD
     A[Christmas] -->|Get money| B(Go shopping)
     B --> C{Let me think}
@@ -346,4 +346,4 @@ graph TD
 #+end_src
 
 #+RESULTS:
-[[file:test.png]]
+[[file:mermaidTest.png]]
