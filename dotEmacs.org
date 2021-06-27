@@ -345,5 +345,4 @@ graph TD
     C -->|Three| F[fa:fa-car Car]
 #+end_src
 
-#+RESULTS:
 [[file:mermaidTest.png]]
