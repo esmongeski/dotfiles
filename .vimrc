@@ -6,4 +6,4 @@ set nu
 syntax enable
 filetype plugin on
 
-
+autocmd BufWritePre * :%s/\s\+$//e
