@@ -69,9 +69,10 @@ No clue what custom-set-faces is to be honest.
 #+END_SRC
 Refile config. I found this on reddit, but I think this says "take the stuff from org-agenda-files and go one level deep in the trees to find targets". It works.
 #+BEGIN_SRC emacs-lisp
-(setq org-refile-targets '((nil :maxlevel . 1)
-                                (org-agenda-files :maxlevel . 2)))
-(setq org-refile-use-outline-path 'file)
+  (setq org-refile-targets '((nil :maxlevel . 1)
+                                  (org-agenda-files :maxlevel . 2)
+                                  ("~/Dropbox/org/stuff.org" :maxlevel . 1)))
+  (setq org-refile-use-outline-path 'file)
 #+END_SRC
 Adding sh (bash) to babel languages so I can tangle my bash profile.
 #+begin_src emacs-lisp
