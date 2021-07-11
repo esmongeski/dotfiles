@@ -42,7 +42,7 @@ This brings back the old "<s" shortcut for source blocks. Unfortunately it has d
 #+end_src
 
 * Custom variables (I don't really remember what this is)
-Variables - org agenda files, which will some day pull dates, but are also used for how things refile. Packages, which I guess says which packages are installed? 
+Variables - org agenda files, which will some day pull dates, but are also used for how things refile. Packages, which I guess says which packages are installed?
 #+BEGIN_SRC emacs-lisp
   (custom-set-variables
    '(org-agenda-files
@@ -71,7 +71,8 @@ Refile config. I found this on reddit, but I think this says "take the stuff fro
 #+BEGIN_SRC emacs-lisp
   (setq org-refile-targets '((nil :maxlevel . 1)
                                   (org-agenda-files :maxlevel . 2)
-                                  ("~/Dropbox/org/stuff.org" :maxlevel . 1)))
+                                  ("~/Dropbox/org/stuff.org" :maxlevel . 1)
+                                  ("~/Dropbox/org/financeMath.org" :maxlevel . 2)))
   (setq org-refile-use-outline-path 'file)
 #+END_SRC
 Adding sh (bash) to babel languages so I can tangle my bash profile.
@@ -212,14 +213,14 @@ Next, I need to format a payload with local secrets (api key) and hit the api. I
     (defun org-todo-to-notion-todo (org-todo)
       "map org todo status to notion status - you should change this to fit whatever todo statuses you have"
       (plist-get '(TODO "To Do" IN-PROGRESSS "Doing" DONE "Done") (intern org-todo)))
-    
+
     (defun org-heading-to-notion-json ()
       "Encode current heading as json"
       (let* ((ohc (org-heading-components))
              (todo-state (nth 2 ohc))
              (notion-todo-state (org-todo-to-notion-todo todo-state)))
            (message notion-todo-state)))
-    
+
 #+end_src
 
 * Layout
@@ -298,7 +299,7 @@ the todo states seem to work. Keeping because this is needed for the meeting min
 
 Update: four *s seems to work to not use a header, which will work for me.
 #+begin_src emacs-lisp
-  (require 'org-inlinetask) 
+  (require 'org-inlinetask)
 #+end_src
 ** Meeting minutes
 [[https://lists.gnu.org/archive/html/emacs-orgmode/2019-10/msg00300.html][This]] seems interesting. Try it out.
@@ -324,7 +325,7 @@ Update: four *s seems to work to not use a header, which will work for me.
            (table (string-join rows "\n")))
       (insert-before-markers table))
     (org-table-align)))
-  
+
 #+end_src
 
 * Mermaid in org

@@ -1,31 +1,41 @@
-*  Clock in
+* Clock in
 C-c C-x C-i
-*  Clock out
+* Clock out
 C-c C-x C-i
-*  Agenda view
+* Agenda view
 M-x org-agenda - agenda view (can't remember it though)
-*  Insert date
+* Insert date
 C-c . - insert date
-*  Describe function
+* Describe function
 C-h f
-*  Describe keybind
+* Describe keybind
 C-h k
-*  Cycle nested thing (org-cycle)
+* Cycle nested thing (org-cycle)
 TAB but in "INSERT" mode in vim. Weird with org-evil.
-*  New checkbox
+* New checkbox
 M-S-Ret OR C-c C-x M
 
 [[https://emacs.stackexchange.com/questions/26699/keycode-for-shift-return-on-os-x-iterm2][Fix For Mac]]
-*  Archive
+* Archive
 Usually - C-c C-x C-a
 
 I made it C-r C-a
-*  Refile
+* Refile
 Usually - C-c C-w
 
 I made it C-r C-f
 
-*  Switch window
+* Switch window
 This is just an emacs thing, but whatever.
 
 C-x o (NOT C-x C-o)
+
+* Agenda
+**
+** Filter by
+`~` - Prompts for filtering current agenda view
+
+* Tables
+`| |` to start
+`C-c -` to make a header
+`=$1+$2` in the cell then `C-c` to do a function
