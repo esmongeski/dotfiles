@@ -180,7 +180,7 @@ alias undocommitanddelete="g reset HEAD^; g checkout *; g clean -f -d"
 alias undocommit="g reset HEAD^"
 #+end_src
 
-** Core workflow 
+** Core workflow
 Git add and commit with message - gotta shortcut this. Didn't end up using `gp` as much, but oh well!
 #+begin_src bash
 function gca(){
@@ -217,15 +217,16 @@ alias cb='parse_git_branch'
 #+end_src
 ** Various shortcuts
 List all git branches
-#+begin_src bash 
+#+begin_src bash
 alias brs='g branch -vv'
 #+end_src
 Git status, git checkout, git log, git log files, current branch name
 #+begin_src bash
-alias gs='g status'
-alias gc='g checkout'
-alias gl='g log'
-alias glf='gl --name-only'
+  alias gs='g status'
+  alias gc='g checkout'
+  alias gl='g log'
+  alias glf='gl --name-only'
+  alias glogme='gl --author=esmongeski'
 #+end_src
 Git diff, git diff staged files, git diff with remote branch, git merge squash, git fetch
 #+begin_src bash
@@ -287,7 +288,7 @@ alias sd='shortdate'
 #+end_src
 
 Count the files in a given directory
-#+begin_src bash 
+#+begin_src bash
 function countfiles {
     ls -1 $1 | wc -l | tr -d '[:space:]'
 }
