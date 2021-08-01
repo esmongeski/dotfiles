@@ -1,0 +1,8 @@
+* What is this
+I started using fish, but I still want my config in org. It's fishProfile.org!
+
+** TODO Pickle rick gif
+* TEST
+#+begin_src fish
+alias vlv='vim ~/.vimrc'
+#+end_src

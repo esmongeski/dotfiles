@@ -3,3 +3,5 @@ dotEmacs.el
 bookmarks
 bashProfile.bash
 bookmarks~
+fish/fishProfile.fish
+fish/.emacsSaves
