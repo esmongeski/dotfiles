@@ -472,3 +472,11 @@ If it's there, source bash autocomplete
 [ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion
 
 #+end_src
+
+* Fish
+I decided to move to fish as my main shell - these are some aliases to quickly edit my fish config
+
+#+begin_src bash
+alias vfp='emacs $PATH_TO_DOTFILES_REPO/fish/fishProfile.org'
+
+#+end_src

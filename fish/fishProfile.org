@@ -2,7 +2,19 @@
 I started using fish, but I still want my config in org. It's fishProfile.org!
 
 ** TODO Pickle rick gif
-* TEST
+* Basic shortcuts
 #+begin_src fish
-alias vlv='vim ~/.vimrc'
+alias vfp='emacs $PATH_TO_DOTFILES_REPO/fish/fishProfile.org'
+alias sfp='. $PATH_TO_DOTFILES_REPO/fish/fish_profile.fish'
+alias vlfp='vim ~/.config/fish/config.fish'
+alias slfp='. ~/.config/fish/config.fish'
+alias cddf='cd $PATH_TO_DOTFILES_REPO'
+#+end_src
+* Terminal prompt
+Using go powerline.
+#+begin_src fish
+export GOPATH=$HOME/go
+function fish_prompt
+    eval $GOPATH/bin/powerline-go -error $status -jobs (count (jobs -p))
+end
 #+end_src
