@@ -1,0 +1,4 @@
+* Install all packages
+cmd+p go install update tools
+Needed to =open /Applications/Visual Studio...= to inherit env values I guess, otherwise was getting mkdir errors
+https://www.youtube.com/watch?v=TfCMweSHWHw

@@ -46,4 +46,8 @@ C-v enters visual block
 
 Select what you care about
 
-I "type stuff" ESC
+S-i to enter insert
+
+I "type stuff"
+
+ESC

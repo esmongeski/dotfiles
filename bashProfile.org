@@ -72,7 +72,6 @@ These require the aliases used to be defined locally so this can figure out the 
 Some of them are of the form "vx" which in my brain is "vim x". I have cleverly redirected org files to emacs, even though I still type "ve" for "vim emacsconfig".
 #+begin_src bash
 alias ve='echoAndEval "emacs $PATH_TO_DOTFILES_REPO/dotEmacs.org"'
-alias vv='echo `path_to_vimrc`; vim `path_to_vimrc`'
 #+end_src
 
 Quick sourcing and vimming of this bash profile
