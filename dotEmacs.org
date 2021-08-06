@@ -140,6 +140,11 @@ which is good enough for me.
   (setq org-agenda-todo-ignore-with-date "all")
   (setq org-agenda-tags-todo-honor-ignore-options t)
 #+end_src
+** Agenda shortcuts
+Just a command to bring up agenda view
+#+begin_src emacs-lisp
+  (define-key global-map "\C-ca" 'org-agenda)
+#+end_src
 * Colors!!!! And other nice displays - change the ... to a return thingy, make nice bullet icons.
 #+BEGIN_SRC emacs-lisp
 (load-theme 'manoj-dark)
