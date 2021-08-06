@@ -307,49 +307,6 @@ function findLinkAndOpen {
     splitOutput "$1" | grep https | xargs open
 }
 #+end_src
-* partyify
-All credit to Sean Ezrol for this. Script that takes an image/gif and makes it have the party colors.
-#+begin_src bash
-function partyify {
-    while [[ $# -gt 1 ]]
-    do
-    key="$1"
-      case $key in
-      -i|--input-file)
-      INPUTFILE=$2
-      shift
-      ;;
-      -c|-color)
-      COLOR=$2
-      shift
-      ;;
-      -f|--fuzz)
-      FUZZ=$2
-      shift
-      ;;
-      -o|--output-file)
-      OUTPUTFILE=$2
-      shift
-      ;;
-      *)
-        # unknown arg
-      ;;
-    esac
-    shift
-    done
-
-    echo Input - "${INPUTFILE}"
-    party_colors=("#93FE90" "#8FB3FC" "#CF7CFA" "#EF4CEF" "#F1586A" "#F9D48D")
-    for i in "${!party_colors[@]}"
-    do
-      echo   magick convert "${INPUTFILE}" -fill "${party_colors[i]}" -fuzz "${FUZZ}"% -opaque "${COLOR}" party_temp-"$((i+1))".png
-      magick convert "${INPUTFILE}" -fill "${party_colors[i]}" -fuzz "${FUZZ}"% -opaque "${COLOR}" party_temp-"$((i+1))".png
-      echo Making party_temp-"$((i+1))".png, replacing "${COLOR}" with "${party_colors[i]}"
-    done
-    magick convert party_temp-%d.png[1-"${#party_colors[@]}"] -set delay 10 -loop 0 "${OUTPUTFILE}"
-    echo "${OUTPUTFILE} has been created."
-}
-#+end_src
 * Background SSH agent
 Start a background ssh agent
 #+begin_src bash
@@ -376,12 +333,6 @@ if [ -f "${SSH_ENV}" ]; then
 fi
 
 
-#+end_src
-* Org files
-These aren't always right, I should fix that
-#+begin_src bash
-
-alias todos="emacs ~/org/todo.org"
 #+end_src
 * Docker
 Aliases around cleaning up old containers
@@ -478,4 +429,47 @@ I decided to move to fish as my main shell - these are some aliases to quickly e
 #+begin_src bash
 alias vfp='emacs $PATH_TO_DOTFILES_REPO/fish/fishProfile.org'
 
+#+end_src
+* partyify
+All credit to Sean Ezrol for this. Script that takes an image/gif and makes it have the party colors.
+#+begin_src bash
+function partyify {
+    while [[ $# -gt 1 ]]
+    do
+    key="$1"
+      case $key in
+      -i|--input-file)
+      INPUTFILE=$2
+      shift
+      ;;
+      -c|-color)
+      COLOR=$2
+      shift
+      ;;
+      -f|--fuzz)
+      FUZZ=$2
+      shift
+      ;;
+      -o|--output-file)
+      OUTPUTFILE=$2
+      shift
+      ;;
+      *)
+        # unknown arg
+      ;;
+    esac
+    shift
+    done
+
+    echo Input - "${INPUTFILE}"
+    party_colors=("#93FE90" "#8FB3FC" "#CF7CFA" "#EF4CEF" "#F1586A" "#F9D48D")
+    for i in "${!party_colors[@]}"
+    do
+      echo   magick convert "${INPUTFILE}" -fill "${party_colors[i]}" -fuzz "${FUZZ}"% -opaque "${COLOR}" party_temp-"$((i+1))".png
+      magick convert "${INPUTFILE}" -fill "${party_colors[i]}" -fuzz "${FUZZ}"% -opaque "${COLOR}" party_temp-"$((i+1))".png
+      echo Making party_temp-"$((i+1))".png, replacing "${COLOR}" with "${party_colors[i]}"
+    done
+    magick convert party_temp-%d.png[1-"${#party_colors[@]}"] -set delay 10 -loop 0 "${OUTPUTFILE}"
+    echo "${OUTPUTFILE} has been created."
+}
 #+end_src

@@ -4,7 +4,7 @@ I started using fish, but I still want my config in org. It's fishProfile.org!
 ** TODO Pickle rick gif
 * Aliases (aliaii?)
 Here's something that never panned out:
-#+begin_src bash
+#+begin_src fish
 alias a='alias'
 #+end_src
 
@@ -74,8 +74,8 @@ function fish_prompt
 end
 #+end_src
 * External config checking
-Env vars this depends on - need to be set in local bash profile.
-This is a poor man's form of dependency injection enforcement in bash.
+Env vars this depends on - need to be set in local fish profile.
+This is a poor man's form of dependency injection enforcement in fish.
 Maybe there's a better way to futz with env vars that should be defined elsewhere, but I don't know it.
 #+begin_src fish
 function checkEnvAndDefault
@@ -190,19 +190,19 @@ end
 #+end_src
 ** Current branch
 Function to parse the current git branch. I totally stole this from somewhere on the internet (like any usage of sed you find in here).
-#+begin_src bash
-function parse_git_branch() {
+#+begin_src fish
+function parse_git_branch
     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'
-}
+end
 alias cb='parse_git_branch'
 #+end_src
 ** Various shortcuts
 List all git branches
-#+begin_src bash
+#+begin_src fish
 alias brs='g branch -vv'
 #+end_src
 Git status, git checkout, git log, git log files, current branch name
-#+begin_src bash
+#+begin_src fish
   alias gs='g status'
   alias gc='g checkout'
   alias gl='g log'
@@ -210,7 +210,7 @@ Git status, git checkout, git log, git log files, current branch name
   alias glogme='gl --author=esmongeski'
 #+end_src
 Git diff, git diff staged files, git diff with remote branch, git merge squash, git fetch
-#+begin_src bash
+#+begin_src fish
 alias gd='g diff'
 alias gds='g diff --staged'
 alias gdo='g diff origin/`cb`'
@@ -219,27 +219,14 @@ alias gf='g fetch'
 #+end_src
 ** Branch swapping
 This was a failed experiment to quickly switch between two git branches, typically master (nowadays main) and the current working branch. Ended up not super useful.
-#+begin_src bash
+#+begin_src fish
 alias oswp="echo $OLDBRANCH; echo 'gswp to change, setswbranch to change oldbranch'"
 alias swbr="echo $OLDBRANCH"
 export OLDBRANCH=master
 
 #+end_src
-** Removing the git index can be awful
-I was bitten by this once and it was a bad time. I'm not sure why it was something that would happen in my workflow, but I put this alias in to prevent me from doing it again.
-#+begin_src bash
-alias rgi='rm .git/index.lock'
-
-function rm {
-    if [ $1 == ".git/index" ]; then
-      echo "NOOOOOO"
-    else
-      command rm "$@"
-    fi
-}
-#+end_src
 ** Rebase continue
-#+begin_src bash
+#+begin_src fish
 alias grbc='g add -uv; g rebase --continue'
 #+end_src
 ** New branch
@@ -247,12 +234,156 @@ alias grbc='g add -uv; g rebase --continue'
 alias newbr='g checkout -b'
 
 #+end_src
-** Push and open PR
+** TODO Push and open PR - make work in fish
 So I haven't used this for a while - push and immediately open the MR (PR nowadays). I should try this again.
 #+begin_src bash
-function pushAndOpenMR {
-    MR_RESULT=`g push`
-    echo "$MR_RESULT"
-    findLinkAndOpen "$MR_RESULT"
-}
+function pushAndOpenMR
+    set -l mr_result (g push)
+    echo "$mr_result"
+    findLinkAndOpen "$mr_result"
+end
+#+end_src
+* Misc helper functions
+Spit out the current date
+#+begin_src fish
+alias shortdate='date +%Y-%m-%d' # get date in format YYYY-MM-DD
+alias sd='shortdate'
+#+end_src
+
+Count the files in a given directory
+#+begin_src fish
+function countfiles
+    ls -1 $1 | wc -l | tr -d '[:space:]'
+end
+#+end_src
+** TODO Fix this so it works in fish
+Echo out each line of an input
+#+begin_src fish
+function splitOutput
+    for token in $argv[1]
+      echo $token
+    end
+end
+#+end_src
+Given a bunch of output, find anything prefixed with https and open it. This was for something specific but I don't remember what
+#+begin_src fish
+function findLinkAndOpen
+    splitOutput "$argv[1]" | grep https | xargs open
+end
+#+end_src
+* No window for emacs - really only relevant on ubuntu
+#+begin_src fish
+alias emacs='emacs --no-splash -nw'
+
+#+end_src
+* Background SSH agent
+Start a background ssh agent if one isn't already running
+#+begin_src fish
+  export SSH_ENV=$HOME/.ssh/environment
+  function start_agent
+    echo "Initialising new SSH agent..."
+    echo $SSH_ENV
+    eval /usr/bin/ssh-agent | sed 's/^echo/#echo/' | sed 's/SSH_AUTH_SOCK/export SSH_AUTH_SOCK/' | sed 's/SSH_AGENT_PID/export SSH_AGENT_PID/' > {$SSH_ENV}
+    echo succeeded
+    chmod 600 {$SSH_ENV}
+    . {$SSH_ENV} > /dev/null
+    /usr/bin/ssh-add;
+  end
+
+  alias sag="start_agent"
+  # Source SSH settings, if applicable
+  if test -f $SSH_ENV
+      . {$SSH_ENV} > /dev/null
+      ps -ef | grep {$SSH_AGENT_PID} | grep "ssh-agent\$" > /dev/null || {
+          echo "No agent found, starting new one"
+          start_agent;
+      }
+  else
+      echo "SSH_ENV not initiatlized, starting new agent"
+      start_agent;
+  end
+
+
+#+end_src
+* Docker
+Aliases around cleaning up old containers
+#+begin_src fish
+alias d='docker'
+alias killcontainers='docker container stop (docker ps -a -q)'
+alias rmcontainer='d container rm -f'
+alias dls='docker container ls'
+alias dps='d container ls'
+alias dlsa='d container ls -a'
+alias rmc='rmcontainer'
+alias drm='rmc'
+
+#+end_src
+Shortcut to bash into a container
+#+begin_src fish
+function dbashin
+        d exec -it $argv[1] bash
+end
+#+end_src
+Docker rm grep - remove containers that look like a certiain thing
+#+begin_src fish
+function drmg
+        drm (dlsa | grep $argv[1] | awk '{print $1;}')
+end
+#+end_src
+* Kubernetes
+Shortcuts for interacting with pods
+#+begin_src fish
+checkEnvAndDefault "KUBE_NAMESPACE"
+
+function kods
+	echoAndEval "kubectl get pods -n $KUBE_NAMESPACE"
+end
+
+function findpods
+	echoAndEval "kubectl get pods --all-namespaces | grep $argv[1]"
+end
+
+#+end_src
+
+Set and change namespace
+#+begin_src fish
+
+alias skn='setkubenamespace'
+
+function setkubenamespace
+	export KUBE_NAMESPACE=$1
+end
+#+end_src
+Logs and events
+#+begin_src fish
+function klogs
+	klogswithnamespace $argv[1] $KUBE_NAMESPACE
+end
+
+function klogswithnamespace
+	echoAndEval "kubectl logs $argv[1] --namespace $argv[2]"
+end
+
+function kevs
+	echoAndEval "kubectl get events -n $KUBE_NAMESPACE"
+end
+#+end_src
+See k8s contexts
+#+begin_src fish
+function kc
+      echoAndEval "kubectl config get-contexts"
+end
+function kcsc
+	echo "kubectl config use-context $argv[1]";
+	kubectl config use-context $argv[1];
+	kc
+end
+#+end_src
+* Because who can remember awk syntax
+Get the first column of output
+#+begin_src fish
+function firstColumn
+        awk '{print $1;}' $argv[1];
+end
+
 #+end_src
