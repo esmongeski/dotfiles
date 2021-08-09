@@ -77,6 +77,7 @@ Refile config. I found this on reddit, but I think this says "take the stuff fro
                                  ("~/code/dotfiles/fish/fishProfile.org" :maxlevel . 3)
                                  ("~/code/dotfiles/bashProfile.org" :maxlevel . 3)))
  (setq org-refile-use-outline-path 'file)
+ (setq org-refile-allow-creating-parent-nodes 'confirm)
 #+END_SRC
 Adding sh (bash) to babel languages so I can tangle my bash profile.
 #+begin_src emacs-lisp
@@ -116,7 +117,7 @@ Column view in org-agenda
 (setq org-columns-default-format-for-agenda "%80ITEM(Task) %4PRIORITY(Priority)  %10TODO(Todo Status) %17Effort(Estimated Effort){:} %CLOCKSUM(Time Spent)")
 #+end_src
 ** Agenda Sorting
-Define a custom tiebreaker for priority - I baically want A on par with within 1 day, B on par with within 2 days, etc.
+Define a custom tiebreaker for priority - I basically want A on par with within 1 day, B on par with within 2 days, etc.
 #+begin_src emacs-lisp :tangle no
       (setq org-agenda-cmp-user-defined (lambda (a b) (message (org-get-priority a))))
 #+end_src
@@ -361,4 +362,86 @@ graph TD
 * Trim whitespace on save
 #+begin_src emacs-lisp
 (add-hook 'write-file-hooks 'delete-trailing-whitespace)
+#+end_src
+
+* Roam
+#+begin_src emacs-lisp
+  (setq org-roam-db-location "~/org/roam/org-roam.db")
+  (use-package org-roam
+        :ensure t
+        :init
+        (setq org-roam-v2-ack t)
+        :custom
+        (org-roam-directory (file-truename "~/Dropbox/org/roam"))
+        (org-roam-completion-everywhere t)
+        :bind (("C-c n l" . org-roam-buffer-toggle)
+               ("C-c n f" . org-roam-node-find)
+               ("C-c n g" . org-roam-graph)
+               ("C-c n i" . org-roam-node-insert)
+               ("C-c n c" . org-roam-capture)
+               ;; Dailies
+               ("C-c n j" . org-roam-dailies-capture-today)
+               :map org-mode-map
+               ("C-M-i" . completion-at-point))
+        :config
+        (org-roam-setup)
+        ;; If using org-roam-protocol
+        (require 'org-roam-protocol))
+#+end_src
+Capture templates for roam
+#+begin_src emacs-lisp
+  (setq org-roam-capture-templates
+        '(
+          ("n" "normal" plain "%?"
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                              "#+title: ${title}\n")
+           :unnarrowed t)
+          ("f" "fun" plain "%?"
+           :if-new (file+head "fun/%<%Y%m%d%H%M%S>-${slug}.org"
+                              "#+title: ${title}\n#+filetags: fun\n")
+           :unnarrowed t)
+          ("t" "test" plain "%?"
+           :if-new (file+head "localTest/%<%Y%m%d%H%M%S>-${slug}.org"
+                              "#+title: ${title}\n")
+           :unnarrowed t)
+          ))
+#+end_src
+Synchronize cache on startup
+#+begin_src emacs-lisp
+(org-roam-db-sync)
+#+end_src
+* Helm
+#+begin_src emacs-lisp
+  (use-package helm
+        :ensure t)
+  (require 'helm-config)
+  (setq helm-split-window-in-side-p t
+        helm-move-to-line-cycle-in-source t)
+  (helm-mode 1)
+  (define-key evil-ex-map "b" 'helm-buffers-list)
+  (define-key evil-ex-map "c" 'helm-M-x)
+  (setq org-outline-path-complete-in-steps nil)
+#+end_src
+
+* Nice autocompletion things
+Much of this I just followed [[https://org-roam.discourse.group/t/how-to-to-get-title-of-the-target-note-working-with-inline-autocomplete-in-org-roam/782][this guide while trying to configure Roam]]
+Smart parents
+#+begin_src emacs-lisp
+  (use-package smartparens)
+  (smartparens-global-mode t)
+
+#+end_src
+Company
+#+begin_src emacs-lisp
+  (use-package company)
+  (add-hook 'after-init-hook 'global-company-mode)
+  (setq company-minimum-prefix-length 2)
+  (setq company-idle-delay 0.25)
+  (add-to-list 'company-backends 'company-capf)
+
+#+end_src
+Completion config
+#+begin_src emacs-lisp
+(setq completion-ignore-case t)
+
 #+end_src
