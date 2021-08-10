@@ -5,10 +5,9 @@ Evil, because I am a vim user at heart.
   (use-package evil)
   (evil-mode 1)
 #+END_SRC
-Evil bindings
+** Evil colon shortcuts
 #+begin_src emacs-lisp
-(define-key evil-ex-map "e" 'find-file)
-
+(define-key evil-ex-map "a" 'org-agenda)
 #+end_src
 * Package things!
 This is a bit of fumbling to try and get this all to work on a new computer from zero with minimal manual intervention.
@@ -94,7 +93,7 @@ Ongoing thing to figure out what states I want. log-done enables timestamp and p
 More details [[https://orgmode.org/manual/Tracking-TODO-state-changes.html][Here]]
 #+BEGIN_SRC emacs-lisp
 (setq org-todo-keywords
-     '((sequence "TODO(t)" "SOMEDAY(s)" "WAITING(w)" "IN-PROGRESS(i)" "|" "DONE(d)" "EXPORTED(e)" "OBSOLOTE(o)")))
+     '((sequence "TODO(t)" "SOMEDAY(s)" "WAITING(w)" "IN-PROGRESS(i)" "|" "DONE(d)" "EXPORTED(e)" "OBSOLOTE(b)")))
 
 (setq org-log-done 'time)
 (setq org-log-done 'note)
@@ -363,7 +362,6 @@ graph TD
 #+begin_src emacs-lisp
 (add-hook 'write-file-hooks 'delete-trailing-whitespace)
 #+end_src
-
 * Roam
 #+begin_src emacs-lisp
   (setq org-roam-db-location "~/org/roam/org-roam.db")
@@ -394,7 +392,7 @@ Capture templates for roam
         '(
           ("n" "normal" plain "%?"
            :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-                              "#+title: ${title}\n")
+                              "#+title: ${title}")
            :unnarrowed t)
           ("f" "fun" plain "%?"
            :if-new (file+head "fun/%<%Y%m%d%H%M%S>-${slug}.org"
@@ -402,9 +400,13 @@ Capture templates for roam
            :unnarrowed t)
           ("t" "test" plain "%?"
            :if-new (file+head "localTest/%<%Y%m%d%H%M%S>-${slug}.org"
-                              "#+title: ${title}\n")
+                              "#+title: ${title}")
            :unnarrowed t)
           ))
+#+end_src
+#+begin_src emacs-lisp
+(setq org-roam-node-display-template "${title:30}")
+
 #+end_src
 Synchronize cache on startup
 #+begin_src emacs-lisp
@@ -420,9 +422,9 @@ Synchronize cache on startup
   (helm-mode 1)
   (define-key evil-ex-map "b" 'helm-buffers-list)
   (define-key evil-ex-map "c" 'helm-M-x)
+  (define-key evil-ex-map "e" 'helm-find-files)
   (setq org-outline-path-complete-in-steps nil)
 #+end_src
-
 * Nice autocompletion things
 Much of this I just followed [[https://org-roam.discourse.group/t/how-to-to-get-title-of-the-target-note-working-with-inline-autocomplete-in-org-roam/782][this guide while trying to configure Roam]]
 Smart parents
