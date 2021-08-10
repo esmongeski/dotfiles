@@ -52,6 +52,7 @@ Dropbox paths are probably the same everywhere? Fingers crossed!
 Quick navigation to my org directory.
 #+begin_src fish
 alias cdo='cd ~/Dropbox/org'
+alias cdor='cdo; cd roam'
 #+end_src
 ** Quick backtracking
 [[https://github.com/dusbennett/terminal-commands/blob/master/shell/.profile][Completely stolen from Dustin Bennett]]

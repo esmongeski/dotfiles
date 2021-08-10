@@ -7,7 +7,7 @@ Evil, because I am a vim user at heart.
 #+END_SRC
 ** Evil colon shortcuts
 #+begin_src emacs-lisp
-(define-key evil-ex-map "a" 'org-agenda)
+(define-key evil-ex-map "a" 'org-agenda-list)
 #+end_src
 * Package things!
 This is a bit of fumbling to try and get this all to work on a new computer from zero with minimal manual intervention.
@@ -125,7 +125,7 @@ Only one change from the default strategy, which is to use effort-up. The orderi
 I think the fact that all my things in "recurring.org" are habits sort of circuvents "habit-down". But I don't mind for now.
 #+begin_src emacs-lisp
   (setq org-agenda-sorting-strategy
-    '((agenda user-defined-up habit-down time-up priority-down effort-up category-keep)
+    '((agenda user-defined-up todo-state-down habit-down time-up priority-down effort-up category-keep)
       (todo priority-down category-keep)
       (tags priority-down category-keep)
       (search category-keep)))
@@ -358,9 +358,22 @@ graph TD
 
 [[file:mermaidTest.png]]
 
-* Trim whitespace on save
+* Sensible Defaults
+Use sensible defaults from the git submodule.
+#+begin_src emacs-lisp
+  (load-file "./sensible-defaults.el/sensible-defaults.el")
+  (sensible-defaults/use-all-settings)
+  (sensible-defaults/use-all-keybindings)
+#+end_src
+* Exit hooks/config
+Trim whitespace
 #+begin_src emacs-lisp
 (add-hook 'write-file-hooks 'delete-trailing-whitespace)
+#+end_src
+Don't prompt for exit - this must be after sensible defaults, as it overwrites it.
+#+begin_src emacs-lisp
+  (setq confirm-kill-emacs nil)
+
 #+end_src
 * Helm
 #+begin_src emacs-lisp
@@ -412,8 +425,7 @@ Completion config
                ("C-c n g" . org-roam-graph)
                ("C-c n i" . org-roam-node-insert)
                ("C-c n c" . org-roam-capture)
-               ;; Dailies
-               ("C-c n j" . org-roam-dailies-capture-today)
+               ("C-c n d" . org-roam-dailies-capture-today)
                :map org-mode-map
                ("C-M-i" . completion-at-point))
         :config
@@ -442,6 +454,10 @@ Capture templates for roam
 #+begin_src emacs-lisp
 (setq org-roam-node-display-template "${title:30}")
 
+#+end_src
+Dailies
+#+begin_src emacs-lisp
+  (setq org-roam-dailies-directory "daily/")
 #+end_src
 Synchronize cache on startup
 #+begin_src emacs-lisp

@@ -31,11 +31,14 @@ This is just an emacs thing, but whatever.
 C-x o (NOT C-x C-o)
 
 * Agenda
-**
-** Filter by
-`~` - Prompts for filtering current agenda view
+** Filter by N entries
+=~= - Prompts for filtering current agenda view
 
 * Tables
 `| |` to start
 `C-c -` to make a header
 `=$1+$2` in the cell then `C-c` to do a function
+
+* Completion
+=M-/= or =C-M-/=
+Or, just wait for company to dropdown.
