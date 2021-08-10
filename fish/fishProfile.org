@@ -66,11 +66,18 @@ alias .5='cd ../../../../..'
 #+end_src
 * Terminal prompt
 Using go powerline.
+For some reason, it doesn't work for fish on terminator on ubuntu, so use fish powerline instead.
 #+begin_src fish
-export GOPATH="$HOME/go"
-export GOBIN="$HOME/go/bin"
-function fish_prompt
-    eval $GOPATH/bin/powerline-go -error $status -jobs (count (jobs -p))
+if set -q USE_FISH_POWERLINE
+  set fish_function_path $fish_function_path "/usr/share/powerline/bindings/fish"
+  source /usr/share/powerline/bindings/fish/powerline-setup.fish
+  powerline-setup
+else
+  export GOPATH="$HOME/go"
+  export GOBIN="$HOME/go/bin"
+  function fish_prompt
+      eval $GOPATH/bin/powerline-go -shell fish -error $status -jobs (count (jobs -p))
+  end
 end
 #+end_src
 * External config checking
