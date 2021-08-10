@@ -362,6 +362,41 @@ graph TD
 #+begin_src emacs-lisp
 (add-hook 'write-file-hooks 'delete-trailing-whitespace)
 #+end_src
+* Helm
+#+begin_src emacs-lisp
+  (use-package helm
+        :ensure t)
+  (require 'helm-config)
+  (setq helm-split-window-in-side-p t
+        helm-move-to-line-cycle-in-source t)
+  (helm-mode 1)
+  (define-key evil-ex-map "b" 'helm-buffers-list)
+  (define-key evil-ex-map "c" 'helm-M-x)
+  (define-key evil-ex-map "e" 'helm-find-files)
+  (setq org-outline-path-complete-in-steps nil)
+#+end_src
+* Nice autocompletion things
+Much of this I just followed [[https://org-roam.discourse.group/t/how-to-to-get-title-of-the-target-note-working-with-inline-autocomplete-in-org-roam/782][this guide while trying to configure Roam]]
+Smart parents
+#+begin_src emacs-lisp
+  (use-package smartparens)
+  (smartparens-global-mode t)
+
+#+end_src
+Company
+#+begin_src emacs-lisp
+  (use-package company)
+  (add-hook 'after-init-hook 'global-company-mode)
+  (setq company-minimum-prefix-length 2)
+  (setq company-idle-delay 0.25)
+  (add-to-list 'company-backends 'company-capf)
+
+#+end_src
+Completion config
+#+begin_src emacs-lisp
+(setq completion-ignore-case t)
+
+#+end_src
 * Roam
 #+begin_src emacs-lisp
   (setq org-roam-db-location "~/org/roam/org-roam.db")
@@ -411,39 +446,4 @@ Capture templates for roam
 Synchronize cache on startup
 #+begin_src emacs-lisp
 (org-roam-db-sync)
-#+end_src
-* Helm
-#+begin_src emacs-lisp
-  (use-package helm
-        :ensure t)
-  (require 'helm-config)
-  (setq helm-split-window-in-side-p t
-        helm-move-to-line-cycle-in-source t)
-  (helm-mode 1)
-  (define-key evil-ex-map "b" 'helm-buffers-list)
-  (define-key evil-ex-map "c" 'helm-M-x)
-  (define-key evil-ex-map "e" 'helm-find-files)
-  (setq org-outline-path-complete-in-steps nil)
-#+end_src
-* Nice autocompletion things
-Much of this I just followed [[https://org-roam.discourse.group/t/how-to-to-get-title-of-the-target-note-working-with-inline-autocomplete-in-org-roam/782][this guide while trying to configure Roam]]
-Smart parents
-#+begin_src emacs-lisp
-  (use-package smartparens)
-  (smartparens-global-mode t)
-
-#+end_src
-Company
-#+begin_src emacs-lisp
-  (use-package company)
-  (add-hook 'after-init-hook 'global-company-mode)
-  (setq company-minimum-prefix-length 2)
-  (setq company-idle-delay 0.25)
-  (add-to-list 'company-backends 'company-capf)
-
-#+end_src
-Completion config
-#+begin_src emacs-lisp
-(setq completion-ignore-case t)
-
 #+end_src
