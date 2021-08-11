@@ -77,7 +77,7 @@ else
   export GOPATH="$HOME/go"
   export GOBIN="$HOME/go/bin"
   function fish_prompt
-      eval $GOPATH/bin/powerline-go -shell fish -error $status -jobs (count (jobs -p))
+      eval $GOPATH/bin/powerline-go -error $status -jobs (count (jobs -p))
   end
 end
 #+end_src
