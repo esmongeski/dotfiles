@@ -463,3 +463,13 @@ Synchronize cache on startup
 #+begin_src emacs-lisp
 (org-roam-db-sync)
 #+end_src
+
+* Rifle
+All the other deps with the funked up deps
+#+begin_src emacs-lisp
+  (use-package f)
+  (use-package s)
+  (use-package dash)
+  (use-package helm-org-rifle)
+
+#+end_src
