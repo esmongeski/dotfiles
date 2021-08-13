@@ -302,10 +302,10 @@ Start a background ssh agent if one isn't already running
   # Source SSH settings, if applicable
   if test -f $SSH_ENV
       . {$SSH_ENV} > /dev/null
-      ps -ef | grep {$SSH_AGENT_PID} | grep "ssh-agent\$" > /dev/null || {
+      ps -ef | grep {$SSH_AGENT_PID} | grep "ssh-agent\$" > /dev/null || begin
           echo "No agent found, starting new one"
           start_agent;
-      }
+      end
   else
       echo "SSH_ENV not initiatlized, starting new agent"
       start_agent;
