@@ -465,8 +465,10 @@ Completion config
 #+end_src
 * Roam
 ** General setup and config
+Probably need to change the viewer per OS.
 #+begin_src emacs-lisp
   (setq org-roam-db-location "~/org/roam/org-roam.db")
+  (setq org-roam-graph-viewer "/usr/bin/open")
   (use-package org-roam
     :ensure t
     :init
