@@ -521,10 +521,65 @@ Dailies go here
 #+begin_src emacs-lisp
   (setq org-roam-dailies-directory "daily/")
 #+end_src
-*** SOMEDAY Daily linking
+*** Daily linking
 Workflow to link things from agenda to daily note to more intentionally curate todo list.
 Taken from [[https://org-roam.discourse.group/t/daily-task-management-with-org-agenda-and-org-roam-dailies/989][this post]].
-Tried it out, but needed to customize the daily templates more. Don't quite need it yet.
+
+**** Get daily agenda
+This doesn't quite seem to work yet - I suspect it doesn't play nice with
+super agenda
+#+begin_src emacs-lisp
+  (setq org-agenda-custom-commands
+               '(("d" "Daily schedule"
+                ((agenda ""
+                         ((org-agenda-span 'day)
+                          (org-agenda-use-time-grid nil)
+                          (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))))))))
+  (defun as/get-daily-agenda (&optional date)
+    "Return the agenda for the day as a string."
+    (interactive)
+    (let ((file (make-temp-file "daily-agenda" nil ".txt")))
+      (org-agenda nil "d" nil)
+      (when date (org-agenda-goto-date date))
+      (org-agenda-write file nil nil "*Org Agenda*")
+      (kill-buffer)
+      (with-temp-buffer
+        (insert-file-contents file)
+        (goto-char (point-min))
+        (kill-line 2)
+        (while (re-search-forward "^  " nil t)
+          (replace-match "- " nil nil))
+        (buffer-string))))
+#+end_src
+**** Daily capture templates
+This is the bit referenced above that inserts the target header as
+a link into the org roam note. Pretty handy!
+#+begin_src emacs-lisp
+  (setq org-roam-dailies-capture-templates
+        (let ((head
+               (concat "#+title: %<%Y-%m-%d (%A)>\n#+startup: showall\n* Daily Overview\n"
+                       "#+begin_src emacs-lisp :results value raw\n"
+                       "(as/get-daily-agenda \"%<%Y-%m-%d>\")\n"
+                       "#+end_src\n"
+                       "* [/] Do Today\n* [/] Maybe Do Today\n* Journal\n")))
+          `(("j" "journal" entry
+             "* %<%H:%M> %?"
+             :if-new (file+head+olp "%<%Y-%m-%d>.org" ,head ("Journal")))
+            ("t" "do today" item
+             "[ ] %a"
+             :if-new (file+head+olp "%<%Y-%m-%d>.org" ,head ("Do Today"))
+             :immediate-finish t)
+            ("m" "maybe do today" item
+             "[ ] %a"
+             :if-new (file+head+olp "%<%Y-%m-%d>.org" ,head ("Maybe Do Today"))
+             :immediate-finish t))))
+
+#+end_src
+Make a shortcut in org agenda to cap something.
+#+begin_src emacs-lisp
+(define-key org-agenda-mode-map (kbd "c") 'org-roam-dailies-capture-today)
+
+#+end_src
 * Rifle
 All the other deps with the funked up deps
 #+begin_src emacs-lisp
