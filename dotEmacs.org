@@ -577,8 +577,13 @@ a link into the org roam note. Pretty handy!
 #+end_src
 Make a shortcut in org agenda to cap something.
 #+begin_src emacs-lisp
-(define-key org-agenda-mode-map (kbd "c") 'org-roam-dailies-capture-today)
-
+  (define-key org-agenda-mode-map (kbd "c") 'org-roam-dailies-capture-today)
+#+end_src
+* More agenda customization
+I'll admit, there's a header further up for this, but for some reason defining this that far up breaks, and I don't really want
+to figure out why =org-agenda-mode-map= isn't initiatlized up [[file:dotEmacs.org::149][here]]
+#+begin_src emacs-lisp
+ (define-key org-agenda-mode-map (kbd "C-w C-w") 'evil-window-next)
 #+end_src
 * Rifle
 All the other deps with the funked up deps
