@@ -100,7 +100,7 @@ Ongoing thing to figure out what states I want. log-done enables timestamp and p
 More details [[https://orgmode.org/manual/Tracking-TODO-state-changes.html][Here]]
 #+BEGIN_SRC emacs-lisp
   (setq org-todo-keywords
-        '((sequence "TODO(t)" "SOMEDAY(s)" "WAITING(w)" "IN-PROGRESS(i)" "|" "DONE(d)" "EXPORTED(e)" "OBSOLOTE(b)")))
+        '((sequence "TODO(t)" "SOMEDAY(s)" "WAITING(w)" "IN-PROGRESS(i)" "BLOCKED(l)" "|" "DONE(d)" "EXPORTED(e)" "OBSOLOTE(b)")))
 
   (setq org-log-done 'time)
   (setq org-log-done 'note)
@@ -161,7 +161,7 @@ Just a command to bring up agenda view
           (:name "Important"
                  ;; Single arguments given alone
                  :and (:priority "A"
-                                 :todo ("TODO" "IN-PROGRESS" "WAITING" "SOMEDAY")))
+                                 :todo ("TODO" "IN-PROGRESS" "SOMEDAY")))
           (:name "Habits Overdue"
                  :and(:file-path "recurring.org" :deadline past)
                  )
@@ -173,12 +173,16 @@ Just a command to bring up agenda view
                             ;; Show this section after "Today" and "Important", because
                             ;; their order is unspecified, defaulting to 0. Sections
                             ;; are displayed lowest-number-first.
-                            :order 1
-                            :todo ("TODO" "IN-PROGRESS" "WAITING" "SOMEDAY")))
+                            :order 0
+                            :todo ("TODO" "IN-PROGRESS" "SOMEDAY")))
           ;; After the last group, the agenda will display items that didn't
           ;; match any of these groups, with the default order position of 99
+          (:name "Blocked"
+                 :todo ("BLOCKED"))
           (:name "Future Habits"
                  :and(:file-path "recurring.org" :deadline future))
+          (:name "Waiting"
+                 :todo ("WAITING"))
           (:name "Done"
                  :todo ("DONE" "OBSOLETE")
                  )
