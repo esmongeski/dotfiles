@@ -162,12 +162,16 @@ Just a command to bring up agenda view
                  ;; Single arguments given alone
                  :and (:priority "A"
                                  :todo ("TODO" "IN-PROGRESS" "SOMEDAY")))
+          (:name "Work stuff"
+                 :and(:file-path "devoted.org" :todo ("TODO" "IN-PROGRESS")))
           (:name "Habits Overdue"
                  :and(:file-path "recurring.org" :deadline past)
                  )
           (:name "Habits Today"
                  :and(:file-path "recurring.org" :deadline today)
                  )
+          (:name "Work stuck"
+                 :and(:file-path "devoted.org" :todo ("WAITING" "BLOCKED")))
           ;; Set order of multiple groups at once
           (:and(:priority<= "B"
                             ;; Show this section after "Today" and "Important", because
@@ -516,8 +520,8 @@ Capture templates for roam
            :if-new (file+head "fun/%<%Y%m%d%H%M%S>-${slug}.org"
                               "#+title: ${title}\n#+filetags: fun\n")
            :unnarrowed t)
-          ("t" "test" plain "%?"
-           :if-new (file+head "localTest/%<%Y%m%d%H%M%S>-${slug}.org"
+          ("w" "work" plain "%?"
+           :if-new (file+head "work/%<%Y%m%d%H%M%S>-${slug}.org"
                               "#+title: ${title}")
            :unnarrowed t)
           ))
