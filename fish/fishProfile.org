@@ -151,8 +151,8 @@ end
 Sometimes, I fuck up with git, because it's git and it's kinda complicated sometimes. These help recover from said fuckups.
 #+begin_src fish
 alias unstage="g reset HEAD"
-alias gpush='echo "ted you typed too fast"; g push;'
-alias gpull='echo "ted you typed too fast"; g pull;'
+alias gpush='echo "ted you typed too fast"; g push'
+alias gpull='echo "ted you typed too fast"; g pull'
 #+end_src
 
 If you're in the middle of a pull or rebase and hit a conflict, this can back you out of it. The gitlab ci think wasn't checked out by checkout * for some reason.
