@@ -163,7 +163,8 @@ Just a command to bring up agenda view
                  :and (:priority "A"
                                  :todo ("TODO" "IN-PROGRESS" "SOMEDAY")))
           (:name "Work stuff"
-                 :and(:file-path "work.org" :todo ("TODO" "IN-PROGRESS")))
+                 :or( :and(:file-path "work.org" :todo ("TODO" "IN-PROGRESS"))
+                          :and(:file-path "/Users/edwardsmongeski/org/roam" :todo ("TODO" "IN-PROGRESS"))))
           (:name "Habits Overdue"
                  :and(:file-path "recurring.org" :deadline past)
                  )
