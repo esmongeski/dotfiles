@@ -275,6 +275,10 @@ function pushAndOpenMR {
     findLinkAndOpen "$MR_RESULT"
 }
 #+end_src
+** Git grep
+#+begin_src bash
+  alias gg='git grep -i'
+#+end_src
 * No window for emacs - really only relevant on ubuntu
 #+begin_src bash
 alias emacs='emacs --no-splash -nw'
