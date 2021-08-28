@@ -16,6 +16,27 @@ It's possible I'll want to use https://github.com/Somelauw/evil-org-mode instead
 #+begin_src emacs-lisp
   (define-key evil-ex-map "a" 'org-agenda-list)
 #+end_src
+** Magit
+Definitely pronounced "muh git", much like "muh queen". Certainly not "mahjit", despite what the top hat and wand would make you think.
+#+begin_src emacs-lisp
+(use-package magit)
+#+end_src
+
+** Undo Tree
+I could have sworn I had this installed at one point, but oh well!
+#+begin_src emacs-lisp
+  (use-package undo-tree)
+  (global-undo-tree-mode)
+  (global-set-key (kbd "C-x C-u") 'undo-tree-visualize)
+#+end_src
+** Rifle
+All the other deps with the funked up deps
+#+begin_src emacs-lisp
+  (use-package f)
+  (use-package s)
+  (use-package dash)
+  (use-package helm-org-rifle)
+#+end_src
 * Package things!
 This is a bit of fumbling to try and get this all to work on a new computer from zero with minimal manual intervention.
 
@@ -270,6 +291,32 @@ Make it so I can quickly reload emacs config.
       (load-file user-init-file)
       )
   (global-set-key (kbd "C-r C-e") 'quick-refresh-dot-emacs)
+#+end_src
+** Making it so C-w and friends still switch windows
+#+begin_src emacs-lisp
+    ;; (define-key magit-status-mode-map (kbd "C-w") nil)
+    ;; (define-key magit-status-mode-map (kbd "C-w C-w") 'evil-window-next)
+    ;; (define-key magit-status-mode-map (kbd "C-w w") 'evil-window-next)
+    ;; (define-key magit-status-mode-map (kbd "C-w C-p") 'evil-window-prev)
+    ;; (define-key magit-status-mode-map (kbd "C-w C-p") 'evil-window-prev)
+    ;; (define-key magit-status-mode-map (kbd "C-w p") 'evil-window-prev)
+    ;; (define-key magit-status-mode-map (kbd "C-w p") 'evil-window-prev)
+  (setq w-keymap (make-sparse-keymap))
+  (define-prefix-command 'w-keymap)
+  (global-set-key (kbd "C-w") 'w-keymap)
+  (define-key magit-status-mode-map (kbd "C-w") nil)
+  (define-key magit-diff-mode-map (kbd "C-w") nil)
+  (global-set-key (kbd "C-w C-w") 'evil-window-next)
+#+end_src
+** Nice little shortcut for evil mode for rifle.
+#+begin_src emacs-lisp
+  (define-key evil-ex-map "rf" 'helm-org-rifle-agenda-files)
+#+end_src
+** More agenda customization
+I'll admit, there's a header further up for this, but for some reason defining this that far up breaks, and I don't really want
+to figure out why =org-agenda-mode-map= isn't initiatlized up [[file:dotEmacs.org::149][here]]
+#+begin_src emacs-lisp
+ (define-key org-agenda-mode-map (kbd "C-w C-w") 'evil-window-next)
 #+end_src
 * Debugging
 Trying to see what this does on startup so I can optimize my init/dotfiles.
@@ -616,47 +663,4 @@ a link into the org roam note. Pretty handy!
 Make a shortcut in org agenda to cap something.
 #+begin_src emacs-lisp
   (define-key org-agenda-mode-map (kbd "c") 'org-roam-dailies-capture-today)
-#+end_src
-* More agenda customization
-I'll admit, there's a header further up for this, but for some reason defining this that far up breaks, and I don't really want
-to figure out why =org-agenda-mode-map= isn't initiatlized up [[file:dotEmacs.org::149][here]]
-#+begin_src emacs-lisp
- (define-key org-agenda-mode-map (kbd "C-w C-w") 'evil-window-next)
-#+end_src
-* Rifle
-All the other deps with the funked up deps
-#+begin_src emacs-lisp
-  (use-package f)
-  (use-package s)
-  (use-package dash)
-  (use-package helm-org-rifle)
-#+end_src
-Nice little shortcut for evil mode for rifle.
-#+begin_src emacs-lisp
-  (define-key evil-ex-map "rf" 'helm-org-rifle-agenda-files)
-#+end_src
-
-* Magit
-Definitely pronounced "muh git", much like "muh queen". Certainly not "mahjit", despite what the top hat and wand would make you think.
-#+begin_src emacs-lisp
-(use-package magit)
-#+end_src
-
-Making it so C-w and friends still switch windows
-#+begin_src emacs-lisp
-  (define-key magit-status-mode-map (kbd "C-w") nil)
-  (define-key magit-status-mode-map (kbd "C-w C-w") 'evil-window-next)
-  (define-key magit-status-mode-map (kbd "C-w w") 'evil-window-next)
-  (define-key magit-status-mode-map (kbd "C-w C-p") 'evil-window-prev)
-  (define-key magit-status-mode-map (kbd "C-w C-p") 'evil-window-prev)
-  (define-key magit-status-mode-map (kbd "C-w p") 'evil-window-prev)
-  (define-key magit-status-mode-map (kbd "C-w p") 'evil-window-prev)
-
-#+end_src
-* Undo Tree
-I could have sworn I had this installed at one point, but oh well!
-#+begin_src emacs-lisp
-  (use-package undo-tree)
-  (global-undo-tree-mode)
-  (global-set-key (kbd "C-x C-u") 'undo-tree-visualize)
 #+end_src
