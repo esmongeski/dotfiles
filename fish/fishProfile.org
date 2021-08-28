@@ -281,10 +281,23 @@ function findLinkAndOpen
     splitOutput "$argv[1]" | grep https | xargs open
 end
 #+end_src
-* No window for emacs - really only relevant on ubuntu
+* Emacs
+** Daemon configuration
+Start an emacs daemon if one isn't there
 #+begin_src fish
-alias emacs='emacs --no-splash -nw'
-
+  function ensureEmacsDaemon
+      set -l daemon (ps aux | grep "emacs --daemon" | grep -v "grep")
+      if not test $daemon
+          echo "no emacs daemon found - starting one"
+          command emacs --daemon
+      else
+          echo "emacs daemon is already running"
+      end
+  end
+#+end_src
+Use emacsclient instead of emacs to hit the daemon.
+#+begin_src fish
+  alias emacs="ensureEmacsDaemon; emacsclient -t -nw"
 #+end_src
 * Background SSH agent
 Start a background ssh agent if one isn't already running

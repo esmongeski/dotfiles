@@ -279,9 +279,22 @@ function pushAndOpenMR {
 #+begin_src bash
   alias gg='git grep -i'
 #+end_src
-* No window for emacs - really only relevant on ubuntu
+* Emacs
+** Start an emacs daemon if one isn't there
 #+begin_src bash
-alias emacs='emacs --no-splash -nw'
+  function ensureEmacsDaemon {
+      DAEMON=`ps aux | grep "emacs --daemon" | grep -v "grep"`
+      if [ -z "$DAEMON" ]; then
+          echo "no emacs daemon found - starting one"
+          emacs --daemon
+      else
+          echo "emacs daemon is already running"
+      fi
+  }
+#+end_src
+
+#+begin_src bash
+alias emacs="ensureEmacsDaemon; emacsclient -t -nw"
 
 #+end_src
 * Misc helper functions
