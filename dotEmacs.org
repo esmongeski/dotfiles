@@ -59,6 +59,15 @@ Completion config
   (setq completion-ignore-case t)
 
 #+end_src
+** Helm
+#+begin_src emacs-lisp
+  (use-package helm
+    :ensure t)
+  (require 'helm-config)
+  (setq helm-split-window-in-side-p t
+        helm-move-to-line-cycle-in-source t)
+  (helm-mode 1)
+#+end_src
 * Package things!
 This is a bit of fumbling to try and get this all to work on a new computer from zero with minimal manual intervention.
 
@@ -348,6 +357,13 @@ to figure out why =org-agenda-mode-map= isn't initiatlized up [[file:dotEmacs.or
 #+begin_src emacs-lisp
  (define-key org-agenda-mode-map (kbd "C-w C-w") 'evil-window-next)
 #+end_src
+** Evil shortcuts for helm. Navigate buffers, command/func/var (apropos), and files with =:b=, etc.
+#+begin_src emacs-lisp
+  (define-key evil-ex-map "b" 'helm-buffers-list)
+  (define-key evil-ex-map "c" 'helm-M-x)
+  (define-key evil-ex-map "d" 'helm-apropos)
+  (define-key evil-ex-map "e" 'helm-find-files)
+#+end_src
 * Debugging
 Trying to see what this does on startup so I can optimize my init/dotfiles.
 #+begin_src emacs-lisp
@@ -411,7 +427,7 @@ Capture templates
   (setq org-capture-templates
         '(("p" "Personal" entry (file "~/Dropbox/org/inbox.org")
            "* TODO %?\n")
-          ("w" "Work" entry (file "~/Dropbox/org/workStuff.org")
+          ("w" "Work" entry (file "~/Dropbox/org/workInbox.org")
            "* TODO %?\n")
           ("t" "Things on my mind" entry (file "~/Dropbox/org/tList.org")
            "* TODO %?\n" )
@@ -465,6 +481,9 @@ Update: four *s seems to work to not use a header, which will work for me.
 #+end_src
 ** Meeting minutes
 [[https://lists.gnu.org/archive/html/emacs-orgmode/2019-10/msg00300.html][This]] seems interesting. Try it out.
+Update - as of [2021-08-28 Sat]ish, I basically use roam for notes now,
+and having roam nodes for people makes it easy to add attendees. This
+was an interesting experiment, but I'm mostly not using it at this point.
 #+begin_src emacs-lisp
   (require 'org)
   (require 'dash)
@@ -526,25 +545,8 @@ Trim whitespace
 Don't prompt for exit - this must be after sensible defaults, as it overwrites it.
 #+begin_src emacs-lisp
   (setq confirm-kill-emacs nil)
-
 #+end_src
 * Helm
-** Helm
-#+begin_src emacs-lisp
-  (use-package helm
-    :ensure t)
-  (require 'helm-config)
-  (setq helm-split-window-in-side-p t
-        helm-move-to-line-cycle-in-source t)
-  (helm-mode 1)
-#+end_src
-** Evil shortcuts for helm. Navigate buffers, command/func/var (apropos), and files with =:b=, etc.
-#+begin_src emacs-lisp
-  (define-key evil-ex-map "b" 'helm-buffers-list)
-  (define-key evil-ex-map "c" 'helm-M-x)
-  (define-key evil-ex-map "d" 'helm-apropos)
-  (define-key evil-ex-map "e" 'helm-find-files)
-#+end_src
 ** Configure helm search - basically make everything as fuzzy as possible.
 #+begin_src emacs-lisp
   (setq org-outline-path-complete-in-steps nil)

@@ -45,7 +45,7 @@ Dropbox paths are probably the same everywhere? Fingers crossed!
   alias funthings='emacs ~/Dropbox/org/funThings.org'
   alias homeprojects='emacs ~/Dropbox/org/homeProjects.org'
   alias pproj='emacs ~/Dropbox/org/personalProjects.org'
-  alias workstuff='emacs ~/Dropbox/org/workStuff.org'
+  alias workstuff='emacs ~/Dropbox/org/workInbox.org'
   alias wtodos='emacs ~/org/work.org'
   alias winbox='workstuff'
   alias recurring='emacs ~/Dropbox/org/recurring.org'
@@ -217,6 +217,7 @@ Git status, git checkout, git log, git log files, current branch name
   alias gl='g log'
   alias glf='gl --name-only'
   alias glogme='gl --author=esmongeski'
+  alias gg='git grep -i'
 #+end_src
 Git diff, git diff staged files, git diff with remote branch, git merge squash, git fetch
 #+begin_src fish
