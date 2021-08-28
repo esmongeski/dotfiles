@@ -646,6 +646,7 @@ Definitely pronounced "muh git", much like "muh queen". Certainly not "mahjit", 
 * Undo Tree
 I could have sworn I had this installed at one point, but oh well!
 #+begin_src emacs-lisp
-
-
+  (use-package undo-tree)
+  (global-undo-tree-mode)
+  (global-set-key (kbd "C-x C-u") 'undo-tree-visualize)
 #+end_src
