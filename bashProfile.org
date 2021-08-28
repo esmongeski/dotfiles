@@ -354,9 +354,13 @@ alias drm='rmc'
 #+end_src
 Shortcut to bash into a container
 #+begin_src bash
-function dbashin {
-        d exec -it $1 bash
-}
+  function dbashin {
+      d exec -it $1 bash
+  }
+
+  function dshin {
+      d exec -it $1 sh
+  }
 #+end_src
 Docker rm grep - remove containers that look like a certiain thing
 #+begin_src bash

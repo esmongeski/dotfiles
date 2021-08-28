@@ -332,6 +332,9 @@ Shortcut to bash into a container
 function dbashin
         d exec -it $argv[1] bash
 end
+function dshin
+        d exec -it $argv[1] sh
+end
 #+end_src
 Docker rm grep - remove containers that look like a certiain thing
 #+begin_src fish

@@ -8,8 +8,10 @@ C-w w - cycle next window
 
 C-w W - cycle previous window
 
-Doesn't look like this works when an emacs buffer (i.e. org-agenda) is open
+Doesn't look like this works when an emacs buffer (i.e. org-agenda) is open - except I sorta fixed it, although it doesn't work on agenda headings yet.
 
+C-w C-s - split horizontally
+C-w C-v - split vertically
 * org-evil shortcuts
 
 All documented at https://github.com/GuiltyDolphin/org-evil but writing them here for the ones I know I'll use
