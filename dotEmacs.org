@@ -37,6 +37,28 @@ All the other deps with the funked up deps
   (use-package dash)
   (use-package helm-org-rifle)
 #+end_src
+** Nice autocompletion things
+Much of this I just followed [[https://org-roam.discourse.group/t/how-to-to-get-title-of-the-target-note-working-with-inline-autocomplete-in-org-roam/782][this guide while trying to configure Roam]]
+Smart parents
+#+begin_src emacs-lisp
+  (use-package smartparens)
+  (smartparens-global-mode t)
+
+#+end_src
+Company
+#+begin_src emacs-lisp
+  (use-package company)
+  (add-hook 'after-init-hook 'global-company-mode)
+  (setq company-minimum-prefix-length 2)
+  (setq company-idle-delay 0.25)
+  (add-to-list 'company-backends 'company-capf)
+
+#+end_src
+Completion config
+#+begin_src emacs-lisp
+  (setq completion-ignore-case t)
+
+#+end_src
 * Package things!
 This is a bit of fumbling to try and get this all to work on a new computer from zero with minimal manual intervention.
 
@@ -525,28 +547,6 @@ Configure helm search - basically make everything as fuzzy as possible.
 Override M-x
 #+begin_src emacs-lisp
   (global-set-key (kbd "M-x") 'helm-M-x)
-#+end_src
-* Nice autocompletion things
-Much of this I just followed [[https://org-roam.discourse.group/t/how-to-to-get-title-of-the-target-note-working-with-inline-autocomplete-in-org-roam/782][this guide while trying to configure Roam]]
-Smart parents
-#+begin_src emacs-lisp
-  (use-package smartparens)
-  (smartparens-global-mode t)
-
-#+end_src
-Company
-#+begin_src emacs-lisp
-  (use-package company)
-  (add-hook 'after-init-hook 'global-company-mode)
-  (setq company-minimum-prefix-length 2)
-  (setq company-idle-delay 0.25)
-  (add-to-list 'company-backends 'company-capf)
-
-#+end_src
-Completion config
-#+begin_src emacs-lisp
-  (setq completion-ignore-case t)
-
 #+end_src
 * Roam
 ** General setup and config
