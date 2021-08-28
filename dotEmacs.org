@@ -263,6 +263,7 @@ WIP - Hide emphasis markers to make things a bit prettier.
 #+end_src
 *bold* /italic/ _underline_ =literal= ~code~ +strikethrough+
 * Custom Key Bindings
+** Org refile
 This first one is to get a different one for org-refile. I want it as C-r C-f (rf -> refile)
 
 First thing to do is to set "C-r" as a possible prefix.
@@ -285,7 +286,14 @@ Another one - archive. I'm gonna do "C-r C-a" for "refile - archive", and becaus
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-r C-a") 'org-archive-subtree)
 #+END_SRC
+*** Make refile work in evil insert
+"C-r" is bound to something else, which I don't use, and I'd rather be able to refile in insert mode as well.
+#+begin_src emacs-lisp
+  (define-key evil-insert-state-map (kbd "C-r") nil)
+  ;; (define-key evil-insert-state-map (kbd "C-r C-f"))
 
+#+end_src
+** Window switching
 I use C-w C-w to switch windows a lot, but it messes me up when it
 deletes a word in insert mode.
 #+begin_src emacs-lisp
@@ -303,18 +311,7 @@ have C-w C-p and C-w p just do previous window, since that makes sense to me.
   (define-key evil-motion-state-map (kbd "C-w p") 'evil-window-prev)
 
 #+end_src
-** Quick reload
-Make it so I can quickly reload emacs config.
-#+begin_src emacs-lisp
-
-    (defun quick-refresh-dot-emacs ()
-      "Quickly reload emacs config"
-      (interactive)
-      (load-file user-init-file)
-      )
-  (global-set-key (kbd "C-r C-e") 'quick-refresh-dot-emacs)
-#+end_src
-** Making it so C-w and friends still switch windows
+*** TODO In magit, and also globally
 #+begin_src emacs-lisp
     ;; (define-key magit-status-mode-map (kbd "C-w") nil)
     ;; (define-key magit-status-mode-map (kbd "C-w C-w") 'evil-window-next)
@@ -329,6 +326,17 @@ Make it so I can quickly reload emacs config.
   (define-key magit-status-mode-map (kbd "C-w") nil)
   (define-key magit-diff-mode-map (kbd "C-w") nil)
   (global-set-key (kbd "C-w C-w") 'evil-window-next)
+#+end_src
+** Quick reload
+Make it so I can quickly reload emacs config.
+#+begin_src emacs-lisp
+
+    (defun quick-refresh-dot-emacs ()
+      "Quickly reload emacs config"
+      (interactive)
+      (load-file user-init-file)
+      )
+  (global-set-key (kbd "C-r C-e") 'quick-refresh-dot-emacs)
 #+end_src
 ** Nice little shortcut for evil mode for rifle.
 #+begin_src emacs-lisp
@@ -521,6 +529,7 @@ Don't prompt for exit - this must be after sensible defaults, as it overwrites i
 
 #+end_src
 * Helm
+** Helm
 #+begin_src emacs-lisp
   (use-package helm
     :ensure t)
@@ -529,14 +538,14 @@ Don't prompt for exit - this must be after sensible defaults, as it overwrites i
         helm-move-to-line-cycle-in-source t)
   (helm-mode 1)
 #+end_src
-Evil shortcuts for helm. Navigate buffers, command/func/var (apropos), and files with =:b=, etc.
+** Evil shortcuts for helm. Navigate buffers, command/func/var (apropos), and files with =:b=, etc.
 #+begin_src emacs-lisp
   (define-key evil-ex-map "b" 'helm-buffers-list)
   (define-key evil-ex-map "c" 'helm-M-x)
   (define-key evil-ex-map "d" 'helm-apropos)
   (define-key evil-ex-map "e" 'helm-find-files)
 #+end_src
-Configure helm search - basically make everything as fuzzy as possible.
+** Configure helm search - basically make everything as fuzzy as possible.
 #+begin_src emacs-lisp
   (setq org-outline-path-complete-in-steps nil)
   (setq helm-completion-style 'helm-flex)
