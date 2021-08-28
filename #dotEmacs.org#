@@ -256,7 +256,7 @@ have C-w C-p and C-w p just do previous window, since that makes sense to me.
 #+begin_src emacs-lisp
   (define-key evil-motion-state-map (kbd "C-w C-p") 'evil-window-prev)
   (define-key evil-insert-state-map (kbd "C-w C-p") 'evil-window-prev)
-  (define-key evil-insert-state-map (kbd "C-w p") 'evil-window-prev)
+  (define-key evil-inser``t-state-map (kbd "C-w p") 'evil-window-prev)
   (define-key evil-motion-state-map (kbd "C-w p") 'evil-window-prev)
 
 #+end_src
