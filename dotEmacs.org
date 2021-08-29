@@ -16,11 +16,12 @@ It's possible I'll want to use https://github.com/Somelauw/evil-org-mode instead
 #+begin_src emacs-lisp
   (define-key evil-ex-map "a" 'org-agenda-list)
 #+end_src
-** Smartparens
+** TODO Smartparens
+Doesn't quite work yet - Maybe I'll get it going some day.
 #+begin_src emacs-lisp
-      (use-package smartparens)
-    (use-package evil-smartparens)
-    (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode)
+  ;;   (use-package smartparens)
+  ;; (use-package evil-smartparens)
+  ;; (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode)
 
 #+end_src
 ** Magit
