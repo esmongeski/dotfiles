@@ -76,6 +76,15 @@ Completion config
         helm-move-to-line-cycle-in-source t)
   (helm-mode 1)
 #+end_src
+*** TODO Helm fuzzier matching
+Doesn't quite work yet - I'm trying to get it so that I can fuzzy match
+in helm-apropos, but despite what the internet says it is not working.
+#+begin_src emacs-lisp
+  ;; (use-package helm-fuzzier)
+  ;; (helm-fuzzier-mode 1)
+
+#+end_src
+
 * Package things!
 This is a bit of fumbling to try and get this all to work on a new computer from zero with minimal manual intervention.
 
@@ -564,6 +573,7 @@ Don't prompt for exit - this must be after sensible defaults, as it overwrites i
   (add-to-list 'completion-styles 'helm-flex)
   (setq helm-apropos-fuzzy-match t)
   (setq helm-locate-fuzzy-match t)
+  (setq helm-mode-fuzzy-match t)
 #+end_src
 Override M-x
 #+begin_src emacs-lisp
