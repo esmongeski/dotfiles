@@ -216,7 +216,7 @@ Just a command to bring up agenda view
                                  :todo ("TODO" "IN-PROGRESS" "SOMEDAY")))
           (:name "Work stuff"
                  :and(:file-path "work.org" :todo ("TODO" "IN-PROGRESS"))
-                          :and(:file-path "/Users/edwardsmongeski/org/roam" :todo ("TODO" "IN-PROGRESS")))
+                 :and(:file-path "/Users/edwardsmongeski/org/roam" :todo ("TODO" "IN-PROGRESS")))
           (:name "Habits Overdue"
                  :and(:file-path "recurring.org" :deadline past)
                  )
@@ -224,7 +224,7 @@ Just a command to bring up agenda view
                  :and(:file-path "recurring.org" :deadline today)
                  )
           (:name "Work stuck"
-                 :and(:file-path "devoted.org" :todo ("WAITING" "BLOCKED")))
+                 :and(:file-path "work.org" :todo ("WAITING" "BLOCKED")))
           ;; Set order of multiple groups at once
           (:and(:priority<= "B"
                             ;; Show this section after "Today" and "Important", because
@@ -243,7 +243,9 @@ Just a command to bring up agenda view
           (:name "Done"
                  :todo ("DONE" "OBSOLETE")
                  )
-          ))
+          (:name "EOD Routine"
+                 :and(:todo "TODO" :file-path "recurring.org" :scheduled today :tag "eodroutine")
+                 )))
 #+end_src
 * Colors!!!! And other nice displays - change the ... to a return thingy, make nice bullet icons.
 #+BEGIN_SRC emacs-lisp
