@@ -1,7 +1,7 @@
 * What is this
 I started using fish, but I still want my config in org. It's fishProfile.org!
 
-** TODO Pickle rick gif
+[[file:fishPickleRick.gif]]
 * Aliases (aliaii?)
 Here's something that never panned out:
 #+begin_src fish
@@ -413,3 +413,6 @@ function firstColumn
 end
 
 #+end_src
+
+* What else?
+[[file:justBeImpressed.gif]]
