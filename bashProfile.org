@@ -280,7 +280,8 @@ function pushAndOpenMR {
   alias gg='git grep -i'
 #+end_src
 * Emacs
-** Start an emacs daemon if one isn't there
+** Run emacs with a background daemon
+Start an emacs daemon if one isn't there
 #+begin_src bash
   function ensureEmacsDaemon {
       DAEMON=`ps aux | grep "emacs --daemon" | grep -v "grep"`
@@ -292,7 +293,7 @@ function pushAndOpenMR {
       fi
   }
 #+end_src
-
+Start emacs as a client
 #+begin_src bash
   alias emacs="ensureEmacsDaemon; emacsclient -t -nw"
   alias killEmacs="emacsclient -e -t '(save-buffers-kill-emacs)'"
