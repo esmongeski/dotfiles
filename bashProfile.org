@@ -294,8 +294,9 @@ function pushAndOpenMR {
 #+end_src
 
 #+begin_src bash
-alias emacs="ensureEmacsDaemon; emacsclient -t -nw"
-
+  alias emacs="ensureEmacsDaemon; emacsclient -t -nw"
+  alias killEmacs="emacsclient -e -t '(save-buffers-kill-emacs)'"
+  alias ke=killEmacs
 #+end_src
 * Misc helper functions
 Spit out the current date
