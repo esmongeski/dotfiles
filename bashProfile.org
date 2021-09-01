@@ -277,7 +277,7 @@ function pushAndOpenMR {
 #+end_src
 ** Git grep
 #+begin_src bash
-  alias gg='git grep -i'
+  alias gg='git grep -in'
 #+end_src
 * Emacs
 ** Run emacs with a background daemon
