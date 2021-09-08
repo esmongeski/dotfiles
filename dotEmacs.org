@@ -234,11 +234,17 @@ Just a command to bring up agenda view
           (:name "Work stuff"
                  :and(:file-path "work.org" :todo ("TODO" "IN-PROGRESS"))
                  :and(:file-path "/Users/edwardsmongeski/org/roam" :todo ("TODO" "IN-PROGRESS")))
+          (:name "EOD Routine"
+                 :and(:todo "TODO" :file-path "recurring.org" :scheduled today :tag "eodroutine")
+                 :and(:todo "TODO" :file-path "recurring.org" :scheduled past :tag "eodroutine")
+                 )
           (:name "Habits Overdue"
-                 :and(:file-path "recurring.org" :deadline past)
+                 :and(:file-path "recurring.org" :deadline  past)
+                 :and(:file-path "recurring.org" :scheduled past)
                  )
           (:name "Habits Today"
                  :and(:file-path "recurring.org" :deadline today)
+                 :and(:file-path "recurring.org" :scheduled today)
                  )
           (:name "Work stuck"
                  :and(:file-path "work.org" :todo ("WAITING" "BLOCKED")))
@@ -259,9 +265,6 @@ Just a command to bring up agenda view
                  :todo ("WAITING"))
           (:name "Done"
                  :todo ("DONE" "OBSOLETE")
-                 )
-          (:name "EOD Routine"
-                 :and(:todo "TODO" :file-path "recurring.org" :scheduled today :tag "eodroutine")
                  )))
 #+end_src
 * Colors!!!! And other nice displays - change the ... to a return thingy, make nice bullet icons.
@@ -375,6 +378,11 @@ I'll admit, there's a header further up for this, but for some reason defining t
 to figure out why =org-agenda-mode-map= isn't initiatlized up [[file:dotEmacs.org::149][here]]
 #+begin_src emacs-lisp
  (define-key org-agenda-mode-map (kbd "C-w C-w") 'evil-window-next)
+#+end_src
+I am evil, so =:= is special. It sets tags in agenda, which I basically never want to do.
+#+begin_src emacs-lisp
+ (define-key org-agenda-mode-map (kbd ":") nil)
+
 #+end_src
 ** Evil shortcuts for helm. Navigate buffers, command/func/var (apropos), and files with =:b=, etc.
 #+begin_src emacs-lisp
