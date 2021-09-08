@@ -7,7 +7,9 @@ Here's something that never panned out:
 #+begin_src fish
 alias a='alias'
 #+end_src
-
+#+begin_src fish
+alias c='clear'
+#+end_src
 ** Basic shortcuts
 *** Modifying fish profile
 #+begin_src fish

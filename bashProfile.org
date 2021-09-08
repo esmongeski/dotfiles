@@ -58,7 +58,10 @@ Here's something that never panned out:
 #+begin_src bash
 alias a='alias'
 #+end_src
-
+Quick clear
+#+begin_src bash
+alias c='clear'
+#+end_src
 ** Local dotfiles
 Shortcuts to open local dotfiles. Generally, these files source something in this repo for ease of bootstrapping config on new machines.
 #+begin_src bash
