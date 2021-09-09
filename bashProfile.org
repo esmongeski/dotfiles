@@ -128,7 +128,7 @@ vendor is an exclusion of php libraries - I should probably add other libarary d
 but I'm mostly writing php day to day
 #+begin_src bash
 function grd() {
-  grep -r -i --exclude-dir={vendor,.git,.idea} $1 . | grep -v vendor
+  grep -r -i --exclude-dir={node_modules,vendor,.git,.idea} $1 . | grep -v vendor
 }
 #+end_src
 ** Quickly ls and pipe into grep
