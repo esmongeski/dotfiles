@@ -688,14 +688,14 @@ a link into the org roam note. Pretty handy!
                        "* [/] Do Today\n* [/] Maybe Do Today\n* Journal\n")))
           `(("j" "journal" entry
              "* %<%H:%M> %?"
-             :if-new (file+head+olp "%<%Y-%m-%d>.org" ,head ("Journal")))
+             :if-new (file+head+olp "~/org/roam/daily/%<%Y-%m-%d>.org" ,head ("Journal")))
             ("t" "do today" item
              "[ ] %a"
-             :if-new (file+head+olp "%<%Y-%m-%d>.org" ,head ("Do Today"))
+             :if-new (file+head+olp "~/org/roam/daily/%<%Y-%m-%d>.org" ,head ("Do Today"))
              :immediate-finish t)
             ("m" "maybe do today" item
              "[ ] %a"
-             :if-new (file+head+olp "%<%Y-%m-%d>.org" ,head ("Maybe Do Today"))
+             :if-new (file+head+olp "~/org/roam/daily/%<%Y-%m-%d>.org" ,head ("Maybe Do Today"))
              :immediate-finish t))))
 
 #+end_src
