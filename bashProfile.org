@@ -282,6 +282,11 @@ function pushAndOpenMR {
 #+begin_src bash
   alias gg='git grep -in'
 #+end_src
+** Upstream branch set
+#+begin_src bash
+  alias setUpstreamBranch='git branch --set-upstream-to=origin/`cb` `cb`'
+  alias gsub=setUpstreamBranch
+#+end_src
 * Emacs
 ** Run emacs with a background daemon
 Start an emacs daemon if one isn't there

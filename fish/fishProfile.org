@@ -246,6 +246,11 @@ alias grbc='g add -uv; g rebase --continue'
 alias newbr='g checkout -b'
 
 #+end_src
+** Set upstream
+#+begin_src fish
+  alias setUpstreamBranch='git branch --set-upstream-to=origin/`cb` `cb`'
+  alias gsub=setUpstreamBranch
+#+end_src
 ** TODO Push and open PR - make work in fish
 So I haven't used this for a while - push and immediately open the MR (PR nowadays). I should try this again.
 #+begin_src bash
