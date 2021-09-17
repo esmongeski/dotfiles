@@ -80,7 +80,7 @@ else
   export GOPATH="$HOME/go"
   export GOBIN="$HOME/go/bin"
   function fish_prompt
-      eval $GOPATH/bin/powerline-go -error $status -jobs (count (jobs -p)) -cwd-max-dir-size 1  -truncate-segment-width 5  -trim-ad-domain
+      eval $GOPATH/bin/powerline-go -error $status -jobs (count (jobs -p)) -cwd-max-dir-size 2 -colorize-hostname -hostname-only-if-ssh -path-aliases="~/code/dotfiles=df"
   end
 end
 #+end_src
