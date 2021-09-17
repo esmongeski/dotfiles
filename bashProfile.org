@@ -288,6 +288,11 @@ function pushAndOpenMR {
   alias setUpstreamBranch='git branch --set-upstream-to=origin/`cb` `cb`'
   alias gsub=setUpstreamBranch
 #+end_src
+** Checkout file at master
+*** TODO make this respect master/main
+#+begin_src bash
+alias gcam='g checkout master -- '
+#+end_src
 * Emacs
 ** Run emacs with a background daemon
 Start an emacs daemon if one isn't there
