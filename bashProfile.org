@@ -4,28 +4,6 @@ Heyo this is my bash profile. I make a toooon of personal scripts for ease of us
 If you haven't already noticed, this is an org file, not a bash file. I use a couple scripts to [[./generateBashProfile.bash][complie this to bash]] and then [[./bash_profile.bash][execute it.]]
 
 [[file:orgRick.gif]]
-* Terminal Prompt
-Go powerline
-#+begin_src bash
-  export GOPATH="$HOME/go"
-  export GOBIN="$HOME/go/bin"
-  export EXTRA_POWERLINE_DIR_ALIASES="$EXTRA_POWERLINE_DIR_ALIASES,~/code/dotfiles=dfiles"
-  function _update_ps1() {
-      PS1="$($GOPATH/bin/powerline-go -error $? -jobs $(jobs -p | wc -l) -shell bash -cwd-max-dir-size 2 -colorize-hostname -hostname-only-if-ssh  -path-aliases=$EXTRA_POWERLINE_DIR_ALIASES -truncate-segment-width 5 $EXTRA_POWERLINE_OPTIONS)"
-      # Uncomment the following line to automatically clear errors after showing
-      # them once. This not only clears the error for powerline-go, but also for
-      # everything else you run in that shell. Don't enable this if you're not
-      # sure this is what you want.
-
-      set "?"
-  }
-
-  if [ -f "$GOPATH/bin/powerline-go" ]; then
-      PROMPT_COMMAND="_update_ps1; $PROMPT_COMMAND"
-  else
-      echo "powerline-go not installed, go get it https://github.com/justjanne/powerline-go#installation"
-  fi
-#+end_src
 * External config checking
 Env vars this depends on - need to be set in local bash profile.
 This is a poor man's form of dependency injection enforcement in bash.
@@ -45,6 +23,29 @@ And these are the vars I want defined by the local system.
 #+begin_src bash
 checkEnvAndDefault "PATH_TO_DOTFILES_REPO"
 checkEnvAndDefault "PATH_TO_EDITABLE_DOT_EMACS"
+#+end_src
+* Terminal Prompt
+Go powerline
+#+begin_src bash
+  export GOPATH="$HOME/go"
+  export GOBIN="$HOME/go/bin"
+  export EXTRA_POWERLINE_DIR_ALIASES="$EXTRA_POWERLINE_DIR_ALIASES,~/code/dotfiles=dfiles"
+  checkEnvAndDefault "EXTRA_POWERLINE_OPTIONS"
+  function _update_ps1() {
+      PS1="$($GOPATH/bin/powerline-go -error $? -jobs $(jobs -p | wc -l) -shell bash -cwd-max-dir-size 2 -colorize-hostname -hostname-only-if-ssh -path-aliases=$EXTRA_POWERLINE_DIR_ALIASES -truncate-segment-width 5 $EXTRA_POWERLINE_OPTIONS)"
+      # Uncomment the following line to automatically clear errors after showing
+      # them once. This not only clears the error for powerline-go, but also for
+      # everything else you run in that shell. Don't enable this if you're not
+      # sure this is what you want.
+
+      set "?"
+  }
+
+  if [ -f "$GOPATH/bin/powerline-go" ]; then
+      PROMPT_COMMAND="_update_ps1; $PROMPT_COMMAND"
+  else
+      echo "powerline-go not installed, go get it https://github.com/justjanne/powerline-go#installation"
+  fi
 #+end_src
 * EchoAndEval
 Utility function to spit out a thing to STDOUT and then evaluate it. Useful because I want to see what my aliases are doing in many cases.
