@@ -12,14 +12,6 @@ It's possible I'll want to use https://github.com/Somelauw/evil-org-mode instead
   (use-package find-lisp)
 
 #+end_src
-** Evil colon shortcuts
-#+begin_src emacs-lisp
-    (defun org-agenda-list-day () (interactive)
-      "Wrapper for org-agenda-list that just lists a single day"
-      (org-agenda-list 1)
-    )
-    (define-key evil-ex-map "a" 'org-agenda-list-day)
-#+end_src
 ** TODO Smartparens
 Doesn't quite work yet - Maybe I'll get it going some day.
 #+begin_src emacs-lisp
@@ -167,7 +159,7 @@ Adding sh (bash) to babel languages so I can tangle my bash profile.
                                )
   (setq org-babel-default-header-args:bash '((:tangle . "yes")))
 #+end_src
-* Todo customization - states and donetime/note
+* Todo/agenda customization - states and donetime/note
 Ongoing thing to figure out what states I want. log-done enables timestamp and prompts for a note. Archive location is what you'd expect.
 
 More details [[https://orgmode.org/manual/Tracking-TODO-state-changes.html][Here]]
@@ -270,6 +262,14 @@ Just a command to bring up agenda view
           (:name "Done"
                  :todo ("DONE" "OBSOLETE")
                  )))
+#+end_src
+** Agenda evil shortcut
+#+begin_src emacs-lisp
+    (defun org-agenda-list-day () (interactive)
+      "Wrapper for org-agenda-list that just lists a single day"
+      (org-agenda-list 1)
+    )
+    (define-key evil-ex-map "a" 'org-agenda-list-day)
 #+end_src
 * Colors!!!! And other nice displays - change the ... to a return thingy, make nice bullet icons.
 #+BEGIN_SRC emacs-lisp
