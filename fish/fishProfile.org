@@ -219,7 +219,8 @@ Git status, git checkout, git log, git log files, current branch name
   alias gl='g log'
   alias glf='gl --name-only'
   alias glogme='gl --author=esmongeski'
-  alias gg='git grep -in'
+  alias gg='g grep -in'
+  alias gcp='g cherry-pick'
 #+end_src
 Git diff, git diff staged files, git diff with remote branch, git merge squash, git fetch
 #+begin_src fish
