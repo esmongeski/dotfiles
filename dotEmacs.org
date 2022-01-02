@@ -125,6 +125,11 @@ Variables - org agenda files, which will some day pull dates, but are also used 
     (setq org-startup-indented t)
     (setq org-startup-folded t)
 #+END_SRC
+WIP - Remove archive from agenda files.
+#+begin_src emacs-lisp
+ ; (setq org-agenda-files (cl-delete-if (lambda (k) (string-match-p ".*archive.org" k)) org-agenda-files))
+
+#+end_src
 No clue what custom-set-faces is to be honest.
 #+BEGIN_SRC emacs-lisp
   (custom-set-faces
@@ -141,7 +146,7 @@ No clue what custom-set-faces is to be honest.
 Refile config. I found this on reddit, but I think this says "take the stuff from org-agenda-files and go one level deep in the trees to find targets". It works.
 #+BEGIN_SRC emacs-lisp
   (setq org-refile-targets '((nil :maxlevel . 1)
-                             (org-agenda-files :maxlevel . 2)
+                             (org-agenda-files :maxlevel . 3)
                              ("~/Dropbox/org/stuff.org" :maxlevel . 1)
                              ("~/Dropbox/org/financeMath.org" :maxlevel . 2)
                              ("~/Dropbox/org/tList.org" :maxlevel . 1)
@@ -160,7 +165,7 @@ Adding sh (bash) to babel languages so I can tangle my bash profile.
   (setq org-babel-default-header-args:bash '((:tangle . "yes")))
 #+end_src
 * Todo/agenda customization - states and donetime/note
-Ongoing thing to figure out what states I want. log-done enables timestamp and prompts for a note. Archive location is what you'd expect.
+Ongoing thing to figure out what states I want. log-done enables timestamp ~and prompts for a note~. Archive location is what you'd expect.
 
 More details [[https://orgmode.org/manual/Tracking-TODO-state-changes.html][Here]]
 #+BEGIN_SRC emacs-lisp
@@ -168,7 +173,7 @@ More details [[https://orgmode.org/manual/Tracking-TODO-state-changes.html][Here
         '((sequence "TODO(t)" "SOMEDAY(s)" "WAITING(w)" "IN-PROGRESS(i)" "BLOCKED(l)" "|" "DONE(d)" "EXPORTED(e)" "OBSOLOTE(b)")))
 
   (setq org-log-done 'time)
-  (setq org-log-done 'note)
+  ;;(setq org-log-done 'note)
 
   (setq org-archive-location "~/Dropbox/org/archive.org::")
 #+END_SRC
