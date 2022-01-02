@@ -114,17 +114,21 @@ This brings back the old "<s" shortcut for source blocks. Unfortunately it has d
 
 * Custom variables (I don't really remember what this is)
 Variables - org agenda files, which will some day pull dates, but are also used for how things refile. I exclude archive.org from this list because it's huge.
-
-Packages, which I guess says which packages are installed? Not actually sure what package-selected-packages is.
 #+BEGIN_SRC emacs-lisp
   (custom-set-variables
    '(org-agenda-files
        (cl-remove-if (lambda (k) (string-match-p "archive.org" k))
        (append (find-lisp-find-files "~/Dropbox/org/" "\.org$")
                (find-lisp-find-files "~/org/" "\.org$"))))
+#+END_SRC
+Packages, which I guess says which packages are installed? Not actually sure what package-selected-packages is.
+#+BEGIN_SRC emacs-lisp
    '(package-selected-packages
      (quote
       (org-bullets helm-org org-evil monitor dash powerline-evil ## org-link-minor-mode org-mobile-sync evil))))
+#+END_SRC
+Start with bullets folded and indented by default.
+#+BEGIN_SRC emacs-lisp
   (setq org-startup-indented t)
   (setq org-startup-folded t)
 #+END_SRC
