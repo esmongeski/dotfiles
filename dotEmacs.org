@@ -145,7 +145,7 @@ No clue what custom-set-faces is to be honest.
   ;; (require 'powerline)
   ;; (require 'cl)
 #+END_SRC
-Refile config. I found this on reddit, but I think this says "take the stuff from org-agenda-files and go ~one~ N levels deep in the trees to find targets". It works.
+Refile config. I found this on reddit, but I think this says "take the stuff from org-agenda-files and go +one+ N levels deep in the trees to find targets". It works.
 #+BEGIN_SRC emacs-lisp
   (setq org-refile-targets '((nil :maxlevel . 1)
                              (org-agenda-files :maxlevel . 3)
@@ -167,7 +167,7 @@ Adding sh (bash) to babel languages so I can tangle my bash profile.
   (setq org-babel-default-header-args:bash '((:tangle . "yes")))
 #+end_src
 * Todo/agenda customization - states and donetime/note
-Ongoing thing to figure out what states I want. log-done enables timestamp ~and prompts for a note~. Archive location is what you'd expect.
+Ongoing thing to figure out what states I want. log-done enables timestamp +and prompts for a note+. Archive location is what you'd expect.
 
 More details [[https://orgmode.org/manual/Tracking-TODO-state-changes.html][Here]]
 #+BEGIN_SRC emacs-lisp
