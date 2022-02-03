@@ -212,17 +212,6 @@ represents the "branch with the closest-to-production-code" is a frequent, albei
     fi
   }
 
-  function gmm {
-    RESULT=`git rev-parse --verify main`
-    if [ -z $RESULT ];
-    then
-            echo "main is not a branch, merging master"
-            echoAndEval "g merge master"
-    else
-            echo "main is a branch, merging it"
-            echoAndEval "g merge main"
-    fi
-  }
 #+end_src
 ** Current branch
 Function to parse the current git branch. I totally stole this from somewhere on the internet (like any usage of sed you find in here).
@@ -307,7 +296,22 @@ function pushAndOpenMR {
 #+begin_src bash
 alias gcam='g checkout master -- '
 #+end_src
-** Pull and merge master into the current branch
+** Pull and merge master/main into the current branch
+*** Merge master/main
+#+begin_src bash
+  function gmm {
+    RESULT=`git rev-parse --verify main`
+    if [ -z $RESULT ];
+    then
+            echo "main is not a branch, merging master"
+            echoAndEval "g merge master"
+    else
+            echo "main is a branch, merging it"
+            echoAndEval "g merge main"
+    fi
+  }
+#+end_src
+*** Do the pull
 #+begin_src bash
   function pullAndMergeMaster {
     CURRENT_BRANCH=`cb`
