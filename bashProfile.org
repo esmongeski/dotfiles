@@ -200,17 +200,29 @@ I do believe language shapes how we think, and changing it can change how we thi
 This is a bit rambly, but tl;dr this all kinda manifests in this next function. I appreciate the move from master->main in git lexicon. But working in an environment that is inconsistent on which
 represents the "branch with the closest-to-production-code" is a frequent, albeit minor, inconvenience (i.e. a cognitive tax). So I made this function to figure it out for me.
 #+begin_src bash
-function gcm {
-        RESULT=`git rev-parse --verify main`
-        if [ -z $RESULT ];
-        then
-                echo "main is not a branch, checkin out master"
-                echoAndEval "g checkout master"
-        else
-                echo "main is a branch, checking it out"
-                echoAndEval "g checkout main"
-        fi
-}
+  function gcm {
+    RESULT=`git rev-parse --verify main`
+    if [ -z $RESULT ];
+    then
+            echo "main is not a branch, checkin out master"
+            echoAndEval "g checkout master"
+    else
+            echo "main is a branch, checking it out"
+            echoAndEval "g checkout main"
+    fi
+  }
+
+  function gmm {
+    RESULT=`git rev-parse --verify main`
+    if [ -z $RESULT ];
+    then
+            echo "main is not a branch, merging master"
+            echoAndEval "g merge master"
+    else
+            echo "main is a branch, merging it"
+            echoAndEval "g merge main"
+    fi
+  }
 #+end_src
 ** Current branch
 Function to parse the current git branch. I totally stole this from somewhere on the internet (like any usage of sed you find in here).
@@ -294,6 +306,16 @@ function pushAndOpenMR {
 *** TODO make this respect master/main
 #+begin_src bash
 alias gcam='g checkout master -- '
+#+end_src
+** Pull and merge master into the current branch
+#+begin_src bash
+  function pullAndMergeMaster {
+    CURRENT_BRANCH=`cb`
+    gcm;
+    g pull;
+    gc $CURRENT_BRANCH;
+    gmm;
+  }
 #+end_src
 * Emacs
 ** Run emacs with a background daemon
