@@ -316,6 +316,7 @@ alias gcam='g checkout master -- '
     gc $CURRENT_BRANCH;
     gmm;
   }
+  alias gpmm='pullAndMergeMaster'
 #+end_src
 * Emacs
 ** Run emacs with a background daemon
