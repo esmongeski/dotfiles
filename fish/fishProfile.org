@@ -199,6 +199,8 @@ function gcm
         end
 end
 #+end_src
+
+** TODO Migrate gpmm from bashprofile to here. Not doing it now because I don't use fish where I use that workflow
 ** Current branch
 Function to parse the current git branch. I totally stole this from somewhere on the internet (like any usage of sed you find in here).
 #+begin_src fish
