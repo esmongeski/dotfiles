@@ -602,6 +602,7 @@ Override M-x
 ** General setup and config
 Probably need to change the viewer per OS.
 #+begin_src emacs-lisp
+  (setq org-roam-graph-executable "neato")
   (setq org-roam-db-location "~/org/roam/org-roam.db")
   (setq org-roam-graph-viewer "/usr/bin/open")
   (use-package org-roam
