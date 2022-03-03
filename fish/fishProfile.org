@@ -202,6 +202,20 @@ end
 
 ** gpmm - pull and merge master
 #+begin_src fish
+function gmm
+  set -l result (git rev-parse --verify main)
+  if not test $result
+    echo "main is not a branch - merging master"
+    echoAndEval "g merge master"
+  else
+    echo "main is a branch, merging it"
+    echoAndEval "g merge main"
+  end
+
+end
+
+#+end_src
+#+begin_src fish
 function pullAndMergeMaster
   set -l current (cb)
   gcm;
