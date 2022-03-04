@@ -275,7 +275,7 @@ alias newbr='g checkout -b'
 #+end_src
 ** Set upstream
 #+begin_src fish
-  alias setUpstreamBranch='git branch --set-upstream-to=origin/`cb` `cb`'
+  alias setUpstreamBranch='git branch --set-upstream-to=origin/(cb) (cb)'
   alias gsub=setUpstreamBranch
 #+end_src
 ** Checkout at master
