@@ -724,4 +724,5 @@ Make a shortcut in org agenda to cap something.
         (find-file-noselect (concat "~/org/roam/daily/" (concat (format-time-string "%Y-%m-%d") ".org"))))
     )
 
+    (define-key evil-ex-map "rd" 'es/open-daily-buffer)
 #+end_src
