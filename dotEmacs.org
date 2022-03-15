@@ -715,3 +715,13 @@ Make a shortcut in org agenda to cap something.
 #+begin_src emacs-lisp
   (define-key org-agenda-mode-map (kbd "c") 'org-roam-dailies-capture-today)
 #+end_src
+**** Open daily buffer for current day
+#+begin_src emacs-lisp
+    (defun es/open-daily-buffer ()
+      ""
+      (interactive)
+      (switch-to-buffer
+        (find-file-noselect (concat "~/org/roam/daily/" (concat (format-time-string "%Y-%m-%d") ".org"))))
+    )
+
+#+end_src
