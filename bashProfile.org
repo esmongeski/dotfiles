@@ -322,6 +322,11 @@ alias gcam='g checkout master -- '
   }
   alias gpmm='pullAndMergeMaster'
 #+end_src
+** Delete old branches
+#+begin_src bash
+alias delbrs='git branch | grep -v "master" | grep -v "main"" | xargs git branch -D'
+
+#+end_src
 * Emacs
 ** Run emacs with a background daemon
 Start an emacs daemon if one isn't there
