@@ -206,10 +206,10 @@ function gmm
   set -l result (git rev-parse --verify main)
   if not test $result
     echo "main is not a branch - merging master"
-    echoAndEval "g merge master"
+    echoAndEval "g merge master --no-edit"
   else
     echo "main is a branch, merging it"
-    echoAndEval "g merge main"
+    echoAndEval "g merge main --no-edit"
   end
 
 end

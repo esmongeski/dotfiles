@@ -304,10 +304,10 @@ alias gcam='g checkout master -- '
     if [ -z $RESULT ];
     then
             echo "main is not a branch, merging master"
-            echoAndEval "g merge master"
+            echoAndEval "g merge master --no-edit"
     else
             echo "main is a branch, merging it"
-            echoAndEval "g merge main"
+            echoAndEval "g merge main --no-edit"
     fi
   }
 #+end_src
