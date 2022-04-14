@@ -327,6 +327,11 @@ alias gcam='g checkout master -- '
 alias delbrs='git branch | grep -v "master" | grep -v "main"" | xargs git branch -D'
 
 #+end_src
+** local ignore
+#+begin_src bash
+alias vgi='vim ~/.git/info/exclude'
+
+#+end_src
 * Emacs
 ** Run emacs with a background daemon
 Start an emacs daemon if one isn't there
