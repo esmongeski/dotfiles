@@ -117,9 +117,10 @@ Variables - org agenda files, which will some day pull dates, but are also used 
 #+BEGIN_SRC emacs-lisp
   (custom-set-variables
    '(org-agenda-files
+       (cl-remove-if (lambda (k) (string-match-p "roam" k))
        (cl-remove-if (lambda (k) (string-match-p "archive.org" k))
        (append (find-lisp-find-files "~/Dropbox/org/" "\.org$")
-               (find-lisp-find-files "~/org/" "\.org$"))))
+               (find-lisp-find-files "~/org/" "\.org$")))))
 #+END_SRC
 Packages, which I guess says which packages are installed? Not actually sure what package-selected-packages is.
 #+BEGIN_SRC emacs-lisp
