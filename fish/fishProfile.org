@@ -200,6 +200,14 @@ function gcm
 end
 #+end_src
 
+#+begin_src fish
+function finishMerge
+        g add ./
+        g commit --no-edit
+end
+alias fm='finishMerge'
+#+end_src
+
 ** gpmm - pull and merge master
 #+begin_src fish
 function gmm

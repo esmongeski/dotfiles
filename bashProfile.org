@@ -213,6 +213,16 @@ represents the "branch with the closest-to-production-code" is a frequent, albei
   }
 
 #+end_src
+
+#+begin_src bash
+  function finishMerge {
+    g add ./
+    g commit --no-edit
+  }
+  alias fm='finishMerge'
+
+
+#+end_src
 ** Current branch
 Function to parse the current git branch. I totally stole this from somewhere on the internet (like any usage of sed you find in here).
 #+begin_src bash
