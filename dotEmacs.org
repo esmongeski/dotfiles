@@ -104,7 +104,7 @@ Make use package always install if package is not installed.
 
 Ubuntu specific (hopefully this doesn't break mac!) - this forces org to update to a later version.
 #+BEGIN_SRC emacs-lisp
-  (use-package org :ensure org-plus-contrib :pin org)
+  (use-package org :ensure org-contrib :pin org)
 #+END_SRC
 
 This brings back the old "<s" shortcut for source blocks. Unfortunately it has different casing than before, but that's not worth the time to fix (probably easy though).
@@ -489,7 +489,7 @@ This breaks org-agenda. Requring ~subr-x~ at startup fixes this.
 #+end_src
 Ubuntu specific (hopefully this doesn't break mac!) - this forces org to update to a later version.
 #+BEGIN_SRC emacs-lisp
-  (use-package org :ensure org-plus-contrib :pin org)
+  (use-package org :ensure org-contrib :pin org)
 #+END_SRC
 More hacks to force dependencies into place, hopefully.
 #+begin_src emacs-lisp
