@@ -33,6 +33,10 @@ I could have sworn I had this installed at one point, but oh well!
   (global-undo-tree-mode)
   (global-set-key (kbd "C-x C-u") 'undo-tree-visualize)
 #+end_src
+Force undo tree files into local emacs d.
+#+begin_src emacs-lisp
+  (setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
+#+end_src
 ** Rifle
 All the other deps with the funked up deps
 #+begin_src emacs-lisp
