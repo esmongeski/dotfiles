@@ -1,5 +1,9 @@
-This is all vim shortcuts that work in evil mode
-* Windows
+I wrote most of this before I learned vim for real. Now it's just links to other references. And
+some not-often used shortcuts that I'll still forget.
+* Better resources than this
+https://ctoomey.com/mastering-the-vim-language-slides.pdf
+https://www.youtube.com/results?search_query=mastering+the+vim+language
+* Windows (keybinds that I set up for emacs)
 :sp - open horizontal split
 
 :vp - open vertical split
@@ -7,8 +11,6 @@ This is all vim shortcuts that work in evil mode
 C-w w - cycle next window
 
 C-w W - cycle previous window
-
-Doesn't look like this works when an emacs buffer (i.e. org-agenda) is open - except I sorta fixed it, although it doesn't work on agenda headings yet.
 
 C-w C-s - split horizontally
 C-w C-v - split vertically
