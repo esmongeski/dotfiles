@@ -236,6 +236,14 @@ Just a command to bring up agenda view
   (org-super-agenda-mode 1)
   (setq org-super-agenda-groups
         '(;; Each group has an implicit boolean OR operator between its selectors.
+          (:name "Habits Overdue"
+                 :and(:file-path "recurring.org" :deadline  past)
+                 :and(:file-path "recurring.org" :scheduled past)
+                 )
+          (:name "Habits Today"
+                 :and(:file-path "recurring.org" :deadline today)
+                 :and(:file-path "recurring.org" :scheduled today)
+                 )
           (:name "Important"
                  ;; Single arguments given alone
                  :and (:priority "A"
@@ -246,14 +254,6 @@ Just a command to bring up agenda view
           (:name "EOD Routine"
                  :and(:todo "TODO" :file-path "recurring.org" :scheduled today :tag "eodroutine")
                  :and(:todo "TODO" :file-path "recurring.org" :scheduled past :tag "eodroutine")
-                 )
-          (:name "Habits Overdue"
-                 :and(:file-path "recurring.org" :deadline  past)
-                 :and(:file-path "recurring.org" :scheduled past)
-                 )
-          (:name "Habits Today"
-                 :and(:file-path "recurring.org" :deadline today)
-                 :and(:file-path "recurring.org" :scheduled today)
                  )
           (:name "Work stuck"
                  :and(:file-path "work.org" :todo ("WAITING" "BLOCKED")))
@@ -703,7 +703,7 @@ a link into the org roam note. Pretty handy!
                        "#+begin_src emacs-lisp :results value raw\n"
                        "(as/get-daily-agenda \"%<%Y-%m-%d>\")\n"
                        "#+end_src\n"
-                       "* [/] Do Today\n* [/] Maybe Do Today\n* Journal\n")))
+                       "* [/] Do Today\n- [ ] 1m\n- [ ] 1M\n- [ ] 1U\n- [ ] Must do chores\n* [/] Maybe Do Today\n* Journal\n")))
           `(("j" "journal" entry
              "* %<%H:%M> %?"
              :if-new (file+head+olp "~/org/roam/daily/%<%Y-%m-%d>.org" ,head ("Journal")))
