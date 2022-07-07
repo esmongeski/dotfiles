@@ -119,19 +119,15 @@ This brings back the old "<s" shortcut for source blocks. Unfortunately it has d
 * Custom variables (I don't really remember what this is)
 Variables - org agenda files, which will some day pull dates, but are also used for how things refile. I exclude archive.org from this list because it's huge.
 #+BEGIN_SRC emacs-lisp
-      (setq garbage-collection-messages t)
-      (custom-set-variables
-       '(org-agenda-files
-           (cl-remove-if (lambda (k) (string-match-p "archive.org" k))
-           (append (find-lisp-find-files "~/Dropbox/org/" "\.org$")
-                   (find-lisp-find-files "~/org/" "\.org$"))))
-    ;;)
-#+END_SRC
-Packages, which I guess says which packages are installed? Not actually sure what package-selected-packages is.
-#+BEGIN_SRC emacs-lisp
-   '(package-selected-packages
-     (quote
-      (org-bullets helm-org monitor dash powerline-evil ## org-link-minor-mode org-mobile-sync evil))))
+  (defun es/set-org-agenda-files ()
+    "Define my org agenda files"
+    (custom-set-variables
+     '(org-agenda-files
+         (cl-remove-if (lambda (k) (string-match-p "archive.org" k))
+         (append (find-lisp-find-files "~/Dropbox/org/" "\.org$")
+                 (find-lisp-find-files "~/org/" "\.org$"))))
+  ))
+  (es/set-org-agenda-files)
 #+END_SRC
 Start with bullets folded and indented by default.
 #+BEGIN_SRC emacs-lisp
@@ -451,6 +447,10 @@ Next, I need to format a payload with local secrets (api key) and hit the api. I
       ad-do-it))
 #+end_src
 
+** Wrap text by default
+#+begin_src emacs-lisp
+  (add-hook 'text-mode-hook 'visual-line-mode)
+#+end_src
 * Org capture setup
 Inbox directory
 #+begin_src emacs-lisp
@@ -723,12 +723,13 @@ Make a shortcut in org agenda to cap something.
 #+end_src
 **** Open daily buffer for current day
 #+begin_src emacs-lisp
-    (defun es/open-daily-buffer ()
-      ""
-      (interactive)
-      (switch-to-buffer
-        (find-file-noselect (concat "~/org/roam/daily/" (concat (format-time-string "%Y-%m-%d") ".org"))))
-    )
+  (defun es/open-daily-buffer ()
+    ""
+    (interactive)
+    (es/set-org-agenda-files)
+    (switch-to-buffer
+      (find-file-noselect (concat "~/org/roam/daily/" (concat (format-time-string "%Y-%m-%d") ".org"))))
+  )
 
-    (define-key evil-ex-map "rd" 'es/open-daily-buffer)
+  (define-key evil-ex-map "rd" 'es/open-daily-buffer)
 #+end_src
