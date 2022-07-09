@@ -331,12 +331,14 @@ Then we do the actual "C-r C-f" bind.
   (define-key evil-normal-state-map (kbd "C-r") nil)
   (global-set-key (kbd "C-r C-f") 'org-refile)
 
+  (define-key evil-ex-map "rf" 'org-refile)
 #+END_SRC
 
 Another one - archive. I'm gonna do "C-r C-a" for "refile - archive", and because I have "C-r" as a prefix now.
 
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-r C-a") 'org-archive-subtree)
+  (define-key evil-ex-map "ra" 'org-archive-subtree)
 #+END_SRC
 *** Make refile work in evil insert
 "C-r" is bound to something else, which I don't use, and I'd rather be able to refile in insert mode as well.
@@ -392,7 +394,7 @@ Make it so I can quickly reload emacs config.
 #+end_src
 ** Nice little shortcut for evil mode for rifle.
 #+begin_src emacs-lisp
-  (define-key evil-ex-map "rf" 'helm-org-rifle-agenda-files)
+  (define-key evil-ex-map "ri" 'helm-org-rifle-agenda-files)
 #+end_src
 ** More agenda customization
 I'll admit, there's a header further up for this, but for some reason defining this that far up breaks, and I don't really want
