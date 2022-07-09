@@ -7,6 +7,20 @@ It's possible I'll want to use https://github.com/Somelauw/evil-org-mode instead
   (use-package evil)
   (evil-mode 1)
 #+END_SRC
+Change cursor to a bar in insert mode.
+#+begin_src emacs-lisp
+  (use-package evil-terminal-cursor-changer)
+  (unless (display-graphic-p)
+    (require 'evil-terminal-cursor-changer)
+    (evil-terminal-cursor-changer-activate) ; or (etcc-on)
+    )
+  (setq evil-default-cursor (quote (t "#750000"))
+        evil-visual-state-cursor '("#880000" box)
+        evil-normal-state-cursor '("#750000" box)
+        evil-insert-state-cursor '("#e2e222" bar)
+        )
+
+#+end_src
 ** Find lisp
 #+begin_src emacs-lisp
   (use-package find-lisp)
