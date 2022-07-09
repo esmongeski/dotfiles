@@ -46,6 +46,7 @@ I could have sworn I had this installed at one point, but oh well!
   (use-package undo-tree)
   (global-undo-tree-mode)
   (global-set-key (kbd "C-x C-u") 'undo-tree-visualize)
+  (define-key evil-ex-map "xu" 'undo-tree-visualize)
 #+end_src
 Force undo tree files into local emacs d.
 #+begin_src emacs-lisp
@@ -344,7 +345,6 @@ Then we do the actual "C-r C-f" bind.
 #+BEGIN_SRC emacs-lisp
   (define-key evil-normal-state-map (kbd "C-r") nil)
   (global-set-key (kbd "C-r C-f") 'org-refile)
-
   (define-key evil-ex-map "rf" 'org-refile)
 #+END_SRC
 
@@ -362,6 +362,11 @@ Another one - archive. I'm gonna do "C-r C-a" for "refile - archive", and becaus
 
 #+end_src
 ** Window switching
+A lot of the below is from when I relied on C-[key] commands a la emacs style. Recently I'm moving to :[key][key] a la vim style since it's easier for typing. As such, a lot of the below might be obsolete, but hey, I'm too lazy to go reconcile it. Plus, some of the spots where vim command mode doesn't work (magit, agenda buffers) will still need C-w C-w.
+#+begin_src emacs-lisp
+  (define-key evil-ex-map "ww" 'evil-window-next)
+  (define-key evil-ex-map "WW" 'evil-window-prev)
+#+end_src
 I use C-w C-w to switch windows a lot, but it messes me up when it
 deletes a word in insert mode.
 #+begin_src emacs-lisp
@@ -405,6 +410,7 @@ Make it so I can quickly reload emacs config.
     (load-file user-init-file)
     )
   (global-set-key (kbd "C-r C-e") 'quick-refresh-dot-emacs)
+  (define-key evil-ex-map "re" 'quick-refresh-dot-emacs)
 #+end_src
 ** Nice little shortcut for evil mode for rifle.
 #+begin_src emacs-lisp
