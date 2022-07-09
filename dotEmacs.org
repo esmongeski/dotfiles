@@ -280,6 +280,15 @@ Just a command to bring up agenda view
          )
   (define-key evil-ex-map "a" 'org-agenda-list-day)
 #+end_src
+** Auto insert subtask tracke
+Binds =:st= to "insert at end of line, append [/], C-cC-c it" for quick subtask adding.
+#+begin_src emacs-lisp
+  (fset 'es/append-subtask-tracker
+        (kmacro-lambda-form [?A ?  ?\[ ?/ ?\] escape ?\C-c ?\C-c] 0 "%d"))
+
+  (define-key evil-ex-map "st" 'es/append-subtask-tracker)
+
+#+end_src
 * Colors!!!! And other nice displays - change the ... to a return thingy, make nice bullet icons.
 #+BEGIN_SRC emacs-lisp
   (load-theme 'manoj-dark)
