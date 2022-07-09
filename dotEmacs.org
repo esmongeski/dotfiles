@@ -287,7 +287,6 @@ Binds =:st= to "insert at end of line, append [/], C-cC-c it" for quick subtask 
         (kmacro-lambda-form [?A ?  ?\[ ?/ ?\] escape ?\C-c ?\C-c] 0 "%d"))
 
   (define-key evil-ex-map "st" 'es/append-subtask-tracker)
-
 #+end_src
 * Colors!!!! And other nice displays - change the ... to a return thingy, make nice bullet icons.
 #+BEGIN_SRC emacs-lisp
@@ -410,9 +409,17 @@ I am evil, so =:= is special. It sets tags in agenda, which I basically never wa
 #+begin_src emacs-lisp
   (define-key evil-ex-map "b" 'helm-buffers-list)
   (define-key evil-ex-map "c" 'helm-M-x)
-  (define-key evil-ex-map "d" 'helm-apropos)
+  (define-key evil-ex-map "dd" 'helm-apropos)
   (define-key evil-ex-map "e" 'helm-find-files)
   (define-key evil-ex-map "t" 'org-todo)
+#+end_src
+** Do the Thing ex-map
+Quick binding for C-cC-c using evil command mode.
+#+begin_src emacs-lisp
+  (fset 'do-the-thing
+        (kmacro-lambda-form [?\C-c ?\C-c] 0 "%d"))
+
+  (define-key evil-ex-map "dt" 'do-the-thing)
 #+end_src
 * Debugging
 Trying to see what this does on startup so I can optimize my init/dotfiles.
