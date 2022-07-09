@@ -403,6 +403,7 @@ I am evil, so =:= is special. It sets tags in agenda, which I basically never wa
   (define-key evil-ex-map "c" 'helm-M-x)
   (define-key evil-ex-map "d" 'helm-apropos)
   (define-key evil-ex-map "e" 'helm-find-files)
+  (define-key evil-ex-map "t" 'org-todo)
 #+end_src
 * Debugging
 Trying to see what this does on startup so I can optimize my init/dotfiles.
