@@ -23,7 +23,7 @@ Doesn't quite work yet - Maybe I'll get it going some day.
 ** Magit
 Definitely pronounced "muh git", much like "muh queen". Certainly not "mahjit", despite what the top hat and wand would make you think.
 #+begin_src emacs-lisp
-(use-package magit)
+  (use-package magit)
 #+end_src
 
 ** Undo Tree
@@ -123,10 +123,10 @@ Variables - org agenda files, which will some day pull dates, but are also used 
     "Define my org agenda files"
     (custom-set-variables
      '(org-agenda-files
-         (cl-remove-if (lambda (k) (string-match-p "archive.org" k))
-         (append (find-lisp-find-files "~/Dropbox/org/" "\.org$")
-                 (find-lisp-find-files "~/org/" "\.org$"))))
-  ))
+       (cl-remove-if (lambda (k) (string-match-p "archive.org" k))
+                     (append (find-lisp-find-files "~/Dropbox/org/" "\.org$")
+                             (find-lisp-find-files "~/org/" "\.org$"))))
+     ))
   (es/set-org-agenda-files)
 #+END_SRC
 Start with bullets folded and indented by default.
@@ -274,11 +274,11 @@ Just a command to bring up agenda view
 #+end_src
 ** Agenda evil shortcut
 #+begin_src emacs-lisp
-    (defun org-agenda-list-day () (interactive)
-      "Wrapper for org-agenda-list that just lists a single day"
-      (org-agenda-list 1)
-    )
-    (define-key evil-ex-map "a" 'org-agenda-list-day)
+  (defun org-agenda-list-day () (interactive)
+         "Wrapper for org-agenda-list that just lists a single day"
+         (org-agenda-list 1)
+         )
+  (define-key evil-ex-map "a" 'org-agenda-list-day)
 #+end_src
 * Colors!!!! And other nice displays - change the ... to a return thingy, make nice bullet icons.
 #+BEGIN_SRC emacs-lisp
@@ -357,13 +357,13 @@ have C-w C-p and C-w p just do previous window, since that makes sense to me.
 #+end_src
 *** TODO In magit, and also globally
 #+begin_src emacs-lisp
-    ;; (define-key magit-status-mode-map (kbd "C-w") nil)
-    ;; (define-key magit-status-mode-map (kbd "C-w C-w") 'evil-window-next)
-    ;; (define-key magit-status-mode-map (kbd "C-w w") 'evil-window-next)
-    ;; (define-key magit-status-mode-map (kbd "C-w C-p") 'evil-window-prev)
-    ;; (define-key magit-status-mode-map (kbd "C-w C-p") 'evil-window-prev)
-    ;; (define-key magit-status-mode-map (kbd "C-w p") 'evil-window-prev)
-    ;; (define-key magit-status-mode-map (kbd "C-w p") 'evil-window-prev)
+  ;; (define-key magit-status-mode-map (kbd "C-w") nil)
+  ;; (define-key magit-status-mode-map (kbd "C-w C-w") 'evil-window-next)
+  ;; (define-key magit-status-mode-map (kbd "C-w w") 'evil-window-next)
+  ;; (define-key magit-status-mode-map (kbd "C-w C-p") 'evil-window-prev)
+  ;; (define-key magit-status-mode-map (kbd "C-w C-p") 'evil-window-prev)
+  ;; (define-key magit-status-mode-map (kbd "C-w p") 'evil-window-prev)
+  ;; (define-key magit-status-mode-map (kbd "C-w p") 'evil-window-prev)
   (setq w-keymap (make-sparse-keymap))
   (define-prefix-command 'w-keymap)
   (global-set-key (kbd "C-w") 'w-keymap)
@@ -375,11 +375,11 @@ have C-w C-p and C-w p just do previous window, since that makes sense to me.
 Make it so I can quickly reload emacs config.
 #+begin_src emacs-lisp
 
-    (defun quick-refresh-dot-emacs ()
-      "Quickly reload emacs config"
-      (interactive)
-      (load-file user-init-file)
-      )
+  (defun quick-refresh-dot-emacs ()
+    "Quickly reload emacs config"
+    (interactive)
+    (load-file user-init-file)
+    )
   (global-set-key (kbd "C-r C-e") 'quick-refresh-dot-emacs)
 #+end_src
 ** Nice little shortcut for evil mode for rifle.
@@ -390,11 +390,11 @@ Make it so I can quickly reload emacs config.
 I'll admit, there's a header further up for this, but for some reason defining this that far up breaks, and I don't really want
 to figure out why =org-agenda-mode-map= isn't initiatlized up [[file:dotEmacs.org::149][here]]
 #+begin_src emacs-lisp
- (define-key org-agenda-mode-map (kbd "C-w C-w") 'evil-window-next)
+  (define-key org-agenda-mode-map (kbd "C-w C-w") 'evil-window-next)
 #+end_src
 I am evil, so =:= is special. It sets tags in agenda, which I basically never want to do.
 #+begin_src emacs-lisp
- (define-key org-agenda-mode-map (kbd ":") nil)
+  (define-key org-agenda-mode-map (kbd ":") nil)
 
 #+end_src
 ** Evil shortcuts for helm. Navigate buffers, command/func/var (apropos), and files with =:b=, etc.
@@ -673,11 +673,11 @@ This doesn't quite seem to work yet - I suspect it doesn't play nice with
 super agenda
 #+begin_src emacs-lisp
   (setq org-agenda-custom-commands
-               '(("d" "Daily schedule"
-                ((agenda ""
-                         ((org-agenda-span 'day)
-                          (org-agenda-use-time-grid nil)
-                          (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))))))))
+        '(("d" "Daily schedule"
+           ((agenda ""
+                    ((org-agenda-span 'day)
+                     (org-agenda-use-time-grid nil)
+                     (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))))))))
   (defun as/get-daily-agenda (&optional date)
     "Return the agenda for the day as a string."
     (interactive)
@@ -729,8 +729,8 @@ Make a shortcut in org agenda to cap something.
     (interactive)
     (es/set-org-agenda-files)
     (switch-to-buffer
-      (find-file-noselect (concat "~/org/roam/daily/" (concat (format-time-string "%Y-%m-%d") ".org"))))
-  )
+     (find-file-noselect (concat "~/org/roam/daily/" (concat (format-time-string "%Y-%m-%d") ".org"))))
+    )
 
   (define-key evil-ex-map "rd" 'es/open-daily-buffer)
 #+end_src
