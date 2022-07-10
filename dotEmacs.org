@@ -292,8 +292,8 @@ Just a command to bring up agenda view
                  :todo ("WAITING"))
           (:name "Done"
                  :todo ("DONE" "OBSOLETE")
-                 ))))
-  (setq org-super-agenda-header-map evil-org-agenda-mode-map)
+                 )))
+  (setq org-super-agenda-header-map (make-sparse-keymap))
 #+end_src
 ** Agenda evil shortcut
 #+begin_src emacs-lisp
