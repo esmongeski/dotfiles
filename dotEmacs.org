@@ -3,7 +3,14 @@
 Because I am a vim user at heart.
 It's possible I'll want to use https://github.com/Somelauw/evil-org-mode instead of =org-evil= someday. But I've never been *that* good at vim.
 #+BEGIN_SRC emacs-lisp
-  (use-package org-evil)
+  ;;(use-package org-evil)
+  (use-package evil-org
+    :ensure t
+    :after org
+    :hook (org-mode . (lambda () evil-org-mode))
+    :config
+    (require 'evil-org-agenda)
+    (evil-org-agenda-set-keys))
   (use-package evil)
   (evil-mode 1)
 #+END_SRC
