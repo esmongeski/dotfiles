@@ -776,7 +776,7 @@ a link into the org roam note. Pretty handy!
 #+end_src
 Make a shortcut in org agenda to cap something.
 #+begin_src emacs-lisp
-  (define-key org-agenda-mode-map (kbd "c") 'org-roam-dailies-capture-today)
+  (evil-define-key 'motion org-agenda-mode-map (kbd "c") 'org-roam-dailies-capture-today)
 #+end_src
 **** Open daily buffer for current day
 #+begin_src emacs-lisp
