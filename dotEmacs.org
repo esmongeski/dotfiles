@@ -46,7 +46,13 @@ Definitely pronounced "muh git", much like "muh queen". Certainly not "mahjit", 
 #+begin_src emacs-lisp
   (use-package magit)
 #+end_src
-
+*** Evil magit
+Get keybindings for evil in magit mode.
+Not sure what else evil-collection has, but some day I want to move this elsewhere if it's spanning across other modes.
+#+begin_src emacs-lisp
+  (use-package evil-collection)
+  (evil-collection-init 'magit)
+#+end_src
 ** Undo Tree
 I could have sworn I had this installed at one point, but oh well!
 #+begin_src emacs-lisp
