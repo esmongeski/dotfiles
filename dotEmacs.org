@@ -445,6 +445,7 @@ I am evil, so =:= is special. It sets tags in agenda, which I basically never wa
   (define-key evil-ex-map "co" 'org-open-at-point)
   (define-key evil-ex-map "dk" 'describe-key)
   (define-key evil-ex-map "oc" 'org-capture)
+  (define-key evil-ex-map "mg" 'magit)
 #+end_src
 ** Do the Thing ex-map
 Quick binding for C-cC-c using evil command mode.
