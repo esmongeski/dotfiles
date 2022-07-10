@@ -670,6 +670,12 @@ Probably need to change the viewer per OS.
     ;; If using org-roam-protocol
     (require 'org-roam-protocol))
 #+end_src
+Roam ex map bindings
+#+begin_src emacs-lisp
+  (define-key evil-ex-map "ni" 'org-roam-node-insert)
+  (define-key evil-ex-map "nf" 'org-roam-node-find)
+  (define-key evil-ex-map "nb" 'org-roam-buffer-toggle)
+#+end_src
 Capture templates for roam
 #+begin_src emacs-lisp
   (setq org-roam-capture-templates
