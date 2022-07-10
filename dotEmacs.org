@@ -7,6 +7,20 @@ It's possible I'll want to use https://github.com/Somelauw/evil-org-mode instead
   (use-package evil)
   (evil-mode 1)
 #+END_SRC
+Change cursor to a bar in insert mode.
+#+begin_src emacs-lisp
+  (use-package evil-terminal-cursor-changer)
+  (unless (display-graphic-p)
+    (require 'evil-terminal-cursor-changer)
+    (evil-terminal-cursor-changer-activate) ; or (etcc-on)
+    )
+  (setq evil-default-cursor (quote (t "#750000"))
+        evil-visual-state-cursor '("#880000" box)
+        evil-normal-state-cursor '("#750000" box)
+        evil-insert-state-cursor '("#e2e222" bar)
+        )
+
+#+end_src
 ** Find lisp
 #+begin_src emacs-lisp
   (use-package find-lisp)
@@ -23,7 +37,7 @@ Doesn't quite work yet - Maybe I'll get it going some day.
 ** Magit
 Definitely pronounced "muh git", much like "muh queen". Certainly not "mahjit", despite what the top hat and wand would make you think.
 #+begin_src emacs-lisp
-(use-package magit)
+  (use-package magit)
 #+end_src
 
 ** Undo Tree
@@ -32,6 +46,7 @@ I could have sworn I had this installed at one point, but oh well!
   (use-package undo-tree)
   (global-undo-tree-mode)
   (global-set-key (kbd "C-x C-u") 'undo-tree-visualize)
+  (define-key evil-ex-map "xu" 'undo-tree-visualize)
 #+end_src
 Force undo tree files into local emacs d.
 #+begin_src emacs-lisp
@@ -123,10 +138,10 @@ Variables - org agenda files, which will some day pull dates, but are also used 
     "Define my org agenda files"
     (custom-set-variables
      '(org-agenda-files
-         (cl-remove-if (lambda (k) (string-match-p "archive.org" k))
-         (append (find-lisp-find-files "~/Dropbox/org/" "\.org$")
-                 (find-lisp-find-files "~/org/" "\.org$"))))
-  ))
+       (cl-remove-if (lambda (k) (string-match-p "archive.org" k))
+                     (append (find-lisp-find-files "~/Dropbox/org/" "\.org$")
+                             (find-lisp-find-files "~/org/" "\.org$"))))
+     ))
   (es/set-org-agenda-files)
 #+END_SRC
 Start with bullets folded and indented by default.
@@ -274,11 +289,19 @@ Just a command to bring up agenda view
 #+end_src
 ** Agenda evil shortcut
 #+begin_src emacs-lisp
-    (defun org-agenda-list-day () (interactive)
-      "Wrapper for org-agenda-list that just lists a single day"
-      (org-agenda-list 1)
-    )
-    (define-key evil-ex-map "a" 'org-agenda-list-day)
+  (defun org-agenda-list-day () (interactive)
+         "Wrapper for org-agenda-list that just lists a single day"
+         (org-agenda-list 1)
+         )
+  (define-key evil-ex-map "a" 'org-agenda-list-day)
+#+end_src
+** Auto insert subtask tracke
+Binds =:st= to "insert at end of line, append [/], C-cC-c it" for quick subtask adding.
+#+begin_src emacs-lisp
+  (fset 'es/append-subtask-tracker
+        (kmacro-lambda-form [?A ?  ?\[ ?/ ?\] escape ?\C-c ?\C-c] 0 "%d"))
+
+  (define-key evil-ex-map "st" 'es/append-subtask-tracker)
 #+end_src
 * Colors!!!! And other nice displays - change the ... to a return thingy, make nice bullet icons.
 #+BEGIN_SRC emacs-lisp
@@ -322,13 +345,14 @@ Then we do the actual "C-r C-f" bind.
 #+BEGIN_SRC emacs-lisp
   (define-key evil-normal-state-map (kbd "C-r") nil)
   (global-set-key (kbd "C-r C-f") 'org-refile)
-
+  (define-key evil-ex-map "rf" 'org-refile)
 #+END_SRC
 
 Another one - archive. I'm gonna do "C-r C-a" for "refile - archive", and because I have "C-r" as a prefix now.
 
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-r C-a") 'org-archive-subtree)
+  (define-key evil-ex-map "ra" 'org-archive-subtree)
 #+END_SRC
 *** Make refile work in evil insert
 "C-r" is bound to something else, which I don't use, and I'd rather be able to refile in insert mode as well.
@@ -338,6 +362,11 @@ Another one - archive. I'm gonna do "C-r C-a" for "refile - archive", and becaus
 
 #+end_src
 ** Window switching
+A lot of the below is from when I relied on C-[key] commands a la emacs style. Recently I'm moving to :[key][key] a la vim style since it's easier for typing. As such, a lot of the below might be obsolete, but hey, I'm too lazy to go reconcile it. Plus, some of the spots where vim command mode doesn't work (magit, agenda buffers) will still need C-w C-w.
+#+begin_src emacs-lisp
+  (define-key evil-ex-map "ww" 'evil-window-next)
+  (define-key evil-ex-map "WW" 'evil-window-prev)
+#+end_src
 I use C-w C-w to switch windows a lot, but it messes me up when it
 deletes a word in insert mode.
 #+begin_src emacs-lisp
@@ -357,13 +386,13 @@ have C-w C-p and C-w p just do previous window, since that makes sense to me.
 #+end_src
 *** TODO In magit, and also globally
 #+begin_src emacs-lisp
-    ;; (define-key magit-status-mode-map (kbd "C-w") nil)
-    ;; (define-key magit-status-mode-map (kbd "C-w C-w") 'evil-window-next)
-    ;; (define-key magit-status-mode-map (kbd "C-w w") 'evil-window-next)
-    ;; (define-key magit-status-mode-map (kbd "C-w C-p") 'evil-window-prev)
-    ;; (define-key magit-status-mode-map (kbd "C-w C-p") 'evil-window-prev)
-    ;; (define-key magit-status-mode-map (kbd "C-w p") 'evil-window-prev)
-    ;; (define-key magit-status-mode-map (kbd "C-w p") 'evil-window-prev)
+  ;; (define-key magit-status-mode-map (kbd "C-w") nil)
+  ;; (define-key magit-status-mode-map (kbd "C-w C-w") 'evil-window-next)
+  ;; (define-key magit-status-mode-map (kbd "C-w w") 'evil-window-next)
+  ;; (define-key magit-status-mode-map (kbd "C-w C-p") 'evil-window-prev)
+  ;; (define-key magit-status-mode-map (kbd "C-w C-p") 'evil-window-prev)
+  ;; (define-key magit-status-mode-map (kbd "C-w p") 'evil-window-prev)
+  ;; (define-key magit-status-mode-map (kbd "C-w p") 'evil-window-prev)
   (setq w-keymap (make-sparse-keymap))
   (define-prefix-command 'w-keymap)
   (global-set-key (kbd "C-w") 'w-keymap)
@@ -375,34 +404,44 @@ have C-w C-p and C-w p just do previous window, since that makes sense to me.
 Make it so I can quickly reload emacs config.
 #+begin_src emacs-lisp
 
-    (defun quick-refresh-dot-emacs ()
-      "Quickly reload emacs config"
-      (interactive)
-      (load-file user-init-file)
-      )
+  (defun quick-refresh-dot-emacs ()
+    "Quickly reload emacs config"
+    (interactive)
+    (load-file user-init-file)
+    )
   (global-set-key (kbd "C-r C-e") 'quick-refresh-dot-emacs)
+  (define-key evil-ex-map "re" 'quick-refresh-dot-emacs)
 #+end_src
 ** Nice little shortcut for evil mode for rifle.
 #+begin_src emacs-lisp
-  (define-key evil-ex-map "rf" 'helm-org-rifle-agenda-files)
+  (define-key evil-ex-map "ri" 'helm-org-rifle-agenda-files)
 #+end_src
 ** More agenda customization
 I'll admit, there's a header further up for this, but for some reason defining this that far up breaks, and I don't really want
 to figure out why =org-agenda-mode-map= isn't initiatlized up [[file:dotEmacs.org::149][here]]
 #+begin_src emacs-lisp
- (define-key org-agenda-mode-map (kbd "C-w C-w") 'evil-window-next)
+  (define-key org-agenda-mode-map (kbd "C-w C-w") 'evil-window-next)
 #+end_src
 I am evil, so =:= is special. It sets tags in agenda, which I basically never want to do.
 #+begin_src emacs-lisp
- (define-key org-agenda-mode-map (kbd ":") nil)
+  (define-key org-agenda-mode-map (kbd ":") nil)
 
 #+end_src
 ** Evil shortcuts for helm. Navigate buffers, command/func/var (apropos), and files with =:b=, etc.
 #+begin_src emacs-lisp
   (define-key evil-ex-map "b" 'helm-buffers-list)
   (define-key evil-ex-map "c" 'helm-M-x)
-  (define-key evil-ex-map "d" 'helm-apropos)
+  (define-key evil-ex-map "dd" 'helm-apropos)
   (define-key evil-ex-map "e" 'helm-find-files)
+  (define-key evil-ex-map "t" 'org-todo)
+#+end_src
+** Do the Thing ex-map
+Quick binding for C-cC-c using evil command mode.
+#+begin_src emacs-lisp
+  (fset 'do-the-thing
+        (kmacro-lambda-form [?\C-c ?\C-c] 0 "%d"))
+
+  (define-key evil-ex-map "dt" 'do-the-thing)
 #+end_src
 * Debugging
 Trying to see what this does on startup so I can optimize my init/dotfiles.
@@ -672,11 +711,11 @@ This doesn't quite seem to work yet - I suspect it doesn't play nice with
 super agenda
 #+begin_src emacs-lisp
   (setq org-agenda-custom-commands
-               '(("d" "Daily schedule"
-                ((agenda ""
-                         ((org-agenda-span 'day)
-                          (org-agenda-use-time-grid nil)
-                          (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))))))))
+        '(("d" "Daily schedule"
+           ((agenda ""
+                    ((org-agenda-span 'day)
+                     (org-agenda-use-time-grid nil)
+                     (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))))))))
   (defun as/get-daily-agenda (&optional date)
     "Return the agenda for the day as a string."
     (interactive)
@@ -728,8 +767,8 @@ Make a shortcut in org agenda to cap something.
     (interactive)
     (es/set-org-agenda-files)
     (switch-to-buffer
-      (find-file-noselect (concat "~/org/roam/daily/" (concat (format-time-string "%Y-%m-%d") ".org"))))
-  )
+     (find-file-noselect (concat "~/org/roam/daily/" (concat (format-time-string "%Y-%m-%d") ".org"))))
+    )
 
   (define-key evil-ex-map "rd" 'es/open-daily-buffer)
 #+end_src
