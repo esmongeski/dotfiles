@@ -28,6 +28,14 @@ Change cursor to a bar in insert mode.
         )
 
 #+end_src
+*** Evil surround
+#+begin_src emacs-lisp
+(use-package evil-surround
+  :ensure t
+  :config
+  (global-evil-surround-mode 1))
+
+#+end_src
 ** Find lisp
 #+begin_src emacs-lisp
   (use-package find-lisp)
