@@ -776,17 +776,17 @@ a link into the org roam note. Pretty handy!
                        "#+begin_src emacs-lisp :results value raw\n"
                        "(as/get-daily-agenda \"%<%Y-%m-%d>\")\n"
                        "#+end_src\n"
-                       "* [/] Do Today\n- [ ] 1m\n- [ ] 1M\n- [ ] 1U\n- [ ] Must do chores\n** TODO\n* [/] Maybe Do Today\n* Journal\n")))
+                       "* Do Today\n** TODO 1m\n** TODO 1M\n** TODO 1U\n** TODO Must do chores\n* Maybe Today\n* Journal\n")))
           `(("j" "journal" entry
              "* %<%H:%M> %?"
              :if-new (file+head+olp "~/org/roam/daily/%<%Y-%m-%d>.org" ,head ("Journal")))
-            ("t" "do today" item
-             "[ ] %a"
+            ("t" "do today" entry
+             "** TODO %a"
              :if-new (file+head+olp "~/org/roam/daily/%<%Y-%m-%d>.org" ,head ("Do Today"))
              :immediate-finish t)
             ("m" "maybe do today" item
-             "[ ] %a"
-             :if-new (file+head+olp "~/org/roam/daily/%<%Y-%m-%d>.org" ,head ("Maybe Do Today"))
+             "** TODO %a"
+             :if-new (file+head+olp "~/org/roam/daily/%<%Y-%m-%d>.org" ,head ("Maybe Today"))
              :immediate-finish t))))
 
 #+end_src
