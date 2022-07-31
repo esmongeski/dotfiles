@@ -781,11 +781,11 @@ a link into the org roam note. Pretty handy!
              "* %<%H:%M> %?"
              :if-new (file+head+olp "~/org/roam/daily/%<%Y-%m-%d>.org" ,head ("Journal")))
             ("t" "do today" entry
-             "** TODO %a"
+             "** TODO [#A] %a\nSCHEDULED: <%<%Y-%m-%d>>"
              :if-new (file+head+olp "~/org/roam/daily/%<%Y-%m-%d>.org" ,head ("Do Today"))
              :immediate-finish t)
-            ("m" "maybe do today" item
-             "** TODO %a"
+            ("m" "maybe do today" entry
+             "** TODO [#B] %a\nSCHEDULED: <%<%Y-%m-%d>>"
              :if-new (file+head+olp "~/org/roam/daily/%<%Y-%m-%d>.org" ,head ("Maybe Today"))
              :immediate-finish t))))
 
