@@ -188,15 +188,26 @@ I do believe language shapes how we think, and changing it can change how we thi
 This is a bit rambly, but tl;dr this all kinda manifests in this next function. I appreciate the move from master->main in git lexicon. But working in an environment that is inconsistent on which
 represents the "branch with the closest-to-production-code" is a frequent, albeit minor, inconvenience (i.e. a cognitive tax). So I made this function to figure it out for me.
 #+begin_src fish
-function gcm
+
+function masterOrMain
         set -l result (git rev-parse --verify main)
         if not test $result
-            echo "main is not a branch, checkin out master"
-            echoAndEval "g checkout master"
+            echo "master"
         else
-            echo "main is a branch, checking it out"
-            echoAndEval "g checkout main"
+            echo "main"
         end
+end
+#+end_src
+Checkout
+#+begin_src fish
+function gcm
+        g checkout (masterOrMain)
+end
+#+end_src
+wip - Diff against
+#+begin_src fish
+function gdm
+        git diff (git merge-base (masterOrMain) (cb))..(cb)
 end
 #+end_src
 
