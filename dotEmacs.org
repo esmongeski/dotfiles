@@ -476,8 +476,9 @@ Quick binding for C-cC-c using evil command mode.
 Sticks a priority A todo for today afte the current org node.
 #+begin_src emacs-lisp
 (fset 'do-today
-   (kmacro-lambda-form [?\C-u ?\C-\[ ?\C-m ?\C-\[ ?\[ ?1 ?\; ?2 ?C ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-c ?\C-s ?\C-m ?A] 0 "%d"))
-  (define-key evil-ex-map "dtd" 'do-today)
+   (kmacro-lambda-form [?i ?\C-u ?\C-\[ ?\C-m ?\C-\[ ?\[ ?1 ?\; ?2 ?C ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-c ?\C-s ?\C-m] 0 "%d"))
+
+    (define-key evil-ex-map "dtd" 'do-today)
 #+end_src
 * Debugging
 Trying to see what this does on startup so I can optimize my init/dotfiles.
