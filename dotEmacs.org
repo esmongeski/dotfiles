@@ -276,10 +276,13 @@ Just a command to bring up agenda view
                  :and(:file-path "recurring.org" :deadline today)
                  :and(:file-path "recurring.org" :scheduled today)
                  )
-          (:name "Important"
+          (:name "Important - Personal"
                  ;; Single arguments given alone
                  :and (:priority "A"
-                                 :todo ("TODO" "IN-PROGRESS" "SOMEDAY")))
+                                 :todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path "/Users/edwardsmongeski/org/roam"))
+          (:name "Important - Work stuff"
+                 :and (:priority "A"
+                                 :and(:file-path "work.org" :todo ("TODO" "IN-PROGRESS"))))
           (:name "Work stuff"
                  :and(:file-path "work.org" :todo ("TODO" "IN-PROGRESS"))
                  :and(:file-path "/Users/edwardsmongeski/org/roam" :todo ("TODO" "IN-PROGRESS")))
