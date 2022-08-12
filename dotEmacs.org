@@ -482,6 +482,16 @@ Sticks a priority A todo for today afte the current org node.
         (kmacro-lambda-form [?i ?\C-u ?\C-\[ ?\C-m ?\C-\[ ?\[ ?1 ?\; ?2 ?C ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-c ?\C-s ?\C-m] 0 "%d"))
 
   (define-key evil-ex-map "dtd" 'do-today)
+  (fset 'do-today-b
+        (kmacro-lambda-form [?i ?\C-u ?\C-\[ ?\C-m ?\C-\[ ?\[ ?1 ?\; ?2 ?C ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-c ?\C-s ?\C-m] 0 "%d"))
+
+  (define-key evil-ex-map "dtb" 'do-today-b)
+
+  (fset 'do-tmrw
+        (kmacro-lambda-form [?i ?\C-u ?\C-\[ ?\C-m ?\C-\[ ?\[ ?1 ?\; ?2 ?C ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-c ?\C-s ?\C-\[ ?\[ ?1 ?\; ?2 ?C ?\C-m] 0 "%d"))
+
+  (define-key evil-ex-map "dtm" 'do-tmrw)
+
 #+end_src
 * Debugging
 Trying to see what this does on startup so I can optimize my init/dotfiles.
