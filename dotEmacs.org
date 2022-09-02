@@ -1,9 +1,13 @@
 * Extra Plugins
 ** Evil
 Because I am a vim user at heart.
-It's possible I'll want to use https://github.com/Somelauw/evil-org-mode instead of =org-evil= someday. But I've never been *that* good at vim.
+
+First make tab cycling work in normal mode, before evil is loaded.
+#+begin_src emacs-lisp
+  (setq evil-want-C-i-jump nil)
+#+end_src
+Set up org bindings first. Honestly not sure if this needs to come before use evil, but not worth figuring out.
 #+BEGIN_SRC emacs-lisp
-  ;;(use-package org-evil)
   (use-package evil-org
     :ensure t
     :after org
