@@ -456,7 +456,7 @@ I am evil, so =:= is special. It sets tags in agenda, which I basically never wa
   (define-key org-agenda-mode-map (kbd ":") nil)
 
 #+end_src
-** Evil shortcuts for helm. Navigate buffers, command/func/var (apropos), and files with =:b=, etc.
+** Evil shortcuts - helm menus, org capture. Basically replace any common C-[something] C-[something] I use with :[something][something]
 #+begin_src emacs-lisp
   (define-key evil-ex-map "b" 'helm-buffers-list)
   (define-key evil-ex-map "mx" 'helm-M-x)
@@ -470,6 +470,8 @@ I am evil, so =:= is special. It sets tags in agenda, which I basically never wa
   (define-key evil-ex-map "cs" 'org-schedule)
   (define-key evil-ex-map "ce" 'org-export-dispatch)
   (define-key evil-ex-map "kb" 'kill-buffer)
+  (define-key evil-ex-map "cl" 'org-insert-link)
+
 #+end_src
 ** Do the Thing ex-map
 Quick binding for C-cC-c using evil command mode.
