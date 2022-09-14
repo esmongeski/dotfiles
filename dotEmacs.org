@@ -799,13 +799,12 @@ super agenda
 This is the bit referenced above that inserts the target header as
 a link into the org roam note. Pretty handy!
 #+begin_src emacs-lisp
+  (setq org-roam-head
+        (concat "#+title: %<%Y-%m-%d (%A)>\n#+startup: showall\n"
+                "* Do Today\n* Maybe Today\n* Journal\n"))
   (setq org-roam-dailies-capture-templates
         (let ((head
-               (concat "#+title: %<%Y-%m-%d (%A)>\n#+startup: showall\n* Daily Overview\n"
-                       "#+begin_src emacs-lisp :results value raw\n"
-                       "(as/get-daily-agenda \"%<%Y-%m-%d>\")\n"
-                       "#+end_src\n"
-                       "* Do Today\n** TODO 1m\n** TODO 1M\n** TODO 1U\n** TODO Must do chores\n* Maybe Today\n* Journal\n")))
+               org-roam-head))
           `(("j" "journal" entry
              "* %<%H:%M> %?"
              :if-new (file+head+olp "~/org/roam/daily/%<%Y-%m-%d>.org" ,head ("Journal")))
@@ -824,14 +823,23 @@ Make a shortcut in org agenda to cap something.
   (evil-define-key 'motion org-agenda-mode-map (kbd "c") 'org-roam-dailies-capture-today)
 #+end_src
 **** Open daily buffer for current day
+Ok, maybe this should have just been =org-roam-dailies-goto-today=, but checking if the buffer exists is nice to just drop me into the buffer instead of prompting for the header I want to navigate to.
 #+begin_src emacs-lisp
+  (defun es/open-roam-daily-today ()
+    "Thin wrapper around org-roam-dailies-goto-today"
+    (org-roam-dailies-goto-today "t")
+    (save-buffer)
+    )
   (defun es/open-daily-buffer ()
     ""
     (interactive)
     (es/set-org-agenda-files)
-    (switch-to-buffer
-     (find-file-noselect (concat "~/org/roam/daily/" (concat (format-time-string "%Y-%m-%d") ".org"))))
-    )
+    (let ((journal-file (concat "~/org/roam/daily/" (concat (format-time-string "%Y-%m-%d") ".org"))))
+      (if
+          (not (file-exists-p journal-file))
+          (es/open-roam-daily-today) ;;(save-buffer))
+        (switch-to-buffer (find-file-noselect (journal-file)))
+        )))
 
   (define-key evil-ex-map "rd" 'es/open-daily-buffer)
 #+end_src
