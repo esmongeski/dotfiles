@@ -468,9 +468,11 @@ I am evil, so =:= is special. It sets tags in agenda, which I basically never wa
   (define-key evil-ex-map "oc" 'org-capture)
   (define-key evil-ex-map "mg" 'magit)
   (define-key evil-ex-map "cs" 'org-schedule)
+  (define-key evil-ex-map "c!" 'org-time-stamp-inactive)
   (define-key evil-ex-map "ce" 'org-export-dispatch)
   (define-key evil-ex-map "kb" 'kill-buffer)
   (define-key evil-ex-map "cl" 'org-insert-link)
+  (define-key evil-ex-map "cni" 'org-roam-node-insert)
 
 #+end_src
 ** Do the Thing ex-map
