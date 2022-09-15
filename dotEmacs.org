@@ -801,21 +801,27 @@ a link into the org roam note. Pretty handy!
 #+begin_src emacs-lisp
   (setq org-roam-head
         (concat "#+title: %<%Y-%m-%d (%A)>\n#+startup: showall\n"
-                "* Do Today\n* Maybe Today\n* Journal\n"))
+                "* Do Today\n* Journal\n"))
+  (setq personal-dir "~/Dropbox/org/roam/daily/")
+  (setq work-dir "~/org/roam/daily/")
+  (setq org-daily-filename "%<%Y-%m-%d>.org")
+  (setq personal-file (concat personal-dir org-daily-filename))
+  (setq work-file (concat work-dir org-daily-filename))
   (setq org-roam-dailies-capture-templates
         (let ((head
                org-roam-head))
           `(("j" "journal" entry
              "* %<%H:%M> %?"
-             :if-new (file+head+olp "~/org/roam/daily/%<%Y-%m-%d>.org" ,head ("Journal")))
-            ("t" "do today" entry
+             :if-new (file+head+olp ,personal-file ,head ("Journal")))
+            ("t" "do today - work" entry
              "** TODO [#A] %a\nSCHEDULED: <%<%Y-%m-%d>>"
-             :if-new (file+head+olp "~/org/roam/daily/%<%Y-%m-%d>.org" ,head ("Do Today"))
+             :if-new (file+head+olp ,work-file ,head ("Do Today"))
              :immediate-finish t)
-            ("m" "maybe do today" entry
-             "** TODO [#B] %a\nSCHEDULED: <%<%Y-%m-%d>>"
-             :if-new (file+head+olp "~/org/roam/daily/%<%Y-%m-%d>.org" ,head ("Maybe Today"))
-             :immediate-finish t))))
+            ("p" "do today - personal" entry
+             "** TODO [#A] %a\nSCHEDULED: <%<%Y-%m-%d>>"
+             :if-new (file+head+olp ,personal-file ,head ("Do Today"))
+             :immediate-finish t)
+            )))
 
 #+end_src
 Make a shortcut in org agenda to cap something.
@@ -823,23 +829,26 @@ Make a shortcut in org agenda to cap something.
   (evil-define-key 'motion org-agenda-mode-map (kbd "c") 'org-roam-dailies-capture-today)
 #+end_src
 **** Open daily buffer for current day
-Ok, maybe this should have just been =org-roam-dailies-goto-today=, but checking if the buffer exists is nice to just drop me into the buffer instead of prompting for the header I want to navigate to.
+Quick jump to work or personal daily node.
 #+begin_src emacs-lisp
-  (defun es/open-roam-daily-today ()
-    "Thin wrapper around org-roam-dailies-goto-today"
-    (org-roam-dailies-goto-today "t")
+  (defun es/open-roam-daily-today (target)
+    "Thin wrapper around org-roam-dailies-goto-today that also saves the file."
+    (org-roam-dailies-goto-today target)
     (save-buffer)
     )
-  (defun es/open-daily-buffer ()
+  (defun es/open-daily-work-buffer ()
     ""
     (interactive)
     (es/set-org-agenda-files)
-    (let ((journal-file (concat "~/org/roam/daily/" (concat (format-time-string "%Y-%m-%d") ".org"))))
-      (if
-          (not (file-exists-p journal-file))
-          (es/open-roam-daily-today) ;;(save-buffer))
-        (switch-to-buffer (find-file-noselect (journal-file)))
-        )))
+    (es/open-roam-daily-today "t")
+    )
+  (defun es/open-daily-personal-buffer ()
+    ""
+    (interactive)
+    (es/set-org-agenda-files)
+    (es/open-roam-daily-today "p")
+    )
 
-  (define-key evil-ex-map "rd" 'es/open-daily-buffer)
+  (define-key evil-ex-map "rd" 'es/open-daily-work-buffer)
+  (define-key evil-ex-map "rp" 'es/open-daily-personal-buffer)
 #+end_src
