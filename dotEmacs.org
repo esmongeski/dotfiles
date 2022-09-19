@@ -788,14 +788,14 @@ a link into the org roam note. Pretty handy!
                org-roam-head))
           `(("j" "journal" entry
              "* %<%H:%M> %?"
-             :if-new (file+head+olp ,personal-file ,head ("Journal")))
+             :if-new (file+head+olp ,personal-file ,personal-header ("Journal")))
             ("t" "do today - work" entry
              "** TODO [#A] %a\nSCHEDULED: <%<%Y-%m-%d>>"
-             :if-new (file+head+olp ,work-file ,head ("Do Today"))
+             :if-new (file+head+olp ,work-file ,work-header ("Do Today"))
              :immediate-finish t)
             ("p" "do today - personal" entry
              "** TODO [#A] %a\nSCHEDULED: <%<%Y-%m-%d>>"
-             :if-new (file+head+olp ,personal-file ,head ("Do Today"))
+             :if-new (file+head+olp ,personal-file ,personal-header ("Do Today"))
              :immediate-finish t)
             )))
 
