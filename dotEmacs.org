@@ -282,12 +282,16 @@ Just a command to bring up agenda view
                  )
           (:name "Important - Personal"
                  ;; Single arguments given alone
+                 :and (:priority "A" :todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path "Dropbox"))
+          (:name "Important - Work"
+                 ;; Single arguments given alone
                  :and (:priority "A"
-                                 :todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path "/Users/edwardsmongeski/org/roam"))
-          (:name "Important - Work stuff"
+                                 :todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path "/Users/edwardsmongeski/org/roam")
                  :and (:priority "A"
                                  :and(:file-path "work.org" :todo ("TODO" "IN-PROGRESS"))))
-          (:name "Work stuff"
+          (:name "Other personal"
+                 :and (:todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path "Dropbox"))
+          (:name "Other work"
                  :and(:file-path "work.org" :todo ("TODO" "IN-PROGRESS"))
                  :and(:file-path "/Users/edwardsmongeski/org/roam" :todo ("TODO" "IN-PROGRESS")))
           (:name "EOD Routine"
