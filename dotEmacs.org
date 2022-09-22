@@ -775,13 +775,16 @@ super agenda
 This is the bit referenced above that inserts the target header as
 a link into the org roam note. Pretty handy!
 #+begin_src emacs-lisp
-  (setq org-roam-head
-        (concat "#+title: %<%Y-%m-%d (%A)>\n#+startup: showall\n"
-                "* Do Today\n* Journal\n"))
-  (setq personal-header
-        (concat "Personal - " org-roam-head))
-  (setq work-header
-        (concat "Work - " org-roam-head))
+  (defun es/org-roam-header (title)
+    "Formats a roam title with the suffix"
+    (concat "#+title: %<%Y-%m-%d (%A)> - " title "\n#+startup: showall\n"
+            "* Do Today\n* Journal\n")
+    )
+ ; (setq org-roam-head
+ ;       (concat "#+title: %<%Y-%m-%d (%A)>\n#+startup: showall\n"
+ ;               "* Do Today\n* Journal\n"))
+  (setq personal-header (es/org-roam-header "Personal"))
+  (setq work-header (es/org-roam-header "Work"))
   (setq personal-dir "~/Dropbox/org/roam/daily/")
   (setq work-dir "~/org/roam/daily/")
   (setq org-daily-filename "%<%Y-%m-%d>.org")
