@@ -791,8 +791,7 @@ a link into the org roam note. Pretty handy!
   (setq personal-file (concat personal-dir org-daily-filename))
   (setq work-file (concat work-dir org-daily-filename))
   (setq org-roam-dailies-capture-templates
-        (let ((head
-               org-roam-head))
+
           `(("j" "journal" entry
              "* %<%H:%M> %?"
              :if-new (file+head+olp ,personal-file ,personal-header ("Journal")))
@@ -804,7 +803,7 @@ a link into the org roam note. Pretty handy!
              "** TODO [#A] %a\nSCHEDULED: <%<%Y-%m-%d>>"
              :if-new (file+head+olp ,personal-file ,personal-header ("Do Today"))
              :immediate-finish t)
-            )))
+            ))
 
 #+end_src
 Make a shortcut in org agenda to cap something.
