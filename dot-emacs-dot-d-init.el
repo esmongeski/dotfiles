@@ -29,7 +29,7 @@
      (find-lisp-find-files "~/Dropbox/org/" ".org$")
      (find-lisp-find-files "~/org/" ".org$"))))
  '(package-selected-packages
-   '(org-bullets helm-org org-evil monitor dash powerline-evil ## org-link-minor-mode org-mobile-sync evil)))
+   '(helm-org monitor dash powerline-evil ## org-link-minor-mode org-mobile-sync evil)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
