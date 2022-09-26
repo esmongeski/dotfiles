@@ -2,18 +2,11 @@
 ** Evil
 Because I am a vim user at heart.
 *** Fix tab cycling
-Remove evil C-i binding so tab works, and replace with C-j C-k for jumplist.
+Remove evil C-i binding so tab works.
 #+begin_src emacs-lisp
   (setq evil-want-C-i-jump nil)
 #+end_src
-Rebind normal C-i to C-j
-#+begin_src emacs-lisp
-  (define-key evil-normal-state-map (kbd "C-j") 'evil-jump-forward)
-#+end_src
-Rebind normal C-o to C-k
-#+begin_src emacs-lisp
-  (define-key evil-normal-state-map (kbd "C-k") 'evil-jump-backward)
-#+end_src
+See [[*Evil jumplist remapping][Evil jumplist remapping]] for where the rebind happens.
 *** Use package wih org bindings
 Set up org bindings first. Honestly not sure if this needs to come before use evil, but not worth figuring out.
 #+BEGIN_SRC emacs-lisp
@@ -516,6 +509,15 @@ Sticks a priority A todo for today afte the current org node.
 
   (define-key evil-ex-map "dtm" 'do-tmrw)
 
+#+end_src
+** Evil jumplist remapping
+Rebind normal C-i to C-j
+#+begin_src emacs-lisp
+  (define-key evil-normal-state-map (kbd "C-j") 'evil-jump-forward)
+#+end_src
+Rebind normal C-o to C-k
+#+begin_src emacs-lisp
+  (define-key evil-normal-state-map (kbd "C-k") 'evil-jump-backward)
 #+end_src
 * Debugging
 Trying to see what this does on startup so I can optimize my init/dotfiles.
