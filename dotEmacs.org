@@ -1,11 +1,20 @@
 * Extra Plugins
 ** Evil
 Because I am a vim user at heart.
-
-First make tab cycling work in normal mode, before evil is loaded.
+*** Fix tab cycling
+Remove evil C-i binding so tab works, and replace with C-j C-k for jumplist.
 #+begin_src emacs-lisp
   (setq evil-want-C-i-jump nil)
 #+end_src
+Rebind normal C-i to C-j
+#+begin_src emacs-lisp
+  (define-key evil-normal-state-map (kbd "C-j") 'evil-jump-forward)
+#+end_src
+Rebind normal C-o to C-k
+#+begin_src emacs-lisp
+  (define-key evil-normal-state-map (kbd "C-k") 'evil-jump-backward)
+#+end_src
+*** Use package wih org bindings
 Set up org bindings first. Honestly not sure if this needs to come before use evil, but not worth figuring out.
 #+BEGIN_SRC emacs-lisp
   (use-package evil-org
@@ -18,6 +27,7 @@ Set up org bindings first. Honestly not sure if this needs to come before use ev
   (use-package evil)
   (evil-mode 1)
 #+END_SRC
+*** Bar cursor
 Change cursor to a bar in insert mode.
 #+begin_src emacs-lisp
   (use-package evil-terminal-cursor-changer)
