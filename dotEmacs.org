@@ -481,6 +481,11 @@ I am evil, so =:= is special. It sets tags in agenda, which I basically never wa
   (define-key evil-ex-map "kb" 'kill-buffer)
   (define-key evil-ex-map "cl" 'org-insert-link)
   (define-key evil-ex-map "cni" 'org-roam-node-insert)
+  (defun es/save-all ()
+    "Thin wrapper around saving all buffers"
+    (interactive)
+    (save-some-buffers t))
+  (define-key evil-ex-map "sa" 'es/save-all)
 
 #+end_src
 ** Do the Thing ex-map
