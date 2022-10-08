@@ -161,13 +161,19 @@ This brings back the old "<s" shortcut for source blocks. Unfortunately it has d
 
 * Custom variables (I don't really remember what this is)
 Variables - org agenda files, which will some day pull dates, but are also used for how things refile. I exclude archive.org from this list because it's huge.
+
+** TODO how do I make this only grab the last ~month? of journal files?
+one way - just move stuff out into an archive directory
+make it smart enough to match "YYYY-MM" and "YYYY-MM-1"
+could also make it MM-1 only before the 15th
+oh I should remove all my roam nodes too
 #+BEGIN_SRC emacs-lisp
   (defun es/set-org-agenda-files ()
     "Define my org agenda files"
     (custom-set-variables
      '(org-agenda-files
        (cl-remove-if (lambda (k) (string-match-p "archive.org" k))
-                     (append (find-lisp-find-files "~/Dropbox/org/" "\.org$")
+                     (append (find-lisp-find-files "~/Dropbox/org/projects/" "\.org$")
                              (find-lisp-find-files "~/org/" "\.org$"))))
      ))
   (es/set-org-agenda-files)
@@ -194,9 +200,9 @@ Refile config. I found this on reddit, but I think this says "take the stuff fro
 #+BEGIN_SRC emacs-lisp
   (setq org-refile-targets '((nil :maxlevel . 1)
                              (org-agenda-files :maxlevel . 3)
-                             ("~/Dropbox/org/stuff.org" :maxlevel . 1)
-                             ("~/Dropbox/org/financeMath.org" :maxlevel . 2)
-                             ("~/Dropbox/org/tList.org" :maxlevel . 1)
+                             ("~/Dropbox/org/projects/stuff.org" :maxlevel . 1)
+                             ("~/Dropbox/org/projects/financeMath.org" :maxlevel . 2)
+                             ("~/Dropbox/org/projects/tList.org" :maxlevel . 1)
                              ("~/code/dotfiles/fish/fishProfile.org" :maxlevel . 3)
                              ("~/code/dotfiles/bashProfile.org" :maxlevel . 3)))
   (setq org-refile-use-outline-path 'file)
@@ -222,7 +228,7 @@ More details [[https://orgmode.org/manual/Tracking-TODO-state-changes.html][Here
   (setq org-log-done 'time)
   ;;(setq org-log-done 'note)
 
-  (setq org-archive-location "~/Dropbox/org/archive.org::")
+  (setq org-archive-location "~/Dropbox/org/projects/archive.org::")
 #+END_SRC
 
 Custom priorities
@@ -546,7 +552,7 @@ Trying to see what this does on startup so I can optimize my init/dotfiles.
 * Org capture setup
 Inbox directory
 #+begin_src emacs-lisp
-  (setq org-default-notes-file "~/Dropbox/org/inbox.org")
+  (setq org-default-notes-file "~/Dropbox/org/projects/inbox.org")
 #+end_src
 Stick backup files elsewhere. They screw up IFTTT's dropbox integration for some reason.
 #+begin_src emacs-lisp
@@ -561,13 +567,13 @@ Start server
 Capture templates
 #+begin_src emacs-lisp
   (setq org-capture-templates
-        '(("p" "Personal" entry (file "~/Dropbox/org/inbox.org")
+        '(("p" "Personal" entry (file "~/Dropbox/org/projects/inbox.org")
            "* TODO %?\n")
-          ("w" "Work" entry (file "~/Dropbox/org/workInbox.org")
+          ("w" "Work" entry (file "~/Dropbox/org/projects/workInbox.org")
            "* TODO %?\n")
-          ("t" "Things on my mind" entry (file "~/Dropbox/org/tList.org")
+          ("t" "Things on my mind" entry (file "~/Dropbox/org/projects/tList.org")
            "* TODO %?\n" )
-          ("s" "Stuff" entry (file "~/Dropbox/org/stuff.org")
+          ("s" "Stuff" entry (file "~/Dropbox/org/projects/stuff.org")
            "* TODO %?\n")))
 #+end_src
 * Powerline

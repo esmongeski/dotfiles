@@ -42,19 +42,19 @@ alias ve='echoAndEval "emacs $PATH_TO_DOTFILES_REPO/dotEmacs.org"'
 ** Common org files
 Dropbox paths are probably the same everywhere? Fingers crossed!
 #+begin_src fish
-  alias inbox='emacs ~/Dropbox/org/inbox.org'
-  alias ptodos='emacs ~/Dropbox/org/homeProjects.org'
-  alias funthings='emacs ~/Dropbox/org/funThings.org'
-  alias homeprojects='emacs ~/Dropbox/org/homeProjects.org'
-  alias pproj='emacs ~/Dropbox/org/personalProjects.org'
-  alias workstuff='emacs ~/Dropbox/org/workInbox.org'
+  alias inbox='emacs ~/Dropbox/org/projects/inbox.org'
+  alias ptodos='emacs ~/Dropbox/org/projects/homeProjects.org'
+  alias funthings='emacs ~/Dropbox/org/projects/funThings.org'
+  alias homeprojects='emacs ~/Dropbox/org/projects/homeProjects.org'
+  alias pproj='emacs ~/Dropbox/org/projects/personalProjects.org'
+  alias workstuff='emacs ~/Dropbox/org/projects/workInbox.org'
   alias wtodos='emacs ~/org/work.org'
   alias winbox='workstuff'
-  alias recurring='emacs ~/Dropbox/org/recurring.org'
+  alias recurring='emacs ~/Dropbox/org/projects/recurring.org'
 #+end_src
 Quick navigation to my org directory.
 #+begin_src fish
-alias cdo='cd ~/Dropbox/org'
+alias cdo='cd ~/Dropbox/org/projects/'
 alias cdor='cdo; cd roam'
 #+end_src
 ** Quick backtracking
