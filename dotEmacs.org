@@ -272,6 +272,7 @@ Just a command to bring up agenda view
 ** Super Agenda
 #+begin_src emacs-lisp
   (use-package org-super-agenda)
+  (setq org-super-agenda-keep-order t)
   (org-super-agenda-mode 1)
   (setq org-super-agenda-groups
         '(;; Each group has an implicit boolean OR operator between its selectors.
