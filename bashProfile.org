@@ -99,7 +99,9 @@ Dropbox paths are probably the same everywhere? Fingers crossed!
 Quick navigation to my org directory.
 #+begin_src bash
   alias cdo='cd ~/Dropbox/org/projects/'
-  alias cdor='cdo; cd roam'
+  alias cdoroot='cd ~/Dropbox/org/'
+  alias cdor='cdoroot; cd roam'
+  alias cdord='cdor; cd daily'
 #+end_src
 ** Quick backtracking
 [[https://github.com/dusbennett/terminal-commands/blob/master/shell/.profile][Completely stolen from Dustin Bennett]]
