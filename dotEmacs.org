@@ -162,21 +162,34 @@ This brings back the old "<s" shortcut for source blocks. Unfortunately it has d
 * Custom variables (I don't really remember what this is)
 Variables - org agenda files, which will some day pull dates, but are also used for how things refile. I exclude archive.org from this list because it's huge.
 
-** TODO how do I make this only grab the last ~month? of journal files?
-one way - just move stuff out into an archive directory
-make it smart enough to match "YYYY-MM" and "YYYY-MM-1"
-could also make it MM-1 only before the 15th
-oh I should remove all my roam nodes too
 #+BEGIN_SRC emacs-lisp
+  (defun es/fourteen-days-ago-month ()
+    "Lookback fourteen days ago, and format that month as YYYY-MM."
+    (format-time-string "%Y-%m" (time-add (current-time) (seconds-to-time -1209600)))
+    )
+  (defun es/current-month ()
+    "Get current month as YYYY-MM."
+    (format-time-string "%Y-%m" (current-time))
+    )
   (defun es/set-org-agenda-files ()
     "Define my org agenda files"
     (custom-set-variables
      '(org-agenda-files
-       (cl-remove-if (lambda (k) (string-match-p "archive.org" k))
-                     (append (find-lisp-find-files "~/Dropbox/org/projects/" "\.org$")
-                             (find-lisp-find-files "~/org/" "\.org$"))))
-     ))
-  (es/set-org-agenda-files)
+       (append
+        (cl-remove-if (lambda (k) (string-match-p "archive.org" k))
+                      (find-lisp-find-files "~/Dropbox/org/projects/" "\.org$"))
+        (cl-remove-if (lambda (k) (string-match-p "_done.org" k))
+                      (find-lisp-find-files "~/org/projects/" "\.org$"))
+        (cl-remove-if (lambda (k) (not (or
+                                        (string-match-p (es/current-month) k)
+                                        (string-match-p (es/fourteen-days-ago-month) k))))
+                      (find-lisp-find-files "~/org/roam/daily" "\.org$"))
+        (cl-remove-if (lambda (k) (not (or
+                                        (string-match-p (es/current-month) k)
+                                        (string-match-p (es/fourteen-days-ago-month) k))))
+                      (find-lisp-find-files "~/Dropbox/org/roam/daily/" "\.org$"))
+        )
+       )))
 #+END_SRC
 Start with bullets folded and indented by default.
 #+BEGIN_SRC emacs-lisp
@@ -334,6 +347,7 @@ Just a command to bring up agenda view
 #+begin_src emacs-lisp
   (defun org-agenda-list-day () (interactive)
          "Wrapper for org-agenda-list that just lists a single day"
+         (es/set-org-agenda-files)
          (org-agenda-list 1)
          )
   (define-key evil-ex-map "a" 'org-agenda-list-day)
