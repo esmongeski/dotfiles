@@ -127,7 +127,16 @@ in helm-apropos, but despite what the internet says it is not working.
   ;; (helm-fuzzier-mode 1)
 
 #+end_src
+** K8s
+Not using k8s a ton day to day, but a magit-like k8s buffer seems great. Going to mess around with it.
+#+begin_src emacs-lisp
+  (use-package kubernetes)
+  (use-package kubernetes-evil
+  :ensure t
+  :after kubernetes)
+  (fset 'k8s 'kubernetes-overview)
 
+#+end_src
 * Package things!
 This is a bit of fumbling to try and get this all to work on a new computer from zero with minimal manual intervention.
 
@@ -496,6 +505,7 @@ I am evil, so =:= is special. It sets tags in agenda, which I basically never wa
   (define-key evil-ex-map "dp" 'describe-package)
   (define-key evil-ex-map "oc" 'org-capture)
   (define-key evil-ex-map "mg" 'magit)
+  (define-key evil-ex-map "k8s" 'k8s)
   (define-key evil-ex-map "cs" 'org-schedule)
   (define-key evil-ex-map "c!" 'org-time-stamp-inactive)
   (define-key evil-ex-map "ce" 'org-export-dispatch)
