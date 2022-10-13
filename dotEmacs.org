@@ -480,7 +480,8 @@ Make it so I can quickly reload emacs config.
 #+end_src
 ** Nice little shortcut for evil mode for rifle.
 #+begin_src emacs-lisp
-  (define-key evil-ex-map "ri" 'helm-org-rifle-agenda-files)
+  (define-key evil-ex-map "rir" 'helm-org-rifle-agenda-files)
+  (define-key evil-ex-map "ria" 'helm-org-rifle-occur-org-directory)
 #+end_src
 ** More agenda customization
 I'll admit, there's a header further up for this, but for some reason defining this that far up breaks, and I don't really want
