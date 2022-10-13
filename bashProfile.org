@@ -87,7 +87,7 @@ alias vbp='emacs $PATH_TO_DOTFILES_REPO/bashProfile.org'
 ** Common org files
 Dropbox paths are probably the same everywhere? Fingers crossed!
 #+begin_src bash
-  alias inbox='emacs ~/Dropbox/org/projects/inbox.org'
+  alias inbox='emacs ~/Dropbox/org/inbox.org'
   alias ptodos='emacs ~/Dropbox/org/projects/homeProjects.org'
   alias funthings='emacs ~/Dropbox/org/projects/funThings.org'
   alias homeprojects='emacs ~/Dropbox/org/projects/homeProjects.org'

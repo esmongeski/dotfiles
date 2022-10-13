@@ -193,6 +193,8 @@ Variables - org agenda files, which will some day pull dates, but are also used 
                                         (string-match-p (es/current-month) k)
                                         (string-match-p (es/fourteen-days-ago-month) k))))
                       (find-lisp-find-files "~/org/roam/daily" "\.org$"))
+        (cl-remove-if (lambda (k) (not (string-match-p "inbox.org" k)))
+                      (find-lisp-find-files "~/Dropbox/org" "\.org$"))
         (cl-remove-if (lambda (k) (not (or
                                         (string-match-p (es/current-month) k)
                                         (string-match-p (es/fourteen-days-ago-month) k))))
@@ -577,7 +579,7 @@ Trying to see what this does on startup so I can optimize my init/dotfiles.
 * Org capture setup
 Inbox directory
 #+begin_src emacs-lisp
-  (setq org-default-notes-file "~/Dropbox/org/projects/inbox.org")
+  (setq org-default-notes-file "~/Dropbox/org/inbox.org")
 #+end_src
 Stick backup files elsewhere. They screw up IFTTT's dropbox integration for some reason.
 #+begin_src emacs-lisp
@@ -592,7 +594,7 @@ Start server
 Capture templates
 #+begin_src emacs-lisp
   (setq org-capture-templates
-        '(("p" "Personal" entry (file "~/Dropbox/org/projects/inbox.org")
+        '(("p" "Personal" entry (file "~/Dropbox/org/inbox.org")
            "* TODO %?\n")
           ("w" "Work" entry (file "~/Dropbox/org/projects/workInbox.org")
            "* TODO %?\n")
