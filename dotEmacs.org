@@ -885,6 +885,14 @@ Quick jump to work or personal daily node.
   (define-key evil-ex-map "rd" 'es/open-daily-work-buffer)
   (define-key evil-ex-map "rp" 'es/open-daily-personal-buffer)
 #+end_src
+** Org roam UI
+#+begin_src emacs-lisp
+  (use-package websocket)
+  (use-package simple-httpd)
+  (use-package org-roam-ui)
+
+
+#+end_src
 * IN-PROGRESS Notion
 This is an attempt to hit the [[https://developers.notion.com/docs/getting-started][notion api]] in order to dump tasks out of org into notion.
 
