@@ -893,6 +893,7 @@ Quick jump to work or personal daily node.
   (use-package simple-httpd)
   (use-package org-roam-ui)
 
+  (define-key evil-ex-map "oru" 'org-roam-ui-open)
 
 #+end_src
 * IN-PROGRESS Notion
