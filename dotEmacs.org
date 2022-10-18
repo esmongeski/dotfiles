@@ -247,7 +247,7 @@ Ongoing thing to figure out what states I want. log-done enables timestamp +and 
 More details [[https://orgmode.org/manual/Tracking-TODO-state-changes.html][Here]]
 #+BEGIN_SRC emacs-lisp
   (setq org-todo-keywords
-        '((sequence "TODO(t)" "SOMEDAY(s)" "WAITING(w)" "IN-PROGRESS(i)" "BLOCKED(l)" "|" "DONE(d)" "EXPORTED(e)" "OBSOLOTE(b)")))
+        '((sequence "TODO(t)" "SOMEDAY(s)" "WAITING(w)" "IN-PROGRESS(i)" "BLOCKED(l)" "|" "DONE(d)" "EXPORTED(e)" "OBSOLOTE(b)" "DELEGATED(g)")))
 
   (setq org-log-done 'time)
   ;;(setq org-log-done 'note)
@@ -350,7 +350,7 @@ Just a command to bring up agenda view
           (:name "Waiting"
                  :todo ("WAITING"))
           (:name "Done"
-                 :todo ("DONE" "OBSOLETE")
+                 :todo ("DONE" "OBSOLETE" "DELEGATED" "EXPORTED")
                  )))
   (setq org-super-agenda-header-map (make-sparse-keymap))
 #+end_src
