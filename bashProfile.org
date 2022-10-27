@@ -22,7 +22,6 @@ And these are the vars I want defined by the local system.
 
 #+begin_src bash
 checkEnvAndDefault "PATH_TO_DOTFILES_REPO"
-checkEnvAndDefault "PATH_TO_EDITABLE_DOT_EMACS"
 #+end_src
 * Terminal Prompt
 Go powerline
