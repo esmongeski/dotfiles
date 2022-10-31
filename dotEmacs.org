@@ -559,6 +559,15 @@ Rebind normal C-o to C-k
 #+begin_src emacs-lisp
   (define-key evil-normal-state-map (kbd "C-k") 'evil-jump-backward)
 #+end_src
+** Mac copy to clipboard
+Yank doesn't quite do the trick with things, so make a custom one
+
+#+begin_src emacs-lisp
+  (fset 'pbcopy
+        (kmacro-lambda-form [?\C-\[ ?| ?p ?b ?c ?o ?p ?y ?\C-m] 0 "%d"))
+
+  (define-key evil-visual-state-map "pc" 'pbcopy)
+#+end_src
 * Debugging
 Trying to see what this does on startup so I can optimize my init/dotfiles.
 #+begin_src emacs-lisp
