@@ -560,7 +560,8 @@ Rebind normal C-o to C-k
   (define-key evil-normal-state-map (kbd "C-k") 'evil-jump-backward)
 #+end_src
 ** Mac copy to clipboard
-Yank doesn't quite do the trick with things, so make a custom one
+Yank doesn't quite do the trick with things, so make a custom one.
+https://emacs.stackexchange.com/questions/10900/copy-text-from-emacs-to-os-x-clipboard
 
 #+begin_src emacs-lisp
   (fset 'pbcopy
