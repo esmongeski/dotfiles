@@ -924,6 +924,19 @@ Quick jump to work or personal daily node.
   (define-key evil-ex-map "oru" 'org-roam-ui-open)
 
 #+end_src
+* Languages
+** Fish
+#+begin_src emacs-lisp
+  (use-package fish-mode)
+#+end_src
+** Graphql
+#+begin_src emacs-lisp
+  (use-package graphql-mode)
+#+end_src
+** Go
+#+begin_src emacs-lisp
+  (use-package go-mode)
+#+end_src
 * IN-PROGRESS Notion
 This is an attempt to hit the [[https://developers.notion.com/docs/getting-started][notion api]] in order to dump tasks out of org into notion.
 
