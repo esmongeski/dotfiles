@@ -299,9 +299,8 @@ alias newbr='g checkout -b'
   alias gsub=setUpstreamBranch
 #+end_src
 ** Checkout at master
-*** TODO Make this respect master/main
 #+begin_src fish
-alias gcam='git checkout master -- '
+alias gcam='git checkout (masterOrMain) -- '
 #+end_src
 ** TODO Push and open PR - make work in fish
 So I haven't used this for a while - push and immediately open the MR (PR nowadays). I should try this again.
