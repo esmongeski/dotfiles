@@ -550,6 +550,22 @@ Sticks a priority A todo for today afte the current org node.
   (define-key evil-ex-map "dtm" 'do-tmrw)
 
 #+end_src
+** Link Thread ex-map
+Shortcut to make a link called "thread". Useful for when I want to stamp a link from a slack thread
+[[https://devoted.slack.com/archives/CVA6JS4BH/p1667596316655489?thread_ts=1667413547.020339&cid=CVA6JS4BH][thread]]
+#+begin_src emacs-lisp
+
+  (fset 'thread
+   (kmacro-lambda-form [?: ?c ?l ?\C-m ?t ?h ?r ?e ?a ?d ?\C-m] 0 "%d"))
+
+  (define-key evil-ex-map "ctl" 'thread)
+#+end_src
+** Recover this file
+ex map shortcut to recover a file
+#+begin_src emacs-lisp
+  (define-key evil-ex-map "rtf" 'recover-this-file)
+
+#+end_src
 ** Evil jumplist remapping
 Rebind normal C-i to C-j
 #+begin_src emacs-lisp
@@ -563,11 +579,13 @@ Rebind normal C-o to C-k
 Yank doesn't quite do the trick with things, so make a custom one.
 https://emacs.stackexchange.com/questions/10900/copy-text-from-emacs-to-os-x-clipboard
 
+Also add =pp= to do visual paste, since =pc= overrides it.
 #+begin_src emacs-lisp
   (fset 'pbcopy
         (kmacro-lambda-form [?\C-\[ ?| ?p ?b ?c ?o ?p ?y ?\C-m] 0 "%d"))
 
   (define-key evil-visual-state-map "pc" 'pbcopy)
+  (define-key evil-visual-state-map "pp" 'evil-paste-after)
 #+end_src
 * Debugging
 Trying to see what this does on startup so I can optimize my init/dotfiles.
