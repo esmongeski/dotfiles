@@ -305,9 +305,8 @@ function pushAndOpenMR {
   alias gsub=setUpstreamBranch
 #+end_src
 ** Checkout file at master
-*** TODO make this respect master/main
 #+begin_src bash
-alias gcam='g checkout master -- '
+alias gcam='g checkout `masterOrMain` -- '
 #+end_src
 ** Pull and merge master/main into the current branch
 *** Merge master/main
