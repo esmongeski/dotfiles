@@ -318,7 +318,7 @@ alias delbrs='git branch | grep -v "master" | grep -v "main" | xargs git branch 
 #+end_src
 ** local git ignore
 #+begin_src fish
-alias vgi='vim ~/.git/info/exclude'
+alias vgi='vim .git/info/exclude'
 #+end_src
 * Misc helper functions
 Spit out the current date

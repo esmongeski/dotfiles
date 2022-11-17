@@ -342,7 +342,7 @@ alias delbrs='git branch | grep -v "master" | grep -v "main"" | xargs git branch
 #+end_src
 ** local ignore
 #+begin_src bash
-alias vgi='vim ~/.git/info/exclude'
+alias vgi='vim .git/info/exclude'
 
 #+end_src
 * Emacs
