@@ -759,6 +759,11 @@ Override M-x
 #+end_src
 * Roam
 ** General setup and config
+[[https://github.com/org-roam/org-roam/issues/1869][make symlinks work]]
+#+begin_src emacs-lisp
+ (setq find-file-visit-truename t)
+
+#+end_src
 Probably need to change the viewer per OS.
 #+begin_src emacs-lisp
   (setq org-roam-graph-executable "neato")
@@ -769,7 +774,7 @@ Probably need to change the viewer per OS.
     :init
     (setq org-roam-v2-ack t)
     :custom
-    (org-roam-directory (file-truename "~/Dropbox/org/roam"))
+    (org-roam-directory (file-truename "~/org/roam"))
     (org-roam-completion-everywhere t)
     :bind (("C-c n l" . org-roam-buffer-toggle)
            ("C-c n f" . org-roam-node-find)
