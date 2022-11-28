@@ -136,19 +136,19 @@ This thing is super great. Give it a short string, and it greps your git branche
 one match, it checks out that branch. Otherwise it tells you what it did find you can refine your query (or just copy
 the branch you want)
 #+begin_src fish
-function gchlike
-    set -l matches (g branch | grep -i $argv[1] | awk '{print $1;}')
-    set -l matchcount (echo "$matches" | wc -w)
-    if [ $matchcount -gt 1 ]
-        echo "Too many branches!"
-        echo "$matches"
-    else if [ -z "$matches" ]
-        echo "No branches!"
-    else
-        echo "checking out $matches"
-        g checkout "$matches"
-    end
-end
+  function gchlike
+      set -l matches (g branch | grep -i $argv[1] | awk '{print $1;}')
+      set -l matchcount (echo "$matches" | wc -w)
+      if [ $matchcount -gt 1 ]
+          echo "Too many branches!"
+          string split " " $matches
+      else if [ -z "$matches" ]
+          echo "No branches!"
+      else
+          echo "checking out $matches"
+          g checkout "$matches"
+      end
+  end
 #+end_src
 ** Mistakes
 Sometimes, I fuck up with git, because it's git and it's kinda complicated sometimes. These help recover from said fuckups.
