@@ -187,6 +187,7 @@ alias undocommit="g reset HEAD^"
 #+end_src
 
 ** Core workflow
+*** Git commit with message; gp
 Git add and commit with message - gotta shortcut this. Didn't end up using `gp` as much, but oh well!
 #+begin_src bash
 function gca(){
@@ -194,6 +195,8 @@ function gca(){
 }
 alias gp='g push'
 #+end_src
+
+*** Main, but not always main
 Ok so, to get a little political, sometimes there are movements to change the language we use. And sometimes, people don't like it because changing language introduces cognitive tax, which is like, kinda understandable.
 And to get more political, I think it's important to empathize with people that feel that way, even if you would prefer they change their language (which believe me, I frequently do, and in moments of impatience, wish people would just think a little harder).
 I do believe language shapes how we think, and changing it can change how we think, and that's important.
@@ -211,12 +214,14 @@ represents the "branch with the closest-to-production-code" is a frequent, albei
     fi
   }
 #+end_src
+Checkout the right one
 #+begin_src bash
   function gcm {
     echoAndEval "g checkout `masterOrMain`"
   }
 #+end_src
-
+*** Finish merge
+Little shortcut to do all the git mechanics for finishing a merge.
 #+begin_src bash
   function finishMerge {
     g add ./
@@ -304,7 +309,7 @@ function pushAndOpenMR {
   alias setUpstreamBranch='git branch --set-upstream-to=origin/`cb` `cb`'
   alias gsub=setUpstreamBranch
 #+end_src
-** Checkout file at master
+** Checkout file at main or that other branch
 #+begin_src bash
 alias gcam='g checkout `masterOrMain` -- '
 #+end_src
