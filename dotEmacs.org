@@ -539,15 +539,34 @@ Sticks a priority A todo for today afte the current org node.
         (kmacro-lambda-form [?i ?\C-u ?\C-\[ ?\C-m ?\C-\[ ?\[ ?1 ?\; ?2 ?C ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-c ?\C-s ?\C-m] 0 "%d"))
 
   (define-key evil-ex-map "dtd" 'do-today)
+#+end_src
+Do today, but with priority b
+#+begin_src emacs-lisp
   (fset 'do-today-b
         (kmacro-lambda-form [?i ?\C-u ?\C-\[ ?\C-m ?\C-\[ ?\[ ?1 ?\; ?2 ?C ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-c ?\C-s ?\C-m] 0 "%d"))
 
   (define-key evil-ex-map "dtb" 'do-today-b)
-
+#+end_src
+Do tomorrow
+#+begin_src emacs-lisp
   (fset 'do-tmrw
         (kmacro-lambda-form [?i ?\C-u ?\C-\[ ?\C-m ?\C-\[ ?\[ ?1 ?\; ?2 ?C ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-c ?\C-s ?\C-\[ ?\[ ?1 ?\; ?2 ?C ?\C-m] 0 "%d"))
 
   (define-key evil-ex-map "dtm" 'do-tmrw)
+#+end_src
+  Insert a do today header, but indented one level from the current header.
+#+begin_src emacs-lisp
+  (fset 'do-today-indent
+        (kmacro-lambda-form [?: ?d ?t ?d ?\C-\[ ?\C-\[ ?\[ ?C] 0 "%d"))
+  (define-key evil-ex-map "dit" 'do-today-indent)
+#+end_src
+** Split src block
+Let's me break up an org source block so I can document in between more easily
+#+begin_src emacs-lisp
+  (fset 'split-src-block
+        (kmacro-lambda-form [?i ?# ?+ ?b ?e ?g ?i ?n ?_ ?s ?e ?r ?c ?\C-? ?\C-? ?\C-? ?r ?c ?  ?e ?m ?a ?c ?s ?- ?l ?i ?s ?t ?p ?\C-? ?\C-? ?p escape ?O ?# ?+ ?e ?n ?d ?_ ?s ?r ?c escape ?j ?I ?\C-\[ ?O ?C ?\C-? escape] 0 "%d"))
+
+  (define-key evil-ex-map "srcsplit" 'split-src-block)
 
 #+end_src
 ** Link Thread ex-map
