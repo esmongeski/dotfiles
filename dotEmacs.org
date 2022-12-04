@@ -594,6 +594,44 @@ Rebind normal C-o to C-k
 #+begin_src emacs-lisp
   (define-key evil-normal-state-map (kbd "C-k") 'evil-jump-backward)
 #+end_src
+** Evil motion remapping
+A bunch of "do this motion, then center the screen" type changes. There's probably some better way to curry these but I'm not good enough at elisp.
+#+begin_src emacs-lisp
+  (defun es/evil-then-center (lambda)
+    "Wrapper for any motion to motion, then center the screen"
+    (funcall lambda)
+    (evil-scroll-line-to-center nil)
+    )
+
+  (defun es/search-center ()
+    "wrapper to center after search"
+    (interactive)
+    (es/evil-then-center 'evil-search-next)
+    )
+
+  (define-key evil-motion-state-map (kbd "n") 'es/search-center)
+
+  (defun es/search-rev-center ()
+    "wrapper to center after reverse search"
+    (interactive)
+    (es/evil-then-center 'evil-search-previous)
+    )
+  (define-key evil-motion-state-map (kbd "N") 'es/search-rev-center)
+
+  (defun es/search-word-center ()
+    "wrapper to center after word search"
+    (interactive)
+    (es/evil-then-center 'evil-search-word-forward)
+    )
+  (define-key evil-motion-state-map (kbd "*") 'es/search-word-center)
+
+  (defun es/search-word-rev-center ()
+    "wrapper to center after reverse word search"
+    (interactive)
+    (es/evil-then-center 'evil-search-word-backward)
+    )
+  (define-key evil-motion-state-map (kbd "#") 'es/search-word-rev-center)
+#+end_src
 ** Mac copy to clipboard
 Yank doesn't quite do the trick with things, so make a custom one.
 https://emacs.stackexchange.com/questions/10900/copy-text-from-emacs-to-os-x-clipboard
