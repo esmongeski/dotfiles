@@ -296,6 +296,10 @@ alias grbc='g add -uv; g rebase --continue'
 alias newbr='g checkout -b'
 
 #+end_src
+** Unpushed branches
+#+begin_src fish
+  alias unpushed='g log --branches --not --remotes'
+#+end_src
 ** Set upstream
 #+begin_src fish
   alias setUpstreamBranch='git branch --set-upstream-to=origin/(cb) (cb)'
