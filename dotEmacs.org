@@ -363,7 +363,7 @@ Just a command to bring up agenda view
          )
   (define-key evil-ex-map "a" 'org-agenda-list-day)
 #+end_src
-** Auto insert subtask tracke
+** Auto insert subtask tracker
 Binds =:st= to "insert at end of line, append [/], C-cC-c it" for quick subtask adding.
 #+begin_src emacs-lisp
   (fset 'es/append-subtask-tracker
@@ -643,6 +643,11 @@ Also add =pp= to do visual paste, since =pc= overrides it.
 
   (define-key evil-visual-state-map "pc" 'pbcopy)
   (define-key evil-visual-state-map "pp" 'evil-paste-after)
+#+end_src
+** Insert link on highlighted text
+#+begin_src emacs-lisp
+  (define-key evil-visual-state-map "cl" 'org-insert-link)
+  (define-key evil-visual-state-map "cc" 'evil-change)
 #+end_src
 * Debugging
 Trying to see what this does on startup so I can optimize my init/dotfiles.
