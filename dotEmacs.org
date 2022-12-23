@@ -1,3 +1,34 @@
+* Package things!
+This is a bit of fumbling to try and get this all to work on a new computer from zero with minimal manual intervention.
+#+begin_src emacs-lisp
+  (package-initialize)
+
+  (when (not package-archive-contents)
+    (package-refresh-contents))
+#+end_src
+#+BEGIN_SRC emacs-lisp
+  (require 'package)
+  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
+  (unless (package-installed-p 'use-package)
+    (package-install 'use-package))
+  (eval-when-compile
+    (require 'use-package))
+#+END_SRC
+Make use package always install if package is not installed.
+#+begin_src emacs-lisp
+  (setq use-package-always-ensure t)
+#+end_src
+
+Ubuntu specific (hopefully this doesn't break mac!) - this forces org to update to a later version.
+#+BEGIN_SRC emacs-lisp
+  (use-package org :ensure org-contrib :pin org)
+#+END_SRC
+
+This brings back the old "<s" shortcut for source blocks. Unfortunately it has different casing than before, but that's not worth the time to fix (probably easy though).
+#+begin_src emacs-lisp
+  (require 'org-tempo)
+#+end_src
+
 * Extra Plugins
 ** Evil
 Because I am a vim user at heart.
@@ -114,9 +145,8 @@ Completion config
 #+begin_src emacs-lisp
   (use-package helm
     :ensure t)
-  (require 'helm-config)
   (setq helm-split-window-in-side-p t
-        helm-move-to-line-cycle-in-source t)
+	helm-move-to-line-cycle-in-source t)
   (helm-mode 1)
 #+end_src
 *** TODO Helm fuzzier matching
@@ -137,37 +167,6 @@ Not using k8s a ton day to day, but a magit-like k8s buffer seems great. Going t
   (fset 'k8s 'kubernetes-overview)
 
 #+end_src
-* Package things!
-This is a bit of fumbling to try and get this all to work on a new computer from zero with minimal manual intervention.
-
-The key is package-refresh-contents - however, it's super slow. The t argument makes it run asynchronously. This means I might have to open emacs multiple times on a new computer to get this working.
-
-Apparently the call to package-initialize isn't always required? I don't fully understand what it does yet.
-#+BEGIN_SRC emacs-lisp
-  (require 'package)
-  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
-  ;;(package-initialize)
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
-  (eval-when-compile
-    (require 'use-package))
-#+END_SRC
-Make use package always install if package is not installed.
-#+begin_src emacs-lisp
-  (setq use-package-always-ensure t)
-#+end_src
-
-Ubuntu specific (hopefully this doesn't break mac!) - this forces org to update to a later version.
-#+BEGIN_SRC emacs-lisp
-  (use-package org :ensure org-contrib :pin org)
-#+END_SRC
-
-This brings back the old "<s" shortcut for source blocks. Unfortunately it has different casing than before, but that's not worth the time to fix (probably easy though).
-#+begin_src emacs-lisp
-  (require 'org-tempo)
-#+end_src
-
 * Custom variables (I don't really remember what this is)
 Variables - org agenda files, which will some day pull dates, but are also used for how things refile. I exclude archive.org from this list because it's huge.
 
@@ -497,6 +496,9 @@ I am evil, so =:= is special. It sets tags in agenda, which I basically never wa
 
 #+end_src
 ** Evil shortcuts - helm menus, org capture. Basically replace any common C-[something] C-[something] I use with :[something][something]
+A bunch of this is effectively recreating =helm-config= - the file generated
+from a shell script bundled with helm. It's easier to roll these in my config so
+I don't have to boot from a clean slate, run some random sh, then boot again.
 #+begin_src emacs-lisp
   (define-key evil-ex-map "b" 'helm-buffers-list)
   (define-key evil-ex-map "mx" 'helm-M-x)
