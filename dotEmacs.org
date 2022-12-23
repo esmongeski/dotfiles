@@ -1012,6 +1012,12 @@ Quick jump to work or personal daily node.
 #+end_src
 ** TODO Ts, react, all the frontend stuff
 Probably do something like [[https://gist.github.com/CodyReichert/9dbc8bd2a104780b64891d8736682cea][this]]
+** Treesitter
+Starting to play with this and see how it works.
+#+begin_src emacs-lisp
+  (use-package tree-sitter)
+  (use-package tree-sitter-langs)
+#+end_src
 * IN-PROGRESS Notion
 This is an attempt to hit the [[https://developers.notion.com/docs/getting-started][notion api]] in order to dump tasks out of org into notion.
 
