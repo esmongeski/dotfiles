@@ -562,6 +562,13 @@ Do tomorrow
         (kmacro-lambda-form [?: ?d ?t ?d ?\C-\[ ?\C-\[ ?\[ ?C] 0 "%d"))
   (define-key evil-ex-map "dit" 'do-today-indent)
 #+end_src
+Do to inbox - experimenting with an inbox view in org-agenda.
+#+begin_src emacs-lisp
+(fset 'do-inbox
+   (kmacro-lambda-form [?\C-u ?\C-u ?\C-c ?\C-x ?M ?\C-c ?\C-c ?i ?n ?b ?o ?x ?\C-m ?\C-c ?\C-s ?\C-m ?a ?\C-\[ ?x ?e ?n ?d ?- ?k ?b ?\C-i] 0 "%d"))
+
+  (define-key evil-ex-map "dti" 'do-inbox)
+#+end_src
 ** Split src block
 Let's me break up an org source block so I can document in between more easily
 #+begin_src emacs-lisp
