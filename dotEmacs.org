@@ -971,14 +971,14 @@ Quick jump to work or personal daily node.
   (defun es/open-daily-work-buffer ()
     ""
     (interactive)
-    (es/set-org-agenda-files)
     (es/open-roam-daily-today "t")
+    (es/set-org-agenda-files)
     )
   (defun es/open-daily-personal-buffer ()
     ""
     (interactive)
-    (es/set-org-agenda-files)
     (es/open-roam-daily-today "p")
+    (es/set-org-agenda-files)
     )
 
   (define-key evil-ex-map "rd" 'es/open-daily-work-buffer)
