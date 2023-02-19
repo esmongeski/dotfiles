@@ -302,58 +302,61 @@ Just a command to bring up agenda view
 #+end_src
 ** Super Agenda
 #+begin_src emacs-lisp
-    (use-package org-super-agenda)
-    (setq org-super-agenda-keep-order t)
-    (org-super-agenda-mode 1)
-    (setq org-super-agenda-groups
-          '(;; Each group has an implicit boolean OR operator between its selectors.
-            (:name "Habits Overdue"
-                   :and(:file-path "recurring.org" :deadline  past)
-                   :and(:file-path "recurring.org" :scheduled past)
-                   )
-            (:name "Habits Today"
-                   :and(:file-path "recurring.org" :deadline today)
-                   :and(:file-path "recurring.org" :scheduled today)
-                   )
-            (:name "Important - Personal"
-                   ;; Single arguments given alone
-                   :and (:priority "A" :todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path "Dropbox"))
-            (:name "Important - Work"
-                   ;; Single arguments given alone
-                   :and (:priority "A"
-                                   :todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path "/Volumes/GoogleDrive/My Drive/org/")
-                   :and (:priority "A"
-                                   :and(:file-path "work.org" :todo ("TODO" "IN-PROGRESS"))))
-            (:name "Other personal"
-                   :and (:todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path "Dropbox"))
-            (:name "Other work"
-                   :and(:file-path "work.org" :todo ("TODO" "IN-PROGRESS"))
-                   :and(:file-path "/Volumes/GoogleDrive/My Drive/org" :todo ("TODO" "IN-PROGRESS")))
-            (:name "EOD Routine"
-                   :and(:todo "TODO" :file-path "recurring.org" :scheduled today :tag "eodroutine")
-                   :and(:todo "TODO" :file-path "recurring.org" :scheduled past :tag "eodroutine")
-                   )
-            (:name "Work stuck"
-                   :and(:file-path "work.org" :todo ("WAITING" "BLOCKED")))
-            ;; Set order of multiple groups at once
-            (:and(:priority<= "B"
-                              ;; Show this section after "Today" and "Important", because
-                              ;; their order is unspecified, defaulting to 0. Sections
-                              ;; are displayed lowest-number-first.
-                              :order 0
-                              :todo ("TODO" "IN-PROGRESS" "SOMEDAY")))
-            ;; After the last group, the agenda will display items that didn't
-            ;; match any of these groups, with the default order position of 99
-            (:name "Blocked"
-                   :todo ("BLOCKED"))
-            (:name "Future Habits"
-                   :and(:file-path "recurring.org" :deadline future))
-            (:name "Waiting"
-                   :todo ("WAITING"))
-            (:name "Done"
-                   :todo ("DONE" "OBSOLETE" "DELEGATED" "EXPORTED")
-                   )))
-    (setq org-super-agenda-header-map (make-sparse-keymap))
+  (use-package org-super-agenda)
+  (setq org-super-agenda-keep-order t)
+  (org-super-agenda-mode 1)
+  (setq org-super-agenda-groups
+        '(;; Each group has an implicit boolean OR operator between its selectors.
+          (:name "Inbox"
+                 :tag "inbox"
+                 )
+          (:name "Habits Overdue"
+                 :and(:file-path "recurring.org" :deadline  past)
+                 :and(:file-path "recurring.org" :scheduled past)
+                 )
+          (:name "Habits Today"
+                 :and(:file-path "recurring.org" :deadline today)
+                 :and(:file-path "recurring.org" :scheduled today)
+                 )
+          (:name "Important - Personal"
+                 ;; Single arguments given alone
+                 :and (:priority "A" :todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path "Dropbox"))
+          (:name "Important - Work"
+                 ;; Single arguments given alone
+                 :and (:priority "A"
+                                 :todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path "Drive")
+                 :and (:priority "A"
+                                 :and(:file-path "work.org" :todo ("TODO" "IN-PROGRESS"))))
+          (:name "Other personal"
+                 :and (:todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path "Dropbox"))
+          (:name "Other work"
+                 :and(:file-path "work.org" :todo ("TODO" "IN-PROGRESS"))
+                 :and(:file-path "Drive" :todo ("TODO" "IN-PROGRESS")))
+          (:name "EOD Routine"
+                 :and(:todo "TODO" :file-path "recurring.org" :scheduled today :tag "eodroutine")
+                 :and(:todo "TODO" :file-path "recurring.org" :scheduled past :tag "eodroutine")
+                 )
+          (:name "Work stuck"
+                 :and(:file-path "work.org" :todo ("WAITING" "BLOCKED")))
+          ;; Set order of multiple groups at once
+          (:and(:priority<= "B"
+                            ;; Show this section after "Today" and "Important", because
+                            ;; their order is unspecified, defaulting to 0. Sections
+                            ;; are displayed lowest-number-first.
+                            :order 0
+                            :todo ("TODO" "IN-PROGRESS" "SOMEDAY")))
+          ;; After the last group, the agenda will display items that didn't
+          ;; match any of these groups, with the default order position of 99
+          (:name "Blocked"
+                 :todo ("BLOCKED"))
+          (:name "Future Habits"
+                 :and(:file-path "recurring.org" :deadline future))
+          (:name "Waiting"
+                 :todo ("WAITING"))
+          (:name "Done"
+                 :todo ("DONE" "OBSOLETE" "DELEGATED" "EXPORTED")
+                 )))
+  (setq org-super-agenda-header-map (make-sparse-keymap))
 #+end_src
 ** Agenda evil shortcut
 #+begin_src emacs-lisp
