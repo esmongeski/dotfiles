@@ -74,6 +74,12 @@ Change cursor to a bar in insert mode.
     (global-evil-surround-mode 1))
 
 #+end_src
+*** Easymotion
+#+begin_src emacs-lisp
+  (use-package evil-easymotion)
+  (evilem-default-keybindings "SPC")
+
+#+end_src
 ** Find lisp
 #+begin_src emacs-lisp
   (use-package find-lisp)
