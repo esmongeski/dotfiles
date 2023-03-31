@@ -527,6 +527,7 @@ I don't have to boot from a clean slate, run some random sh, then boot again.
   (define-key evil-ex-map "ce" 'org-export-dispatch)
   (define-key evil-ex-map "kb" 'kill-buffer)
   (define-key evil-ex-map "cl" 'org-insert-link)
+  (define-key evil-ex-map "osl" 'org-store-link)
   (define-key evil-ex-map "cni" 'org-roam-node-insert)
   (define-key evil-ex-map "xe" 'eval-last-sexp)
   (defun es/save-all ()
