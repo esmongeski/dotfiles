@@ -1066,3 +1066,23 @@ Next, I need to format a payload with local secrets (api key) and hit the api. I
       (message notion-todo-state)))
 
 #+end_src
+* test - mode sensitive macros
+#+begin_src emacs-lisp
+      (fset 'test-org
+         (kmacro-lambda-form [?i ?  ?w ?r ?i ?t ?e ?  ?g ?o ?  ?o ?r ?  ?s ?o ?m ?e ?t ?h ?i ?n ?g escape] 0 "%d"))
+    (fset 'ts-test
+       (kmacro-lambda-form [?i ?i ?  ?w ?r ?i ?t ?e ?  ?i ?n ?  ?t ?y ?p ?e ?s ?c ?r ?i ?p ?t escape] 0 "%d"))
+
+    (defun org-or-ts () (interactive)
+      "Do something based on org or ts"
+      (if (eq major-mode 'org-mode) (test-org)
+        (if (eq major-mode 'typescript-mode) (ts-test)))
+      )
+
+#+end_src
+ write go or something
+ #+begin_src typescript
+   write go or something
+ write go or something
+
+ #+end_src
