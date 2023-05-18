@@ -317,12 +317,12 @@ Just a command to bring up agenda view
                  :tag "inbox"
                  )
           (:name "Habits Overdue"
-                 :and(:file-path "recurring.org" :deadline  past)
-                 :and(:file-path "recurring.org" :scheduled past)
+                 :and(:file-path "recurring.org" :deadline  past :not(:tag "eodroutine"))
+                 :and(:file-path "recurring.org" :scheduled past :not(:tag "eodroutine"))
                  )
           (:name "Habits Today"
-                 :and(:file-path "recurring.org" :deadline today)
-                 :and(:file-path "recurring.org" :scheduled today)
+                 :and(:file-path "recurring.org" :deadline today :not(:tag "eodroutine"))
+                 :and(:file-path "recurring.org" :scheduled today :not(:tag "eodroutine"))
                  )
           (:name "Important - Personal"
                  ;; Single arguments given alone
@@ -334,14 +334,10 @@ Just a command to bring up agenda view
                  :and (:priority "A"
                                  :and(:file-path "work.org" :todo ("TODO" "IN-PROGRESS"))))
           (:name "Other personal"
-                 :and (:todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path "Dropbox"))
+                 :and (:todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path "Dropbox" :not(:tag "eodroutine")))
           (:name "Other work"
                  :and(:file-path "work.org" :todo ("TODO" "IN-PROGRESS"))
                  :and(:file-path "Drive" :todo ("TODO" "IN-PROGRESS")))
-          (:name "EOD Routine"
-                 :and(:todo "TODO" :file-path "recurring.org" :scheduled today :tag "eodroutine")
-                 :and(:todo "TODO" :file-path "recurring.org" :scheduled past :tag "eodroutine")
-                 )
           (:name "Work stuck"
                  :and(:file-path "work.org" :todo ("WAITING" "BLOCKED")))
           ;; Set order of multiple groups at once
@@ -359,8 +355,14 @@ Just a command to bring up agenda view
                  :and(:file-path "recurring.org" :deadline future))
           (:name "Waiting"
                  :todo ("WAITING"))
+          (:name "EOD Routine"
+                 :and(:todo "TODO" :file-path "recurring.org" :scheduled today :tag "eodroutine")
+                 :and(:todo "TODO" :file-path "recurring.org" :scheduled past :tag "eodroutine")
+                 )
           (:name "Done"
-                 :todo ("DONE" "OBSOLETE" "DELEGATED" "EXPORTED")
+                 :and(
+                      :todo ("DONE" "OBSOLETE" "DELEGATED" "EXPORTED")
+                      )
                  )))
   (setq org-super-agenda-header-map (make-sparse-keymap))
 #+end_src
