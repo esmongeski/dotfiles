@@ -547,6 +547,11 @@ Quick binding for C-cC-c using evil command mode.
   (define-key evil-ex-map "cc" 'do-the-thing)
 #+end_src
 ** Do today ex-map
+Unset shift+right for evil insert, because sometimes it overrides org.
+I never use it anyway.
+#+begin_src emacs-lisp
+  (define-key evil-insert-state-map (kbd "S-<right>") nil)
+#+end_src
 Sticks a priority A todo for today afte the current org node.
 #+begin_src emacs-lisp
   (fset 'do-today

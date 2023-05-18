@@ -51,6 +51,7 @@ Dropbox paths are probably the same everywhere? Fingers crossed!
   alias wtodos='emacs ~/org/work.org'
   alias winbox='workstuff'
   alias recurring='emacs ~/Dropbox/org/projects/recurring.org'
+  alias bgb='emacs ~/Dropbox/org/projects/bgb.org'
 #+end_src
 Quick navigation to my org directory.
 #+begin_src fish
