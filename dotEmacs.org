@@ -332,14 +332,18 @@ Just a command to bring up agenda view
                  :and (:priority "A"
                                  :todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path "Drive")
                  :and (:priority "A"
-                                 :and(:file-path "work.org" :todo ("TODO" "IN-PROGRESS"))))
+                                 :todo ("TODO" "IN-PROGRESS") :file-path "work.org"))
+          (:name "Work Stuck"
+                 ;; Single arguments given alone
+                 :and (:priority "A"
+                                 :todo ("WAITING" "BLOCKED") :file-path "Drive")
+                 :and (:priority "A"
+                                 :todo ("WAITING" "BLOCKED") :file-path "work.org"))
           (:name "Other personal"
                  :and (:todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path "Dropbox" :not(:tag "eodroutine")))
           (:name "Other work"
                  :and(:file-path "work.org" :todo ("TODO" "IN-PROGRESS"))
                  :and(:file-path "Drive" :todo ("TODO" "IN-PROGRESS")))
-          (:name "Work stuck"
-                 :and(:file-path "work.org" :todo ("WAITING" "BLOCKED")))
           ;; Set order of multiple groups at once
           (:and(:priority<= "B"
                             ;; Show this section after "Today" and "Important", because
