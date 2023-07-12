@@ -105,6 +105,13 @@ Not sure what else evil-collection has, but some day I want to move this elsewhe
   (use-package evil-collection)
   (evil-collection-init 'magit)
 #+end_src
+*** Forge
+To work with github
+#+begin_src emacs-lisp
+  (use-package forge
+    :after magit)
+
+#+end_src
 ** Undo Tree
 I could have sworn I had this installed at one point, but oh well!
 #+begin_src emacs-lisp
