@@ -550,6 +550,13 @@ I don't have to boot from a clean slate, run some random sh, then boot again.
   (define-key evil-ex-map "sa" 'es/save-all)
 
 #+end_src
+
+Normal map for opening links - remap "go" to do it.
+Inspired by vim's =gf= and =gx= but =go= is easier to type.
+#+begin_src emacs-lisp
+  (define-key evil-normal-state-map "go" 'org-open-at-point)
+#+end_src
+
 ** Do the Thing ex-map
 Quick binding for C-cC-c using evil command mode.
 #+begin_src emacs-lisp
