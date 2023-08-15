@@ -555,6 +555,7 @@ Normal map for opening links - remap "go" to do it.
 Inspired by vim's =gf= and =gx= but =go= is easier to type.
 #+begin_src emacs-lisp
   (define-key evil-normal-state-map "go" 'org-open-at-point)
+  (evil-define-key 'motion org-agenda-mode-map (kbd "go") 'org-open-at-point)
 #+end_src
 
 ** Do the Thing ex-map
