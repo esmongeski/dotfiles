@@ -195,7 +195,12 @@ function gca(){
 }
 alias gp='g push'
 #+end_src
-
+*** Quick commit messages
+#+begin_src bash
+alias gcf="gca 'fix'"
+alias gcw="gca 'wip'"
+alias gcs="gca 'squash'"
+#+end_src
 *** Main, but not always main
 Ok so, to get a little political, sometimes there are movements to change the language we use. And sometimes, people don't like it because changing language introduces cognitive tax, which is like, kinda understandable.
 And to get more political, I think it's important to empathize with people that feel that way, even if you would prefer they change their language (which believe me, I frequently do, and in moments of impatience, wish people would just think a little harder).
