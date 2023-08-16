@@ -200,6 +200,9 @@ alias gp='g push'
 alias gcf="gca 'fix'"
 alias gcw="gca 'wip'"
 alias gcs="gca 'squash'"
+alias gcwp="gcw; gpush"
+alias gcfp="gcf; gpush"
+alias gcsp="gcs; gpush"
 #+end_src
 *** Main, but not always main
 Ok so, to get a little political, sometimes there are movements to change the language we use. And sometimes, people don't like it because changing language introduces cognitive tax, which is like, kinda understandable.
