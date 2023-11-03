@@ -1,0 +1,7 @@
+* Make all the stub directories needed for emacs to work
+#+begin_src bash
+  mkdir -p ~/Dropbox/org/roam/daily
+  mkdir -p ~/Dropbox/org/projects
+  mkdir -p ~/org/projects
+  mkdir -p ~/org/roam/daily
+#+end_src
