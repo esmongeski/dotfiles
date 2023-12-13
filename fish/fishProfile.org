@@ -384,6 +384,31 @@ Use emacsclient instead of emacs to hit the daemon.
   alias killEmacs="emacsclient -e -t '(save-buffers-kill-emacs)'"
   alias ke=killEmacs
 #+end_src
+** GUI Emacs setup
+Inspired by:
+http://hhyu.org/posts/emacs_clientserver
+#+begin_src fish
+  function emacsSocket
+      lsof -c Emacs | grep server | tr -s " " | cut -d' ' -f8
+  end
+
+  function emacsGuiClient
+      set emacs /Applications/Emacs.app/Contents/MacOS/Emacs
+      set emacsclient /Applications/Emacs.app/Contents/MacOS/bin/emacsclient
+      set socketfile (emacsSocket)
+      echo $socketfile
+      echo $emacs
+      echo $emacsclient
+
+      if test "$socketfile" = ""
+          echo "starting Emacs server..."
+          $emacs --chdir $PWD --execute "(server-start)" $argv &
+      else
+          echo "nope"
+          $emacsclient -n $argv --socket-name (emacsSocket)
+      end
+  end
+#+end_src
 * Background SSH agent
 Start a background ssh agent if one isn't already running
 #+begin_src fish

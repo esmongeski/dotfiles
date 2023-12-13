@@ -381,6 +381,7 @@ Start emacs as a client
   alias killEmacs="emacsclient -e -t '(save-buffers-kill-emacs)'"
   alias ke=killEmacs
 #+end_src
+** TODO port the fish version of gui emacs invocation over here
 * Misc helper functions
 Spit out the current date
 #+begin_src bash
