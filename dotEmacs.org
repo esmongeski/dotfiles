@@ -108,8 +108,8 @@ Not sure what else evil-collection has, but some day I want to move this elsewhe
 *** Forge
 To work with github
 #+begin_src emacs-lisp
-  (use-package forge
-    :after magit)
+  ;;(use-package forge
+    ;;:after magit)
 
 #+end_src
 ** Undo Tree
@@ -598,31 +598,30 @@ I never use it anyway.
   (define-key evil-insert-state-map (kbd "S-<right>") nil)
 #+end_src
 Sticks a priority A todo for today afte the current org node.
+https://emacs.stackexchange.com/questions/19210/how-to-insert-a-new-same-level-headline-after-current-one
 #+begin_src emacs-lisp
-  (fset 'do-today
-        (kmacro-lambda-form [?i ?\C-u ?\C-\[ ?\C-m ?\C-\[ ?\[ ?1 ?\; ?2 ?C ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-c ?\C-s ?\C-m] 0 "%d"))
-
-  (define-key evil-ex-map "dtd" 'do-today)
+  (defalias 'dotoday
+   (kmacro "C-<return> S-<right> C-c C-s <return> S-<up> S-<up> A"))
+  (define-key evil-ex-map "dtd" 'dotoday)
 #+end_src
 Do today, but with priority b
 #+begin_src emacs-lisp
-  (fset 'do-today-b
-        (kmacro-lambda-form [?i ?\C-u ?\C-\[ ?\C-m ?\C-\[ ?\[ ?1 ?\; ?2 ?C ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-c ?\C-s ?\C-m] 0 "%d"))
-
-  (define-key evil-ex-map "dtb" 'do-today-b)
+  (defalias 'dotodayb
+   (kmacro "C-<return> S-<right> C-c C-s <return> S-<up> A"))
+  (define-key evil-ex-map "dtb" 'dotodayb)
 #+end_src
 Do tomorrow
 #+begin_src emacs-lisp
-  (fset 'do-tmrw
-        (kmacro-lambda-form [?i ?\C-u ?\C-\[ ?\C-m ?\C-\[ ?\[ ?1 ?\; ?2 ?C ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-\[ ?\[ ?1 ?\; ?2 ?A ?\C-c ?\C-s ?\C-\[ ?\[ ?1 ?\; ?2 ?C ?\C-m] 0 "%d"))
+  (defalias 'dotmrw
+   (kmacro "C-<return> S-<right> C-c C-s S-<right> <return> S-<up> S-<up> A"))
 
-  (define-key evil-ex-map "dtm" 'do-tmrw)
+  (define-key evil-ex-map "dtm" 'dotmrw)
 #+end_src
   Insert a do today header, but indented one level from the current header.
 #+begin_src emacs-lisp
-  (fset 'do-today-indent
-        (kmacro-lambda-form [?: ?d ?t ?d ?\C-\[ ?\C-\[ ?\[ ?C] 0 "%d"))
-  (define-key evil-ex-map "dit" 'do-today-indent)
+  (defalias 'doindenttoday
+   (kmacro "o M-<return> M-<right> S-<right> S-<up> S-<up> C-c C-s <return>"))
+  (define-key evil-ex-map "dit" 'doindenttoday)
 #+end_src
 Do to inbox - experimenting with an inbox view in org-agenda.
 #+begin_src emacs-lisp
@@ -1115,4 +1114,9 @@ Next, I need to format a payload with local secrets (api key) and hit the api. I
            (notion-todo-state (org-todo-to-notion-todo todo-state)))
       (message notion-todo-state)))
 
+#+end_src
+* GUI emacs stuff
+Font size default
+#+begin_src emacs-lisp
+(set-face-attribute 'default nil :height 140)
 #+end_src

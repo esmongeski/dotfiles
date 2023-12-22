@@ -9,3 +9,4 @@ fish/.emacsSaves
 .org-id-locations
 transient
 network-security.data
+org-persist
