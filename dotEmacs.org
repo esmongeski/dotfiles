@@ -195,41 +195,54 @@ Variables - org agenda files, which will some day pull dates, but are also used 
     (format-time-string "%Y-%m" (current-time))
     )
   (defun es/set-org-agenda-files () (interactive)
-    "Define my org agenda files"
-    (custom-set-variables
-     '(org-agenda-files
-       (append
-        (cl-remove-if (lambda (k) (string-match-p "archive.org" k))
-                      (find-lisp-find-files "~/Dropbox/org/projects/" "\.org$"))
-        (cl-remove-if (lambda (k) (string-match-p "_done.org" k))
-                      (find-lisp-find-files "~/org/projects/" "\.org$"))
-        (cl-remove-if (lambda (k) (not (or
-                                        (string-match-p (es/current-month) k)
-                                        (string-match-p (es/fourteen-days-ago-month) k))))
-                      (find-lisp-find-files "~/org/roam/daily" "\.org$"))
-        (cl-remove-if (lambda (k) (not (string-match-p "inbox.org" k)))
-                      (find-lisp-find-files "~/Dropbox/org" "\.org$"))
-        (cl-remove-if (lambda (k) (not (or
-                                        (string-match-p (es/current-month) k)
-                                        (string-match-p (es/fourteen-days-ago-month) k))))
-                      (find-lisp-find-files "~/Dropbox/org/roam/daily/" "\.org$"))
-        )
-       )))
-  (defun es/set-no-work-agenda-files () (interactive)
-    "Define just personal agenda files"
-    (custom-set-variables
-     '(org-agenda-files
-       (append
-        (cl-remove-if (lambda (k) (string-match-p "archive.org" k))
-                      (find-lisp-find-files "~/Dropbox/org/projects/" "\.org$"))
-        (cl-remove-if (lambda (k) (not (string-match-p "inbox.org" k)))
-                      (find-lisp-find-files "~/Dropbox/org" "\.org$"))
-        (cl-remove-if (lambda (k) (not (or
-                                        (string-match-p (es/current-month) k)
-                                        (string-match-p (es/fourteen-days-ago-month) k))))
-                      (find-lisp-find-files "~/Dropbox/org/roam/daily/" "\.org$"))
-        )
-       )))
+         (if es/no-work-agenda
+             (es/set-no-work-org-agenda-files)
+           (es/set-work-org-agenda-files)
+           )
+         )
+  (defun es/set-work-org-agenda-files () (interactive)
+         "Define my org agenda files"
+         (custom-set-variables
+          '(org-agenda-files
+            (append
+             (cl-remove-if (lambda (k) (string-match-p "archive.org" k))
+                           (find-lisp-find-files "~/Dropbox/org/projects/" "\.org$"))
+             (cl-remove-if (lambda (k) (string-match-p "_done.org" k))
+                           (find-lisp-find-files "~/org/projects/" "\.org$"))
+             (cl-remove-if (lambda (k) (not (or
+                                             (string-match-p (es/current-month) k)
+                                             (string-match-p (es/fourteen-days-ago-month) k))))
+                           (find-lisp-find-files "~/org/roam/daily" "\.org$"))
+             (cl-remove-if (lambda (k) (not (string-match-p "inbox.org" k)))
+                           (find-lisp-find-files "~/Dropbox/org" "\.org$"))
+             (cl-remove-if (lambda (k) (not (or
+                                             (string-match-p (es/current-month) k)
+                                             (string-match-p (es/fourteen-days-ago-month) k))))
+                           (find-lisp-find-files "~/Dropbox/org/roam/daily/" "\.org$"))
+             )
+            )))
+  (defun es/set-nw-agenda () (interactive)
+         (setq es/no-work-agenda t)
+         )
+  (defun es/set-yw-agenda () (interactive)
+         (setq es/no-work-agenda nil)
+         )
+  (defun es/set-no-work-org-agenda-files () (interactive)
+         "Define just personal agenda files"
+         (custom-set-variables
+          '(org-agenda-files
+            (append
+             (cl-remove-if (lambda (k) (string-match-p "archive.org" k))
+                           (find-lisp-find-files "~/Dropbox/org/projects/" "\.org$"))
+             (cl-remove-if (lambda (k) (not (string-match-p "inbox.org" k)))
+                           (find-lisp-find-files "~/Dropbox/org" "\.org$"))
+             (cl-remove-if (lambda (k) (not (or
+                                             (string-match-p (es/current-month) k)
+                                             (string-match-p (es/fourteen-days-ago-month) k))))
+                           (find-lisp-find-files "~/Dropbox/org/roam/daily/" "\.org$"))
+             )
+            )))
+  (es/set-yw-agenda)
 #+END_SRC
 Start with bullets folded and indented by default.
 #+BEGIN_SRC emacs-lisp
@@ -407,8 +420,8 @@ Just a command to bring up agenda view
          (org-agenda-list 1)
          )
   (define-key evil-ex-map "a" 'org-agenda-list-day)
-  (define-key evil-ex-map "nw" 'es/set-no-work-agenda-files)
-  (define-key evil-ex-map "yw" 'es/set-org-agenda-files)
+  (define-key evil-ex-map "nw" 'es/set-nw-agenda)
+  (define-key evil-ex-map "yw" 'es/set-yw-agenda)
 #+end_src
 ** Auto insert subtask tracker
 Binds =:st= to "insert at end of line, append [/], C-cC-c it" for quick subtask adding.
