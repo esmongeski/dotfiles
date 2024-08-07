@@ -250,7 +250,7 @@ alias cb='parse_git_branch'
 ** Various shortcuts
 List all git branches
 #+begin_src bash
-alias brs='g branch -vv'
+alias brs='git branch --sort=-authordate --format="%(HEAD)%(authordate:relative)%09%(refname:lstrip=2)"'
 #+end_src
 Git status, git checkout, git log, git log files, current branch name
 #+begin_src bash
