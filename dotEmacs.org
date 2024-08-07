@@ -369,18 +369,18 @@ Just a command to bring up agenda view
                      ;; Single arguments given alone
                      :and (:todo ("IN-PROGRESS") :file-path "Drive")
                      :and (:todo ("IN-PROGRESS") :file-path "work.org"))
-              (:name "Important - Work"
-                     ;; Single arguments given alone
-                     :and (:priority "A"
-                                     :todo ("TODO" "SOMEDAY") :file-path "Drive")
-                     :and (:priority "A"
-                                     :todo ("TODO") :file-path "work.org"))
               (:name "Work Stuck"
                      ;; Single arguments given alone
                      :and (:priority "A"
                                      :todo ("WAITING" "BLOCKED") :file-path "Drive")
                      :and (:priority "A"
                                      :todo ("WAITING" "BLOCKED") :file-path "work.org"))
+              (:name "Important - Work"
+                     ;; Single arguments given alone
+                     :and (:priority "A"
+                                     :todo ("TODO" "SOMEDAY") :file-path "Drive")
+                     :and (:priority "A"
+                                     :todo ("TODO") :file-path "work.org"))
               (:name "Other personal"
                      :and (:todo ("TODO" "SOMEDAY") :file-path "Dropbox" :not(:tag "eodroutine")))
               (:name "Other work"
