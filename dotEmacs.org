@@ -652,15 +652,28 @@ Let's me break up an org source block so I can document in between more easily
   (define-key evil-ex-map "srcsplit" 'split-src-block)
 
 #+end_src
-** Link Thread ex-map
+** Link Thread, PR, etc ex-map
 Shortcut to make a link called "thread". Useful for when I want to stamp a link from a slack thread
 [[https://devoted.slack.com/archives/CVA6JS4BH/p1667596316655489?thread_ts=1667413547.020339&cid=CVA6JS4BH][thread]]
 #+begin_src emacs-lisp
-
   (fset 'thread
    (kmacro-lambda-form [?: ?c ?l ?\C-m ?t ?h ?r ?e ?a ?d ?\C-m] 0 "%d"))
 
   (define-key evil-ex-map "ctl" 'thread)
+#+end_src
+
+#+begin_src emacs-lisp
+  (fset 'pr-link
+   (kmacro-lambda-form [?: ?c ?l ?\C-m ?p ?r ?\C-m] 0 "%d"))
+
+  (define-key evil-ex-map "cpl" 'pr-link)
+#+end_src
+
+#+begin_src emacs-lisp
+  (fset 'link-link
+   (kmacro-lambda-form [?: ?c ?l ?\C-m ?l ?i ?n ?k ?\C-m] 0 "%d"))
+
+  (define-key evil-ex-map "ckl" 'link-link)
 #+end_src
 ** Recover this file
 ex map shortcut to recover a file
