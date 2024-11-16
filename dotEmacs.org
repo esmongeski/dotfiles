@@ -418,6 +418,7 @@ Just a command to bring up agenda view
          "Wrapper for org-agenda-list that just lists a single day"
          (es/set-org-agenda-files)
          (org-agenda-list 1)
+         (setq org-agenda-start-with-log-mode state)
          )
   (define-key evil-ex-map "a" 'org-agenda-list-day)
   (define-key evil-ex-map "nw" 'es/set-nw-agenda)
