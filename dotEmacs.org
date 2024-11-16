@@ -434,7 +434,7 @@ Binds =:st= to "insert at end of line, append [/], C-cC-c it" for quick subtask 
 ** Agenda defaults
 Enable log mode on start up to see what was completed when
 #+begin_src emacs-lisp
-  (setq org-agenda-start-with-log-mode state)
+  (setq org-agenda-start-with-log-mode "state")
 #+end_src
 * Colors!!!! And other nice displays - change the ... to a return thingy, make nice bullet icons.
 #+BEGIN_SRC emacs-lisp
