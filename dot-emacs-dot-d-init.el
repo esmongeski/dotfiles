@@ -20,14 +20,14 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(org-agenda-files
-   (cl-remove-if
-    (lambda
-      (k)
-      (string-match-p "archive.org" k))
-    (append
-     (find-lisp-find-files "~/Dropbox/org/" ".org$")
-     (find-lisp-find-files "~/org/" ".org$"))))
+ ;;'(org-agenda-files
+   ;;(cl-remove-if
+    ;;(lambda
+      ;;(k)
+      ;;(string-match-p "archive.org" k))
+    ;;(append
+     ;;(find-lisp-find-files "~/Dropbox/org/" ".org$")
+     ;;(find-lisp-find-files "~/org/" ".org$"))))
  '(package-selected-packages
    '(helm-org monitor dash powerline-evil ## org-link-minor-mode org-mobile-sync evil)))
 (custom-set-faces
