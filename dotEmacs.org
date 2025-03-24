@@ -214,11 +214,11 @@ Variables - org agenda files, which will some day pull dates, but are also used 
              (cl-remove-if (lambda (k) (string-match-p "archive.org" k))
                            (find-lisp-find-files (concat es/org-root "/projects/") "\.org$"))
              (cl-remove-if (lambda (k) (string-match-p "_done.org" k))
-                           (find-lisp-find-files "~/org/projects/" "\.org$"))
+                           (find-lisp-find-files (concat es/org-work-root "/projects/") "\.org$"))
              (cl-remove-if (lambda (k) (not (or
                                              (string-match-p (es/current-month) k)
                                              (string-match-p (es/fourteen-days-ago-month) k))))
-                           (find-lisp-find-files "~/org/roam/daily" "\.org$"))
+                           (find-lisp-find-files (concat es/org-work-root "/roam/daily") "\.org$"))
              (cl-remove-if (lambda (k) (not (string-match-p "inbox.org" k)))
                            (find-lisp-find-files es/org-root "\.org$"))
              (cl-remove-if (lambda (k) (not (or
@@ -886,6 +886,12 @@ Install this in "~/" or else!
 This is what this ends up looking like. Keeping it here as an example - this
 is just the thing that the [[https://mermaid-js.github.io/mermaid-live-editor/edit][mermaid live editor]] ships with.
 #+begin_src mermaid :file mermaidTest.png
+  graph TD
+     A[Christmas] -->|Get money| B(Go shopping)
+     B --> C{Let me think}
+     C -->|One| D[Laptop]
+     C -->|Two| E[iPhone]
+     C -->|Three| F[fa:fa-car Car]
 #+end_src
 
 [[file:mermaidTest.png]]
