@@ -184,6 +184,7 @@ Not using k8s a ton day to day, but a magit-like k8s buffer seems great. Going t
 ** env variables
 #+begin_src emacs-lisp
   (setq es/org-root (getenv "ORG_ROOT"))
+  (setq es/org-work-root (getenv "ORG_WORK_ROOT"))
 #+end_src
 ** Agenda and things
 Variables - org agenda files, which will some day pull dates, but are also used for how things refile. I exclude archive.org from this list because it's huge.
@@ -369,7 +370,7 @@ Just a command to bring up agenda view
                      :and (:todo ("IN-PROGRESS") :file-path ,es/org-root))
               (:name "Important - Personal"
                      ;; Single arguments given alone
-                     :and (:priority "A" :todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path "Dropbox"))
+                     :and (:priority "A" :todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path ,es/org-root))
               (:name "Work - IN-PROGRESS"
                      ;; Single arguments given alone
                      :and (:todo ("IN-PROGRESS") :file-path "Drive")
@@ -387,7 +388,7 @@ Just a command to bring up agenda view
                      :and (:priority "A"
                                      :todo ("TODO") :file-path "work.org"))
               (:name "Other personal"
-                     :and (:todo ("TODO" "SOMEDAY") :file-path "Dropbox" :not(:tag "eodroutine")))
+                     :and (:todo ("TODO" "SOMEDAY") :file-path ,es/org-root :not(:tag "eodroutine")))
               (:name "Other work"
                      :and(:file-path "work.org" :todo ("TODO"))
                      :and(:file-path "Drive" :todo ("TODO")))
