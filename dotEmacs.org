@@ -445,6 +445,12 @@ Enable log mode on start up to see what was completed when
 #+begin_src emacs-lisp
   (setq org-agenda-start-with-log-mode "state")
 #+end_src
+** TODO Bugs
+suppress warnings when clicking links in agenda
+https://github.com/syl20bnr/spacemacs/issues/16575#issuecomment-2354153927
+#+begin_src emacs-lisp
+  ;; (add-to-list 'warning-suppress-types 'org-element-parser)
+#+end_src
 * Colors!!!! And other nice displays - change the ... to a return thingy, make nice bullet icons.
 #+BEGIN_SRC emacs-lisp
   (load-theme 'manoj-dark)
