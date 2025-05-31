@@ -616,6 +616,11 @@ Inspired by vim's =gf= and =gx= but =go= is easier to type.
   (define-key evil-normal-state-map "go" 'org-open-at-point)
   (evil-define-key 'motion org-agenda-mode-map (kbd "go") 'org-open-at-point)
 #+end_src
+As of org 9.7 or something, org complains about doing org-open-at-point outside
+of org buffers, including org-agenda buffers. suppress warnings so we don't see these.
+#+begin_src emacs-lisp
+  (setq warning-minimum-level :error)
+#+end_src
 
 ** Do the Thing ex-map
 Quick binding for C-cC-c using evil command mode.
