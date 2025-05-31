@@ -1067,7 +1067,7 @@ a link into the org roam note. Pretty handy!
   (setq personal-header (es/org-roam-header "Personal"))
   (setq work-header (es/org-roam-header "Work"))
   (setq personal-dir (concat es/org-root "/roam/daily/"))
-  (setq work-dir "~/org/roam/daily/")
+  (setq work-dir (concat es/org-work-root "/roam/daily/"))
   (setq org-daily-filename "%<%Y-%m-%d>.org")
   (setq personal-file (concat personal-dir org-daily-filename))
   (setq work-file (concat work-dir org-daily-filename))
