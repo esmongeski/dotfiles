@@ -1153,8 +1153,126 @@ Starting to play with this and see how it works.
   (use-package tree-sitter)
   (use-package tree-sitter-langs)
 #+end_src
-* IN-PROGRESS Notion
+* GUI emacs stuff
+Font size default
+#+begin_src emacs-lisp
+(set-face-attribute 'default nil :height 140)
+#+end_src
+* Todoist
+#+begin_src emacs-lisp
+    (use-package todoist)
+
+  ;;(defun todoist--get-tasks-to-me ()
+  ;;  "Get the list of all tasks."
+  ;;  (append (todoist--query "GET" "/tasks" (make-hash-table :labels ("to_me"))) nil))
+
+#+end_src
+  what do I really want?
+  move tasks that are assigned to me into agenda
+  so they need to go in a personal file somewhere, that's fine
+  keep the todoist metadata so I can toggle todoist mode and mark them done from emacs
+
+  i probably want a work project in todoist so pull that down too
+
+  ideally would be something like
+** personal
+:dip will slup in todoist tasks assigned to me
+Maybe I want a todoist file?
+
+  - open personal daily file
+  - call some function, dump all the things out of todoist assigned to me, schedule them on the right date
+    existing thing does deadlines which is nice
+
+#+begin_src emacs-lisp
+  (define-key evil-ex-map "dip" 'todoist--get-insert-today-me)
+  (defun todoist--get-insert-today-me () (interactive)
+      (todoist--insert-today-assigned-to-me (todoist--get-tasks)))
+
+  (defun todoist--insert-today-assigned-to-me (tasks)
+    "Insert today's tasks that are assigned to me.
+
+  TASKS is the list of tasks."
+    (mapcar (lambda (task) (todoist--insert-task task 2 t)) (-filter 'todoist--is-today-and-me tasks)))
+
+  (defun todoist--is-today-and-me (task)
+    "Return non-nil if the tasks is scheduled for today or overdue.
+
+  TASK is the task."
+    (and
+     (todoist--is-me task)
+     (todoist--task-date task)
+     (time-less-p (date-to-time
+                   (concat (todoist--task-date task) " 00:00:00"))
+                  (current-time))))
+
+  (defun todoist--is-me (task)
+      (equal (todoist--task-asignee task) "4330893")
+    )
+
+  (defun todoist--task-assignee (task)
+    "Get the description.
+
+  TASK is the task object"
+
+      (assoc-default 'assignee_id task))
+
+
+  (defun todoist--insert-assigned-to-me (tasks)
+    "Insert today's tasks that are assigned to me.
+
+  TASKS is the list of tasks."
+    (mapcar (lambda (task) (todoist--insert-task task 2 t)) (-filter 'todoist--is-me tasks)))
+
+
+#+end_src
+*** TODO org-after-todo-state-change-hook - make it so when i DONE something it marks it done in todoist
+** work
+  - also have a work flavor that pulls things out, dumps them to workinbox.org, AND deletes out of todoist
+    #+begin_src emacs-lisp
+      (define-key evil-ex-map "diw" 'todoist--get-insert-work)
+      (defun todoist--get-insert-work () (interactive)
+             (todoist--insert-work (todoist--get-tasks)))
+
+      (defun todoist--insert-work (tasks)
+        "Insert today's tasks that are assigned to me.
+
+                TASKS is the list of tasks."
+        (mapcar (lambda (task) (es/todoist--insert-task task 2 t)) (-filter 'todoist--is-work tasks)))
+
+      (defun todoist--is-work (task)
+        (equal (todoist--task-project-id task) "2354638235")
+        )
+
+      (defun es/todoist--insert-task (task level todo)
+        "Insert the task as 'org-mode' bullet.
+
+      TASK is the task.
+      LEVEL is the ord heading level.
+      PRIORITY is the priority
+      TODO is boolean to show TODO tag."
+        (todoist--insert-heading level (todoist--task-content task) todo)
+        (when (todoist--task-date task)
+          (if todoist-use-scheduled-instead-of-deadline
+      	(org-schedule nil (todoist--task-date task))
+            (org-deadline nil (todoist--task-date task))))
+        (org-set-property "TODOIST_ID" (format "%s" (todoist--task-id task)))
+        (org-set-property "TODOIST_PROJECT_ID" (format "%s" (todoist--task-project-id task)))
+        ;; Fudge priority to A - just how I wo my workflow
+        (org-priority-down)
+        (org-schedule nil "+0d")
+        (org-set-tags ":inbox:")
+        (goto-char (point-max))
+        (when-let ((description (todoist--task-description task))
+                   (not-empty (> (length description) 0)))
+          (insert (replace-regexp-in-string (rx line-start) (make-string level ?\s) description))))
+    #+end_src
+** scratch
+
+* OBSOLOTE Notion
+CLOSED: [2025-05-31 Sat 13:58]
 This is an attempt to hit the [[https://developers.notion.com/docs/getting-started][notion api]] in order to dump tasks out of org into notion.
+
+I gave up around [2025-05-31 Sat] in favor of todoist, which had some existing packages for hitting their api from elisp.
 
 My anticipated workflow is, while grooming my inbox, instead of refiling an item, I export it to Notion via POST.
 
@@ -1181,9 +1299,4 @@ Next, I need to format a payload with local secrets (api key) and hit the api. I
            (notion-todo-state (org-todo-to-notion-todo todo-state)))
       (message notion-todo-state)))
 
-#+end_src
-* GUI emacs stuff
-Font size default
-#+begin_src emacs-lisp
-(set-face-attribute 'default nil :height 140)
 #+end_src
