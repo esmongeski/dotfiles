@@ -59,10 +59,13 @@ Change cursor to a bar in insert mode.
     (require 'evil-terminal-cursor-changer)
     (evil-terminal-cursor-changer-activate) ; or (etcc-on)
     )
-  (setq evil-default-cursor (quote (t "#750000"))
-        evil-visual-state-cursor '("#880000" box)
-        evil-normal-state-cursor '("#750000" box)
-        evil-insert-state-cursor '("#e2e222" bar)
+  (setq evil-default-cursor (quote (t "cyan"))
+        evil-visual-state-cursor '("cyan" box)
+        evil-normal-state-cursor '("cyan" box)
+        evil-operator-state-cursor '("cyan" box)
+        evil-emacs-state-cursor '("cyan" box)
+        ;;evil-normal-state-cursor '("cyan" box)
+        ;;evil-insert-state-cursor '("cyan" bar)
         )
 
 #+end_src
