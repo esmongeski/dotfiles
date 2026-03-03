@@ -5,3 +5,8 @@
   mkdir -p ~/org/projects
   mkdir -p ~/org/roam/daily
 #+end_src
+* Copilot skills
+#+begin_src bash
+  mkdir -p ~/.copilot/skills
+  ln -sf $PATH_TO_DOTFILES_REPO/copilot-skills/suggest-aliases ~/.copilot/skills/suggest-aliases
+#+end_src
