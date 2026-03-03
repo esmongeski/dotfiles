@@ -599,7 +599,7 @@ I don't have to boot from a clean slate, run some random sh, then boot again.
   (define-key evil-ex-map "cl" 'org-insert-link)
   (define-key evil-ex-map "osl" 'org-store-link)
   ;; TODO - org sort by priority
-  ;;(define-key evil-ex-map "osp" 'org-store-link)
+  ;;(define-key evil-ex-map "oso" 'org-store-link)
   (define-key evil-ex-map "cni" 'org-roam-node-insert)
   (define-key evil-ex-map "xe" 'eval-last-sexp)
   (defun es/save-all ()
@@ -607,7 +607,6 @@ I don't have to boot from a clean slate, run some random sh, then boot again.
     (interactive)
     (save-some-buffers t))
   (define-key evil-ex-map "sa" 'es/save-all)
-
 #+end_src
 
 Normal map for opening links - remap "go" to do it.
@@ -1150,8 +1149,8 @@ Probably do something like [[https://gist.github.com/CodyReichert/9dbc8bd2a10478
 ** Treesitter
 Starting to play with this and see how it works.
 #+begin_src emacs-lisp
-  (use-package tree-sitter)
-  (use-package tree-sitter-langs)
+  ;;(use-package tree-sitter)
+  ;;(use-package tree-sitter-langs)
 #+end_src
 * GUI emacs stuff
 Font size default
@@ -1175,6 +1174,16 @@ Font size default
   i probably want a work project in todoist so pull that down too
 
   ideally would be something like
+
+** general
+#+begin_src emacs-lisp
+(defun es/todoist-close-task ()
+  "Close the task under the cursor, marking it as done or checking it."
+  (interactive)
+  (todoist--query "POST" (format "/tasks/%s/close" (todoist--under-cursor-task-id))))
+(define-key evil-ex-map "dct" 'es/todoist-close-task)
+
+#+end_src
 ** personal
 :dip will slup in todoist tasks assigned to me
 Maybe I want a todoist file?
@@ -1186,58 +1195,99 @@ Maybe I want a todoist file?
 #+begin_src emacs-lisp
   (define-key evil-ex-map "dip" 'todoist--get-insert-today-me)
   (defun todoist--get-insert-today-me () (interactive)
-      (todoist--insert-today-assigned-to-me (todoist--get-tasks)))
+         (todoist--insert-today-assigned-to-me (todoist--get-tasks)))
 
+  (defun todoist--is-groceries (task)
+    (equal (todoist--task-project-id task) "2354679563")
+    )
   (defun todoist--insert-today-assigned-to-me (tasks)
-    "Insert today's tasks that are assigned to me.
-
-  TASKS is the list of tasks."
-    (mapcar (lambda (task) (todoist--insert-task task 2 t)) (-filter 'todoist--is-today-and-me tasks)))
+    "Insert today's tasks that are assigned to me, avoiding duplicates.
+  )
+      TASKS is the list of tasks."
+    (let ((existing-ids (todoist--get-existing-task-ids)))
+      (mapcar
+       (lambda (task) (todoist--insert-task task 2 t))
+       (-filter (lambda (task)
+                  (and (todoist--is-today-and-me task)
+    		     (not (member (format "%s" (todoist--task-id task))
+                                    existing-ids))))
+                tasks))))
 
   (defun todoist--is-today-and-me (task)
     "Return non-nil if the tasks is scheduled for today or overdue.
 
-  TASK is the task."
-    (and
-     (todoist--is-me task)
-     (todoist--task-date task)
-     (time-less-p (date-to-time
-                   (concat (todoist--task-date task) " 00:00:00"))
-                  (current-time))))
+      TASK is the task."
+    (or
+     (todoist--is-inbox task)
+     (and
+      (todoist--is-me task)
+      (todoist--task-date task)
+      (time-less-p (date-to-time
+                    (concat (todoist--task-date task) " 00:00:00"))
+                   (current-time)))))
 
   (defun todoist--is-me (task)
-      (equal (todoist--task-asignee task) "4330893")
+    (and (equal (todoist--task-assignee task) "4330893")
+         (not (todoist--is-groceries task)))
     )
+
+  (defun todoist--is-inbox (task)
+    (equal (todoist--task-project-id task) "1484705293"))
 
   (defun todoist--task-assignee (task)
     "Get the description.
 
-  TASK is the task object"
+      TASK is the task object"
 
-      (assoc-default 'assignee_id task))
-
-
-  (defun todoist--insert-assigned-to-me (tasks)
-    "Insert today's tasks that are assigned to me.
-
-  TASKS is the list of tasks."
-    (mapcar (lambda (task) (todoist--insert-task task 2 t)) (-filter 'todoist--is-me tasks)))
+    (assoc-default 'assignee_id task))
 
 
+    					;  (defun todoist--insert-assigned-to-me (tasks)
+    					;    "Insert today's tasks that are assigned to me, avoiding duplicates.
+    					;
+    					;  TASKS is the list of tasks."
+    					;    (let ((existing-ids (todoist--get-existing-task-ids)))
+    					;      (mapcar
+    					;       (lambda (task) (todoist--insert-task task 2 t))
+    					;       (-filter (lambda (task)
+    					;                  (and (todoist--is-me task)
+    					;  		     (and (not todoist--is-groceries task)
+    					;  			  (not (member (format "%s" (todoist--task-id task))
+    					;                                    existing-ids)))))
+    					;                tasks))))
 #+end_src
 *** TODO org-after-todo-state-change-hook - make it so when i DONE something it marks it done in todoist
 ** work
   - also have a work flavor that pulls things out, dumps them to workinbox.org, AND deletes out of todoist
+
     #+begin_src emacs-lisp
       (define-key evil-ex-map "diw" 'todoist--get-insert-work)
       (defun todoist--get-insert-work () (interactive)
              (todoist--insert-work (todoist--get-tasks)))
 
-      (defun todoist--insert-work (tasks)
-        "Insert today's tasks that are assigned to me.
+      (defun todoist--get-existing-task-ids ()
+        "Get all TODOIST_ID properties in the entire buffer."
+        (save-excursion
+          (let ((existing-ids '()))
+            (org-map-entries
+             (lambda ()
+               (when-let ((id (org-entry-get nil "TODOIST_ID")))
+                 (push id existing-ids)))
+             nil 'file)
+            existing-ids)))
 
-                TASKS is the list of tasks."
-        (mapcar (lambda (task) (es/todoist--insert-task task 2 t)) (-filter 'todoist--is-work tasks)))
+      (defun todoist--insert-work (tasks)
+        "Insert today's tasks that are assigned to me, avoiding duplicates.
+
+      TASKS is the list of tasks."
+        (let ((existing-ids (todoist--get-existing-task-ids)))
+          (mapcar
+           (lambda (task) (es/todoist--insert-task task 2 t))
+           (-filter (lambda (task)
+                      (and (todoist--is-work task)
+                           (not (member (format "%s" (todoist--task-id task))
+                                        existing-ids))))
+                    tasks))))
 
       (defun todoist--is-work (task)
         (equal (todoist--task-project-id task) "2354638235")
@@ -1260,14 +1310,14 @@ Maybe I want a todoist file?
         ;; Fudge priority to A - just how I wo my workflow
         (org-priority-down)
         (org-schedule nil "+0d")
-        (org-set-tags ":inbox:")
+        ;;(org-set-tags ":inbox:")
         (goto-char (point-max))
         (when-let ((description (todoist--task-description task))
                    (not-empty (> (length description) 0)))
           (insert (replace-regexp-in-string (rx line-start) (make-string level ?\s) description))))
+
     #+end_src
 ** scratch
-
 * OBSOLOTE Notion
 CLOSED: [2025-05-31 Sat 13:58]
 This is an attempt to hit the [[https://developers.notion.com/docs/getting-started][notion api]] in order to dump tasks out of org into notion.
