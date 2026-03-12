@@ -26,12 +26,99 @@ checkEnvAndDefault "PATH_TO_DOTFILES_REPO"
 * Terminal Prompt
 Go powerline
 #+begin_src bash
-  export GOPATH="$HOME/go"
-  export GOBIN="$HOME/go/bin"
-  export EXTRA_POWERLINE_DIR_ALIASES="$EXTRA_POWERLINE_DIR_ALIASES,~/code/dotfiles=dfiles"
+  [ -z "$GOPATH" ] && export GOPATH="$HOME/go"
+  [ -z "$GOBIN" ] && export GOBIN="$HOME/go/bin"
+  export EXTRA_POWERLINE_DIR_ALIASES="$EXTRA_POWERLINE_DIR_ALIASES,~/code/dotfiles=df"
+  export EXTRA_POWERLINE_DIR_ALIASES="$EXTRA_POWERLINE_DIR_ALIASES,~/go2/src/github.com/DevotedHealth/core=go2"
+  export EXTRA_POWERLINE_DIR_ALIASES="$EXTRA_POWERLINE_DIR_ALIASES,~/go3/src/github.com/DevotedHealth/core=go3"
+  export EXTRA_POWERLINE_DIR_ALIASES="$EXTRA_POWERLINE_DIR_ALIASES,~/go4/src/github.com/DevotedHealth/core=go4"
+  export EXTRA_POWERLINE_DIR_ALIASES="$EXTRA_POWERLINE_DIR_ALIASES,~/go5/src/github.com/DevotedHealth/core=go5"
+  export EXTRA_POWERLINE_DIR_ALIASES="$EXTRA_POWERLINE_DIR_ALIASES,~/go6/src/github.com/DevotedHealth/core=go6"
+  export EXTRA_POWERLINE_DIR_ALIASES="$EXTRA_POWERLINE_DIR_ALIASES,~/go7/src/github.com/DevotedHealth/core=go7"
+  export EXTRA_POWERLINE_DIR_ALIASES="$EXTRA_POWERLINE_DIR_ALIASES,~/go8/src/github.com/DevotedHealth/core=go8"
+  export EXTRA_POWERLINE_DIR_ALIASES="$EXTRA_POWERLINE_DIR_ALIASES,~/go9/src/github.com/DevotedHealth/core=go9"
   checkEnvAndDefault "EXTRA_POWERLINE_OPTIONS"
+
+  # Cache for gh PR hyperlink.
+  # gh pr view runs in the background so it never blocks the prompt.
+  # Results are stored in $HOME/.cache/gh_pr/ and survive across shell sessions.
+  _gh_available=""
+  _gh_pr_cache_branch=""
+  _gh_pr_result=""
+  _GH_PR_CACHE_DIR="$HOME/.cache/gh_pr"
+
+  # Read the current git branch by walking up to .git — no git process fork.
+  # Handles both regular repos (.git dir) and worktrees (.git file with gitdir pointer).
+  function _git_head_branch() {
+      local _d="$PWD" _head="" _git_dir=""
+      while [[ "$_d" != "" ]]; do
+          if [[ -f "$_d/.git/HEAD" ]]; then
+              _git_dir="$_d/.git"
+              break
+          elif [[ -f "$_d/.git" ]]; then
+              local _ptr
+              IFS= read -r _ptr < "$_d/.git"
+              _git_dir="${_ptr#gitdir: }"
+              # Resolve relative path
+              [[ "$_git_dir" != /* ]] && _git_dir="$_d/$_git_dir"
+              break
+          fi
+          [[ "$_d" == "/" ]] && return
+          _d="${_d%/*}"
+      done
+      [[ -z "$_git_dir" ]] && return
+      IFS= read -r _head < "$_git_dir/HEAD" 2>/dev/null
+      [[ "$_head" == "ref: refs/heads/"* ]] && printf '%s' "${_head#ref: refs/heads/}"
+  }
+
+  function _get_gh_pr_url() {
+      _gh_pr_result=""
+      if [ -z "$_gh_available" ]; then
+          command -v gh &>/dev/null && _gh_available="yes" || _gh_available="no"
+      fi
+      [ "$_gh_available" = "no" ] && return
+
+      local _branch
+      _branch=$(_git_head_branch)
+      [ -z "$_branch" ] || [ "$_branch" = "main" ] || [ "$_branch" = "master" ] && return
+
+      local _cache_file="$_GH_PR_CACHE_DIR/${_branch//\//_}"
+
+      if [ "$_branch" != "$_gh_pr_cache_branch" ]; then
+          _gh_pr_cache_branch="$_branch"
+          # Fire-and-forget: fetch in background; only write the cache if we got a result.
+          mkdir -p "$_GH_PR_CACHE_DIR"
+          ( _u=$(gh pr view --json url -q .url 2>/dev/null); [ -n "$_u" ] && printf '%s' "$_u" > "$_cache_file" ) &
+          disown
+      fi
+
+      # Read with builtin instead of forking cat.
+      [[ -f "$_cache_file" ]] && IFS= read -r _gh_pr_result < "$_cache_file"
+  }
+
   function _update_ps1() {
-      PS1="$($GOPATH/bin/powerline-go -error $? -jobs $(jobs -p | wc -l) -shell bash -modules cwd,git,exit -cwd-max-dir-size 2 -truncate-segment-width 5 -path-aliases=$EXTRA_POWERLINE_DIR_ALIASES  $EXTRA_POWERLINE_OPTIONS | sed -E 's|es/||; s/([a-zA-Z0-9_./-]{10})[a-zA-Z0-9_./-]+/\1…/')"
+      local _exit=$?
+      _get_gh_pr_url  # sets _gh_pr_result directly; no subshell, so cache vars persist
+      local _pr_url="$_gh_pr_result"
+      local _modules="cwd,git,exit"
+      if [ -n "$_pr_url" ]; then
+          export POWERLINE_GH_PR="🔗"
+          _modules="cwd,shell-var,git,exit"
+      else
+          export POWERLINE_GH_PR=""
+      fi
+      # Count jobs without forking wc: remove newlines, compare lengths.
+      local _jp _jc=0
+      _jp=$(jobs -p)
+      [[ -n "$_jp" ]] && { local _stripped="${_jp//$'\n'/}"; _jc=$(( ${#_jp} - ${#_stripped} + 1 )); }
+      local _pl_out
+      _pl_out="$($GOPATH/bin/powerline-go -error $_exit -jobs $_jc -shell bash -modules "$_modules" -shell-var POWERLINE_GH_PR -cwd-max-dir-size 3 -truncate-segment-width 5 -path-aliases=$EXTRA_POWERLINE_DIR_ALIASES  $EXTRA_POWERLINE_OPTIONS | sed -E 's|es/||; s/([a-zA-Z0-9_./-]{10})[a-zA-Z0-9_./-]+/\1…/')"
+      if [ -n "$_pr_url" ]; then
+          local _link=$'\e]8;;'"${_pr_url}"$'\a🔗\e]8;;\a'
+          PS1="${_pl_out/🔗/$_link}"
+      else
+          PS1="$_pl_out"
+      fi
       # Uncomment the following line to automatically clear errors after showing
       # them once. This not only clears the error for powerline-go, but also for
       # everything else you run in that shell. Don't enable this if you're not
@@ -344,10 +431,10 @@ alias gcam='g checkout `masterOrMain` -- '
 *** Do the pull
 #+begin_src bash
   function pullAndMergeMaster {
-    CURRENT_BRANCH=`cb`
+    local CURRENT_BRANCH=`cb`;
     gcm;
     g pull;
-    gc $CURRENT_BRANCH;
+    gc "$CURRENT_BRANCH";
     gmm;
   }
   alias gpmm='pullAndMergeMaster'
