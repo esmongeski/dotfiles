@@ -1,18 +1,114 @@
 * Package things!
 This is a bit of fumbling to try and get this all to work on a new computer from zero with minimal manual intervention.
 #+begin_src emacs-lisp
-  (package-initialize)
+  (require 'package)
+  (setq load-prefer-newer t)
+  (setq package-install-upgrade-built-in t)
+  (setq package-user-dir (expand-file-name "~/.emacs.d/elpa"))
+  (setq package-archives
+        '(("gnu" . "https://elpa.gnu.org/packages/")
+          ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+          ("melpa" . "https://melpa.org/packages/")))
+  (setq package-archive-priorities
+        '(("gnu" . 30)
+          ("nongnu" . 20)
+          ("melpa" . 10)))
+  (setq package-pinned-packages
+        '((org . "gnu")
+          (org-contrib . "nongnu")
+          (cond-let . "melpa")))
+  (package-initialize t)
 
   (when (not package-archive-contents)
     (package-refresh-contents))
 #+end_src
 #+BEGIN_SRC emacs-lisp
-  (require 'package)
-  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
+  (defconst es/minimum-org-version "9.7.19")
+  (defconst es/minimum-compat-version "29.1.4.1")
+  (defconst es/minimum-cond-let-version "20260201.1500")
+  (defconst es/minimum-transient-version "0.12.0")
+
+  (defun es/package-version-string (desc)
+    "Return DESC version as a string."
+    (package-version-join (package-desc-version desc)))
+
+  (defun es/find-installed-package-desc (name)
+    "Return the newest installed package descriptor for NAME."
+    (car (sort (mapcar #'cadr (seq-filter (lambda (pkg) (eq (car pkg) name))
+                                          package-alist))
+               (lambda (a b)
+                 (version-list-< (package-desc-version b)
+                                 (package-desc-version a))))))
+
+  (defun es/activate-package-desc (desc)
+    "Prefer DESC on `load-path' for the current Emacs session."
+    (when desc
+      (let ((dir (package-desc-dir desc)))
+        (setq load-path (cons dir (delete dir load-path))))))
+
+  (defun es/package-source-file (name file)
+    "Return FILE inside the installed package NAME directory."
+    (let ((desc (es/find-installed-package-desc name)))
+      (when desc
+        (expand-file-name file (package-desc-dir desc)))))
+
+  (defun es/find-archive-package-desc (name)
+    "Return the archive descriptor for NAME, if present."
+    (cadr (assoc name package-archive-contents)))
+
+  (defun es/ensure-package-at-least (name minimum-version)
+    "Install NAME at MINIMUM-VERSION and prefer it in this session."
+    (let* ((installed-desc (es/find-installed-package-desc name))
+           (installed-version (and installed-desc
+                                   (es/package-version-string installed-desc))))
+      (when (or (null installed-desc)
+                (version< installed-version minimum-version))
+        (unless package-archive-contents
+          (package-refresh-contents))
+        (when (and installed-desc
+                   (version< installed-version minimum-version))
+          (message "Replacing old %s package %s" name installed-version)
+          (package-delete installed-desc t))
+        (let ((package-load-list '(all)))
+          (package-install name))
+        (setq installed-desc (es/find-installed-package-desc name)))
+      (es/activate-package-desc installed-desc)
+      installed-desc))
+
+  (defun es/ensure-org-package ()
+    "Install a new enough Org package and prefer it in this session."
+    (es/ensure-package-at-least 'org es/minimum-org-version))
+
+  (defun es/ensure-compat-package ()
+    "Install a new enough Compat package and prefer it in this session."
+    (es/ensure-package-at-least 'compat es/minimum-compat-version))
+
+  (defun es/ensure-cond-let-package ()
+    "Install a new enough Cond-let package and prefer it in this session."
+    (es/ensure-package-at-least 'cond-let es/minimum-cond-let-version))
+
+  (defun es/ensure-transient-package ()
+    "Install a new enough Transient package and prefer it in this session."
+    (es/ensure-package-at-least 'transient es/minimum-transient-version))
+
   (unless (package-installed-p 'use-package)
     (package-install 'use-package))
   (eval-when-compile
     (require 'use-package))
+
+  (es/ensure-compat-package)
+  (require 'compat nil t)
+  (let ((compat-30-file (es/package-source-file 'compat "compat-30.el")))
+    (when compat-30-file
+      (load-file compat-30-file)))
+  (es/ensure-cond-let-package)
+  (require 'cond-let nil t)
+  (es/ensure-org-package)
+  (require 'org)
+  (require 'org-id)
+  (es/ensure-transient-package)
+  (require 'transient)
+  (package-activate-all)
 #+END_SRC
 Make use package always install if package is not installed.
 #+begin_src emacs-lisp
@@ -22,7 +118,7 @@ Make use package always install if package is not installed.
 Ubuntu specific (hopefully this doesn't break mac!) - this forces org to update to a later version.
 #+BEGIN_SRC emacs-lisp
   ;;(use-package org :ensure org-contrib :pin org)
-  (use-package org :ensure org-contrib);; :pin org)
+  (use-package org :ensure nil)
 #+END_SRC
 
 This brings back the old "<s" shortcut for source blocks. Unfortunately it has different casing than before, but that's not worth the time to fix (probably easy though).
@@ -36,6 +132,7 @@ Because I am a vim user at heart.
 *** Fix tab cycling
 Remove evil C-i binding so tab works.
 #+begin_src emacs-lisp
+  (setq evil-want-keybinding nil)
   (setq evil-want-C-i-jump nil)
 #+end_src
 See [[*Evil jumplist remapping][Evil jumplist remapping]] for where the rebind happens.
@@ -43,33 +140,38 @@ See [[*Evil jumplist remapping][Evil jumplist remapping]] for where the rebind h
 Load Helm before the Evil blocks so `M-x` is still rebound even if an Evil package blows up during init.
 #+begin_src emacs-lisp
   (use-package helm
-    :ensure t)
-  (setq helm-split-window-in-side-p t
-        helm-move-to-line-cycle-in-source t)
-  (helm-mode 1)
-  (global-set-key (kbd "M-x") 'helm-M-x)
+    :ensure t
+    :config
+    (setq helm-split-window-in-side-p t
+          helm-move-to-line-cycle-in-source t)
+    (helm-mode 1)
+    (global-set-key (kbd "M-x") 'helm-M-x))
 #+end_src
 *** Use package wih org bindings
 Set up org bindings first. Honestly not sure if this needs to come before use evil, but not worth figuring out.
 #+BEGIN_SRC emacs-lisp
+  (use-package evil
+    :ensure t
+    :demand t
+    :config
+    (evil-mode 1))
+
   (use-package evil-org
     :ensure t
-    :after org
+    :after (evil org)
     :hook (org-mode . (lambda () evil-org-mode))
     :config
     (require 'evil-org-agenda)
     (evil-org-agenda-set-keys))
-  (use-package evil)
-  (evil-mode 1)
 #+END_SRC
 *** Bar cursor
 Change cursor to a bar in insert mode.
 #+begin_src emacs-lisp
-  (use-package evil-terminal-cursor-changer)
-  (unless (display-graphic-p)
-    (require 'evil-terminal-cursor-changer)
-    (evil-terminal-cursor-changer-activate) ; or (etcc-on)
-    )
+  (use-package evil-terminal-cursor-changer
+    :config
+    (unless (display-graphic-p)
+      (require 'evil-terminal-cursor-changer)
+      (evil-terminal-cursor-changer-activate))) ; or (etcc-on)
   (setq evil-default-cursor (quote (t "cyan"))
         evil-visual-state-cursor '("cyan" box)
         evil-normal-state-cursor '("cyan" box)
@@ -90,8 +192,9 @@ Change cursor to a bar in insert mode.
 #+end_src
 *** Easymotion
 #+begin_src emacs-lisp
-  (use-package evil-easymotion)
-  (evilem-default-keybindings "SPC")
+  (use-package evil-easymotion
+    :config
+    (evilem-default-keybindings "SPC"))
 
 #+end_src
 ** Find lisp
@@ -116,8 +219,9 @@ Definitely pronounced "muh git", much like "muh queen". Certainly not "mahjit", 
 Get keybindings for evil in magit mode.
 Not sure what else evil-collection has, but some day I want to move this elsewhere if it's spanning across other modes.
 #+begin_src emacs-lisp
-  (use-package evil-collection)
-  (evil-collection-init 'magit)
+  (use-package evil-collection
+    :config
+    (evil-collection-init 'magit))
 #+end_src
 *** Forge
 To work with github
@@ -129,10 +233,12 @@ To work with github
 ** Undo Tree
 I could have sworn I had this installed at one point, but oh well!
 #+begin_src emacs-lisp
-  (use-package undo-tree)
-  (global-undo-tree-mode)
-  (global-set-key (kbd "C-x C-u") 'undo-tree-visualize)
-  (define-key evil-ex-map "xu" 'undo-tree-visualize)
+  (use-package undo-tree
+    :config
+    (global-undo-tree-mode)
+    (global-set-key (kbd "C-x C-u") 'undo-tree-visualize)
+    (with-eval-after-load 'evil
+      (define-key evil-ex-map "xu" 'undo-tree-visualize)))
 #+end_src
 Force undo tree files into local emacs d.
 #+begin_src emacs-lisp
@@ -150,17 +256,19 @@ All the other deps with the funked up deps
 Much of this I just followed [[https://org-roam.discourse.group/t/how-to-to-get-title-of-the-target-note-working-with-inline-autocomplete-in-org-roam/782][this guide while trying to configure Roam]]
 Smart parents
 #+begin_src emacs-lisp
-  (use-package smartparens)
-  (smartparens-global-mode t)
+  (use-package smartparens
+    :config
+    (smartparens-global-mode t))
 
 #+end_src
 Company
 #+begin_src emacs-lisp
-  (use-package company)
-  (add-hook 'after-init-hook 'global-company-mode)
-  (setq company-minimum-prefix-length 2)
-  (setq company-idle-delay 0.25)
-  (add-to-list 'company-backends 'company-capf)
+  (use-package company
+    :config
+    (add-hook 'after-init-hook 'global-company-mode)
+    (setq company-minimum-prefix-length 2)
+    (setq company-idle-delay 0.25)
+    (add-to-list 'company-backends 'company-capf))
 
 #+end_src
 Completion config
@@ -355,74 +463,64 @@ Just a command to bring up agenda view
 #+end_src
 ** Super Agenda
 #+begin_src emacs-lisp
-      (use-package org-super-agenda)
-      (setq org-super-agenda-keep-order t)
-      (org-super-agenda-mode 1)
-      (setq org-super-agenda-groups
-            `(;; Each group has an implicit boolean OR operator between its selectors.
-              (:name "Inbox"
-                     :tag "inbox"
-                     )
-              (:name "Habits Overdue"
-                     :and(:file-path "recurring.org" :deadline  past :not(:tag "eodroutine"))
-                     :and(:file-path "recurring.org" :scheduled past :not(:tag "eodroutine"))
-                     )
-              (:name "Habits Today"
-                     :and(:file-path "recurring.org" :deadline today :not(:tag "eodroutine"))
-                     :and(:file-path "recurring.org" :scheduled today :not(:tag "eodroutine"))
-                     )
-              (:name "Personal - IN-PROGRESS"
-                     ;; Single arguments given alone
-                     :and (:todo ("IN-PROGRESS") :file-path ,es/org-root))
-              (:name "Important - Personal"
-                     ;; Single arguments given alone
-                     :and (:priority "A" :todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path ,es/org-root))
-              (:name "Work - IN-PROGRESS"
-                     ;; Single arguments given alone
-                     :and (:todo ("IN-PROGRESS") :file-path ,es/org-work-root)
-                     :and (:todo ("IN-PROGRESS") :file-path "work.org"))
-              (:name "Work Stuck"
-                     ;; Single arguments given alone
-                     :and (:priority "A"
-                                     :todo ("WAITING" "BLOCKED") :file-path ,es/org-work-root)
-                     :and (:priority "A"
-                                     :todo ("WAITING" "BLOCKED") :file-path "work.org"))
-              (:name "Important - Work"
-                     ;; Single arguments given alone
-                     :and (:priority "A"
-                                     :todo ("TODO" "SOMEDAY") :file-path ,es/org-work-root)
-                     :and (:priority "A"
-                                     :todo ("TODO") :file-path "work.org"))
-              (:name "Other personal"
-                     :and (:todo ("TODO" "SOMEDAY") :file-path ,es/org-root :not(:tag "eodroutine")))
-              (:name "Other work"
-                     :and(:file-path "work.org" :todo ("TODO"))
-                     :and(:file-path ,es/org-work-root :todo ("TODO")))
-              ;; Set order of multiple groups at once
-              (:and(:priority<= "B"
-                                ;; Show this section after "Today" and "Important", because
-                                ;; their order is unspecified, defaulting to 0. Sections
-                                ;; are displayed lowest-number-first.
-                                :order 0
-                                :todo ("TODO" "IN-PROGRESS" "SOMEDAY")))
-              ;; After the last group, the agenda will display items that didn't
-              ;; match any of these groups, with the default order position of 99
-              (:name "Blocked"
-                     :todo ("BLOCKED"))
-              (:name "Future Habits"
-                     :and(:file-path "recurring.org" :deadline future))
-              (:name "Waiting"
-                     :todo ("WAITING"))
-              (:name "EOD Routine"
-                     :and(:todo "TODO" :file-path "recurring.org" :scheduled today :tag "eodroutine")
-                     :and(:todo "TODO" :file-path "recurring.org" :scheduled past :tag "eodroutine")
-                     )
-              (:name "Done"
-                     :and(
-                          :todo ("DONE" "OBSOLETE" "DELEGATED" "EXPORTED")
-                          )
-                     )))
-      (setq org-super-agenda-header-map (make-sparse-keymap))
+      (use-package org-super-agenda
+        :config
+        (setq org-super-agenda-keep-order t)
+        (org-super-agenda-mode 1)
+        (setq org-super-agenda-groups
+              `(;; Each group has an implicit boolean OR operator between its selectors.
+                (:name "Inbox"
+                       :tag "inbox"
+                       )
+                (:name "Habits Overdue"
+                       :and(:file-path "recurring.org" :deadline  past :not(:tag "eodroutine"))
+                       :and(:file-path "recurring.org" :scheduled past :not(:tag "eodroutine"))
+                       )
+                (:name "Habits Today"
+                       :and(:file-path "recurring.org" :deadline today :not(:tag "eodroutine"))
+                       :and(:file-path "recurring.org" :scheduled today :not(:tag "eodroutine"))
+                       )
+                (:name "Personal - IN-PROGRESS"
+                       :and (:todo ("IN-PROGRESS") :file-path ,es/org-root))
+                (:name "Important - Personal"
+                       :and (:priority "A" :todo ("TODO" "IN-PROGRESS" "SOMEDAY") :file-path ,es/org-root))
+                (:name "Work - IN-PROGRESS"
+                       :and (:todo ("IN-PROGRESS") :file-path ,es/org-work-root)
+                       :and (:todo ("IN-PROGRESS") :file-path "work.org"))
+                (:name "Work Stuck"
+                       :and (:priority "A"
+                                       :todo ("WAITING" "BLOCKED") :file-path ,es/org-work-root)
+                       :and (:priority "A"
+                                       :todo ("WAITING" "BLOCKED") :file-path "work.org"))
+                (:name "Important - Work"
+                       :and (:priority "A"
+                                       :todo ("TODO" "SOMEDAY") :file-path ,es/org-work-root)
+                       :and (:priority "A"
+                                       :todo ("TODO") :file-path "work.org"))
+                (:name "Other personal"
+                       :and (:todo ("TODO" "SOMEDAY") :file-path ,es/org-root :not(:tag "eodroutine")))
+                (:name "Other work"
+                       :and(:file-path "work.org" :todo ("TODO"))
+                       :and(:file-path ,es/org-work-root :todo ("TODO")))
+                (:and(:priority<= "B"
+                                  :order 0
+                                  :todo ("TODO" "IN-PROGRESS" "SOMEDAY")))
+                (:name "Blocked"
+                       :todo ("BLOCKED"))
+                (:name "Future Habits"
+                       :and(:file-path "recurring.org" :deadline future))
+                (:name "Waiting"
+                       :todo ("WAITING"))
+                (:name "EOD Routine"
+                       :and(:todo "TODO" :file-path "recurring.org" :scheduled today :tag "eodroutine")
+                       :and(:todo "TODO" :file-path "recurring.org" :scheduled past :tag "eodroutine")
+                       )
+                (:name "Done"
+                       :and(
+                            :todo ("DONE" "OBSOLETE" "DELEGATED" "EXPORTED")
+                            )
+                       )))
+        (setq org-super-agenda-header-map (make-sparse-keymap)))
 #+end_src
 ** Agenda evil shortcut
 #+begin_src emacs-lisp
@@ -431,9 +529,10 @@ Just a command to bring up agenda view
          (es/set-org-agenda-files)
          (org-agenda-list 1)
          )
-  (define-key evil-ex-map "a" 'org-agenda-list-day)
-  (define-key evil-ex-map "nw" 'es/set-nw-agenda)
-  (define-key evil-ex-map "yw" 'es/set-yw-agenda)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "a" 'org-agenda-list-day)
+    (define-key evil-ex-map "nw" 'es/set-nw-agenda)
+    (define-key evil-ex-map "yw" 'es/set-yw-agenda))
 #+end_src
 ** Auto insert subtask tracker
 Binds =:st= to "insert at end of line, append [/], C-cC-c it" for quick subtask adding.
@@ -441,7 +540,8 @@ Binds =:st= to "insert at end of line, append [/], C-cC-c it" for quick subtask 
   (fset 'es/append-subtask-tracker
         (kmacro-lambda-form [?A ?  ?\[ ?/ ?\] escape ?\C-c ?\C-c] 0 "%d"))
 
-  (define-key evil-ex-map "st" 'es/append-subtask-tracker)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "st" 'es/append-subtask-tracker))
 #+end_src
 ** Agenda defaults
 Enable log mode on start up to see what was completed when
@@ -494,45 +594,51 @@ Next thing to do is to remove "C-r" from the evil map (apparently it's redo, whi
 
 Then we do the actual "C-r C-f" bind.
 #+BEGIN_SRC emacs-lisp
-  (define-key evil-normal-state-map (kbd "C-r") nil)
+  (with-eval-after-load 'evil
+    (define-key evil-normal-state-map (kbd "C-r") nil)
+    (define-key evil-ex-map "rf" 'org-refile))
   (global-set-key (kbd "C-r C-f") 'org-refile)
-  (define-key evil-ex-map "rf" 'org-refile)
 #+END_SRC
 
 Another one - archive. I'm gonna do "C-r C-a" for "refile - archive", and because I have "C-r" as a prefix now.
 
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-r C-a") 'org-archive-subtree)
-  (define-key evil-ex-map "ra" 'org-archive-subtree)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "ra" 'org-archive-subtree))
 #+END_SRC
 *** Make refile work in evil insert
 "C-r" is bound to something else, which I don't use, and I'd rather be able to refile in insert mode as well.
 #+begin_src emacs-lisp
-  (define-key evil-insert-state-map (kbd "C-r") nil)
+  (with-eval-after-load 'evil
+    (define-key evil-insert-state-map (kbd "C-r") nil))
   ;; (define-key evil-insert-state-map (kbd "C-r C-f"))
 
 #+end_src
 ** Window switching
 A lot of the below is from when I relied on C-[key] commands a la emacs style. Recently I'm moving to :[key][key] a la vim style since it's easier for typing. As such, a lot of the below might be obsolete, but hey, I'm too lazy to go reconcile it. Plus, some of the spots where vim command mode doesn't work (magit, agenda buffers) will still need C-w C-w.
 #+begin_src emacs-lisp
-  (define-key evil-ex-map "ww" 'evil-window-next)
-  (define-key evil-ex-map "WW" 'evil-window-prev)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "ww" 'evil-window-next)
+    (define-key evil-ex-map "WW" 'evil-window-prev))
 #+end_src
 I use C-w C-w to switch windows a lot, but it messes me up when it
 deletes a word in insert mode.
 #+begin_src emacs-lisp
-  (define-key evil-insert-state-map (kbd "C-w") nil)
-  (define-key evil-insert-state-map (kbd "C-w C-w") 'evil-window-next)
-  (define-key evil-insert-state-map (kbd "C-w w") 'evil-window-next)
+  (with-eval-after-load 'evil
+    (define-key evil-insert-state-map (kbd "C-w") nil)
+    (define-key evil-insert-state-map (kbd "C-w C-w") 'evil-window-next)
+    (define-key evil-insert-state-map (kbd "C-w w") 'evil-window-next))
 #+end_src
 
 I never really use the most recently used functionality, and would rather
 have C-w C-p and C-w p just do previous window, since that makes sense to me.
 #+begin_src emacs-lisp
-  (define-key evil-motion-state-map (kbd "C-w C-p") 'evil-window-prev)
-  (define-key evil-insert-state-map (kbd "C-w C-p") 'evil-window-prev)
-  (define-key evil-insert-state-map (kbd "C-w p") 'evil-window-prev)
-  (define-key evil-motion-state-map (kbd "C-w p") 'evil-window-prev)
+  (with-eval-after-load 'evil
+    (define-key evil-motion-state-map (kbd "C-w C-p") 'evil-window-prev)
+    (define-key evil-insert-state-map (kbd "C-w C-p") 'evil-window-prev)
+    (define-key evil-insert-state-map (kbd "C-w p") 'evil-window-prev)
+    (define-key evil-motion-state-map (kbd "C-w p") 'evil-window-prev))
 
 #+end_src
 *** TODO In magit, and also globally
@@ -547,8 +653,9 @@ have C-w C-p and C-w p just do previous window, since that makes sense to me.
   (setq w-keymap (make-sparse-keymap))
   (define-prefix-command 'w-keymap)
   (global-set-key (kbd "C-w") 'w-keymap)
-  (define-key magit-status-mode-map (kbd "C-w") nil)
-  (define-key magit-diff-mode-map (kbd "C-w") nil)
+  (with-eval-after-load 'magit
+    (define-key magit-status-mode-map (kbd "C-w") nil)
+    (define-key magit-diff-mode-map (kbd "C-w") nil))
   (global-set-key (kbd "C-w C-w") 'evil-window-next)
 #+end_src
 ** Quick reload
@@ -561,22 +668,26 @@ Make it so I can quickly reload emacs config.
     (load-file user-init-file)
     )
   (global-set-key (kbd "C-r C-e") 'quick-refresh-dot-emacs)
-  (define-key evil-ex-map "re" 'quick-refresh-dot-emacs)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "re" 'quick-refresh-dot-emacs))
 #+end_src
 ** Nice little shortcut for evil mode for rifle.
 #+begin_src emacs-lisp
-  (define-key evil-ex-map "rir" 'helm-org-rifle-agenda-files)
-  (define-key evil-ex-map "ria" 'helm-org-rifle-occur-org-directory)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "rir" 'helm-org-rifle-agenda-files)
+    (define-key evil-ex-map "ria" 'helm-org-rifle-occur-org-directory))
 #+end_src
 ** More agenda customization
 I'll admit, there's a header further up for this, but for some reason defining this that far up breaks, and I don't really want
 to figure out why =org-agenda-mode-map= isn't initiatlized up [[file:dotEmacs.org::149][here]]
 #+begin_src emacs-lisp
-  (define-key org-agenda-mode-map (kbd "C-w C-w") 'evil-window-next)
+  (with-eval-after-load 'org-agenda
+    (define-key org-agenda-mode-map (kbd "C-w C-w") 'evil-window-next))
 #+end_src
 I am evil, so =:= is special. It sets tags in agenda, which I basically never want to do.
 #+begin_src emacs-lisp
-  (define-key org-agenda-mode-map (kbd ":") nil)
+  (with-eval-after-load 'org-agenda
+    (define-key org-agenda-mode-map (kbd ":") nil))
 
 #+end_src
 ** Evil shortcuts - helm menus, org capture. Basically replace any common C-[something] C-[something] I use with :[something][something]
@@ -584,39 +695,44 @@ A bunch of this is effectively recreating =helm-config= - the file generated
 from a shell script bundled with helm. It's easier to roll these in my config so
 I don't have to boot from a clean slate, run some random sh, then boot again.
 #+begin_src emacs-lisp
-  (define-key evil-ex-map "b" 'helm-buffers-list)
-  (define-key evil-ex-map "mx" 'helm-M-x)
-  (define-key evil-ex-map "dd" 'helm-apropos)
-  (define-key evil-ex-map "e" 'helm-find-files)
-  (define-key evil-ex-map "t" 'org-todo)
-  (define-key evil-ex-map "co" 'org-open-at-point)
-  (define-key evil-ex-map "dk" 'describe-key)
-  (define-key evil-ex-map "dp" 'describe-package)
-  (define-key evil-ex-map "oc" 'org-capture)
-  (define-key evil-ex-map "mg" 'magit)
-  (define-key evil-ex-map "k8s" 'k8s)
-  (define-key evil-ex-map "cs" 'org-schedule)
-  (define-key evil-ex-map "c!" 'org-time-stamp-inactive)
-  (define-key evil-ex-map "ce" 'org-export-dispatch)
-  (define-key evil-ex-map "kb" 'kill-buffer)
-  (define-key evil-ex-map "cl" 'org-insert-link)
-  (define-key evil-ex-map "osl" 'org-store-link)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "b" 'helm-buffers-list)
+    (define-key evil-ex-map "mx" 'helm-M-x)
+    (define-key evil-ex-map "dd" 'helm-apropos)
+    (define-key evil-ex-map "e" 'helm-find-files)
+    (define-key evil-ex-map "t" 'org-todo)
+    (define-key evil-ex-map "co" 'org-open-at-point)
+    (define-key evil-ex-map "dk" 'describe-key)
+    (define-key evil-ex-map "dp" 'describe-package)
+    (define-key evil-ex-map "oc" 'org-capture)
+    (define-key evil-ex-map "mg" 'magit)
+    (define-key evil-ex-map "k8s" 'k8s)
+    (define-key evil-ex-map "cs" 'org-schedule)
+    (define-key evil-ex-map "c!" 'org-time-stamp-inactive)
+    (define-key evil-ex-map "ce" 'org-export-dispatch)
+    (define-key evil-ex-map "kb" 'kill-buffer)
+    (define-key evil-ex-map "cl" 'org-insert-link)
+    (define-key evil-ex-map "osl" 'org-store-link)
   ;; TODO - org sort by priority
   ;;(define-key evil-ex-map "oso" 'org-store-link)
-  (define-key evil-ex-map "cni" 'org-roam-node-insert)
-  (define-key evil-ex-map "xe" 'eval-last-sexp)
+    (define-key evil-ex-map "cni" 'org-roam-node-insert)
+    (define-key evil-ex-map "xe" 'eval-last-sexp))
   (defun es/save-all ()
     "Thin wrapper around saving all buffers"
     (interactive)
     (save-some-buffers t))
-  (define-key evil-ex-map "sa" 'es/save-all)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "sa" 'es/save-all))
 #+end_src
 
 Normal map for opening links - remap "go" to do it.
 Inspired by vim's =gf= and =gx= but =go= is easier to type.
 #+begin_src emacs-lisp
-  (define-key evil-normal-state-map "go" 'org-open-at-point)
-  (evil-define-key 'motion org-agenda-mode-map (kbd "go") 'org-open-at-point)
+  (with-eval-after-load 'evil
+    (define-key evil-normal-state-map "go" 'org-open-at-point))
+  (with-eval-after-load 'org-agenda
+    (with-eval-after-load 'evil
+      (evil-define-key 'motion org-agenda-mode-map (kbd "go") 'org-open-at-point)))
 #+end_src
 As of org 9.7 or something, org complains about doing org-open-at-point outside
 of org buffers, including org-agenda buffers. suppress warnings so we don't see these.
@@ -630,47 +746,54 @@ Quick binding for C-cC-c using evil command mode.
   (fset 'do-the-thing
         (kmacro-lambda-form [?\C-c ?\C-c] 0 "%d"))
 
-  (define-key evil-ex-map "dtt" 'do-the-thing)
-  (define-key evil-ex-map "cc" 'do-the-thing)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "dtt" 'do-the-thing)
+    (define-key evil-ex-map "cc" 'do-the-thing))
 #+end_src
 ** Do today ex-map
 Unset shift+right for evil insert, because sometimes it overrides org.
 I never use it anyway.
 #+begin_src emacs-lisp
-  (define-key evil-insert-state-map (kbd "S-<right>") nil)
+  (with-eval-after-load 'evil
+    (define-key evil-insert-state-map (kbd "S-<right>") nil))
 #+end_src
 Sticks a priority A todo for today afte the current org node.
 https://emacs.stackexchange.com/questions/19210/how-to-insert-a-new-same-level-headline-after-current-one
 #+begin_src emacs-lisp
   (defalias 'dotoday
    (kmacro "C-<return> S-<right> C-c C-s <return> S-<up> S-<up> A"))
-  (define-key evil-ex-map "dtd" 'dotoday)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "dtd" 'dotoday))
 #+end_src
 Do today, but with priority b
 #+begin_src emacs-lisp
   (defalias 'dotodayb
    (kmacro "C-<return> S-<right> C-c C-s <return> S-<up> A"))
-  (define-key evil-ex-map "dtb" 'dotodayb)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "dtb" 'dotodayb))
 #+end_src
 Do tomorrow
 #+begin_src emacs-lisp
   (defalias 'dotmrw
    (kmacro "C-<return> S-<right> C-c C-s S-<right> <return> S-<up> S-<up> A"))
 
-  (define-key evil-ex-map "dtm" 'dotmrw)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "dtm" 'dotmrw))
 #+end_src
   Insert a do today header, but indented one level from the current header.
 #+begin_src emacs-lisp
   (defalias 'doindenttoday
    (kmacro "o M-<return> M-<right> S-<right> S-<up> S-<up> C-c C-s <return>"))
-  (define-key evil-ex-map "dit" 'doindenttoday)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "dit" 'doindenttoday))
 #+end_src
 Do to inbox - experimenting with an inbox view in org-agenda.
 #+begin_src emacs-lisp
   (fset 'do-inbox
      (kmacro-lambda-form [?\C-u ?\C-u ?\C-c ?\C-x ?M ?\C-c ?\C-c ?i ?n ?b ?o ?x ?\C-m ?\C-c ?\C-s ?\C-m ?a ?\C-\[ ?x ?e ?n ?d ?- ?k ?b ?\C-i] 0 "%d"))
 
-    (define-key evil-ex-map "dti" 'do-inbox)
+    (with-eval-after-load 'evil
+      (define-key evil-ex-map "dti" 'do-inbox))
 #+end_src
 ** Split src block
 Let's me break up an org source block so I can document in between more easily
@@ -678,7 +801,8 @@ Let's me break up an org source block so I can document in between more easily
   (fset 'split-src-block
         (kmacro-lambda-form [?i ?# ?+ ?b ?e ?g ?i ?n ?_ ?s ?e ?r ?c ?\C-? ?\C-? ?\C-? ?r ?c ?  ?e ?m ?a ?c ?s ?- ?l ?i ?s ?t ?p ?\C-? ?\C-? ?p escape ?O ?# ?+ ?e ?n ?d ?_ ?s ?r ?c escape ?j ?I ?\C-\[ ?O ?C ?\C-? escape] 0 "%d"))
 
-  (define-key evil-ex-map "srcsplit" 'split-src-block)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "srcsplit" 'split-src-block))
 
 #+end_src
 ** Link Thread, PR, etc ex-map
@@ -688,36 +812,42 @@ Shortcut to make a link called "thread". Useful for when I want to stamp a link 
   (fset 'thread
    (kmacro-lambda-form [?: ?c ?l ?\C-m ?t ?h ?r ?e ?a ?d ?\C-m] 0 "%d"))
 
-  (define-key evil-ex-map "ctl" 'thread)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "ctl" 'thread))
 #+end_src
 
 #+begin_src emacs-lisp
   (fset 'pr-link
    (kmacro-lambda-form [?: ?c ?l ?\C-m ?p ?r ?\C-m] 0 "%d"))
 
-  (define-key evil-ex-map "cpl" 'pr-link)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "cpl" 'pr-link))
 #+end_src
 
 #+begin_src emacs-lisp
   (fset 'link-link
    (kmacro-lambda-form [?: ?c ?l ?\C-m ?l ?i ?n ?k ?\C-m] 0 "%d"))
 
-  (define-key evil-ex-map "ckl" 'link-link)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "ckl" 'link-link))
 #+end_src
 ** Recover this file
 ex map shortcut to recover a file
 #+begin_src emacs-lisp
-  (define-key evil-ex-map "rtf" 'recover-this-file)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "rtf" 'recover-this-file))
 
 #+end_src
 ** Evil jumplist remapping
 Rebind normal C-i to C-j
 #+begin_src emacs-lisp
-  (define-key evil-normal-state-map (kbd "C-j") 'evil-jump-forward)
+  (with-eval-after-load 'evil
+    (define-key evil-normal-state-map (kbd "C-j") 'evil-jump-forward))
 #+end_src
 Rebind normal C-o to C-k
 #+begin_src emacs-lisp
-  (define-key evil-normal-state-map (kbd "C-k") 'evil-jump-backward)
+  (with-eval-after-load 'evil
+    (define-key evil-normal-state-map (kbd "C-k") 'evil-jump-backward))
 #+end_src
 ** Evil motion remapping
 A bunch of "do this motion, then center the screen" type changes. There's probably some better way to curry these but I'm not good enough at elisp.
@@ -734,28 +864,32 @@ A bunch of "do this motion, then center the screen" type changes. There's probab
     (es/evil-then-center 'evil-search-next)
     )
 
-  (define-key evil-motion-state-map (kbd "n") 'es/search-center)
+  (with-eval-after-load 'evil
+    (define-key evil-motion-state-map (kbd "n") 'es/search-center))
 
   (defun es/search-rev-center ()
     "wrapper to center after reverse search"
     (interactive)
     (es/evil-then-center 'evil-search-previous)
     )
-  (define-key evil-motion-state-map (kbd "N") 'es/search-rev-center)
+  (with-eval-after-load 'evil
+    (define-key evil-motion-state-map (kbd "N") 'es/search-rev-center))
 
   (defun es/search-word-center ()
     "wrapper to center after word search"
     (interactive)
     (es/evil-then-center 'evil-search-word-forward)
     )
-  (define-key evil-motion-state-map (kbd "*") 'es/search-word-center)
+  (with-eval-after-load 'evil
+    (define-key evil-motion-state-map (kbd "*") 'es/search-word-center))
 
   (defun es/search-word-rev-center ()
     "wrapper to center after reverse word search"
     (interactive)
     (es/evil-then-center 'evil-search-word-backward)
     )
-  (define-key evil-motion-state-map (kbd "#") 'es/search-word-rev-center)
+  (with-eval-after-load 'evil
+    (define-key evil-motion-state-map (kbd "#") 'es/search-word-rev-center))
 #+end_src
 ** Mac copy to clipboard
 Yank doesn't quite do the trick with things, so make a custom one.
@@ -766,13 +900,15 @@ Also add =pp= to do visual paste, since =pc= overrides it.
   (fset 'pbcopy
         (kmacro-lambda-form [?\C-\[ ?| ?p ?b ?c ?o ?p ?y ?\C-m] 0 "%d"))
 
-  (define-key evil-visual-state-map "pc" 'pbcopy)
-  (define-key evil-visual-state-map "pp" 'evil-paste-after)
+  (with-eval-after-load 'evil
+    (define-key evil-visual-state-map "pc" 'pbcopy)
+    (define-key evil-visual-state-map "pp" 'evil-paste-after))
 #+end_src
 ** Insert link on highlighted text
 #+begin_src emacs-lisp
-  (define-key evil-visual-state-map "cl" 'org-insert-link)
-  (define-key evil-visual-state-map "cc" 'evil-change)
+  (with-eval-after-load 'evil
+    (define-key evil-visual-state-map "cl" 'org-insert-link)
+    (define-key evil-visual-state-map "cc" 'evil-change))
 #+end_src
 * Debugging
 Trying to see what this does on startup so I can optimize my init/dotfiles.
@@ -803,8 +939,13 @@ Stick backup files elsewhere. They screw up IFTTT's dropbox integration for some
 #+end_src
 Start server
 #+begin_src emacs-lisp
-  (load "server")
-  (unless (server-running-p) (server-start))
+  (condition-case err
+      (unless noninteractive
+        (load "server")
+        (unless (server-running-p)
+          (server-start)))
+    (error
+     (message "server startup skipped: %S" err)))
 #+end_src
 Capture templates
 #+begin_src emacs-lisp
@@ -831,10 +972,6 @@ This breaks org-agenda. Requring ~subr-x~ at startup fixes this.
 #+begin_src emacs-lisp
   (require 'subr-x)
 #+end_src
-Ubuntu specific (hopefully this doesn't break mac!) - this forces org to update to a later version.
-#+BEGIN_SRC emacs-lisp
-  (use-package org :ensure org-contrib :pin org)
-#+END_SRC
 More hacks to force dependencies into place, hopefully.
 #+begin_src emacs-lisp
   (require 'org-macs)
@@ -980,9 +1117,10 @@ Probably need to change the viewer per OS.
 #+end_src
 Roam ex map bindings
 #+begin_src emacs-lisp
-  (define-key evil-ex-map "ni" 'org-roam-node-insert)
-  (define-key evil-ex-map "nf" 'org-roam-node-find)
-  (define-key evil-ex-map "nb" 'org-roam-buffer-toggle)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "ni" 'org-roam-node-insert)
+    (define-key evil-ex-map "nf" 'org-roam-node-find)
+    (define-key evil-ex-map "nb" 'org-roam-buffer-toggle))
 #+end_src
 Capture templates for roam
 #+begin_src emacs-lisp
@@ -1092,7 +1230,9 @@ a link into the org roam note. Pretty handy!
 #+end_src
 Make a shortcut in org agenda to cap something.
 #+begin_src emacs-lisp
-  (evil-define-key 'motion org-agenda-mode-map (kbd "c") 'org-roam-dailies-capture-today)
+  (with-eval-after-load 'org-agenda
+    (with-eval-after-load 'evil
+      (evil-define-key 'motion org-agenda-mode-map (kbd "c") 'org-roam-dailies-capture-today)))
 #+end_src
 **** Open daily buffer for current day
 Quick jump to work or personal daily node.
@@ -1115,8 +1255,9 @@ Quick jump to work or personal daily node.
     (es/set-org-agenda-files)
     )
 
-  (define-key evil-ex-map "rd" 'es/open-daily-work-buffer)
-  (define-key evil-ex-map "rp" 'es/open-daily-personal-buffer)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "rd" 'es/open-daily-work-buffer)
+    (define-key evil-ex-map "rp" 'es/open-daily-personal-buffer))
 #+end_src
 ** Org roam UI
 #+begin_src emacs-lisp
@@ -1124,7 +1265,8 @@ Quick jump to work or personal daily node.
   (use-package simple-httpd)
   (use-package org-roam-ui)
 
-  (define-key evil-ex-map "oru" 'org-roam-ui-open)
+  (with-eval-after-load 'evil
+    (define-key evil-ex-map "oru" 'org-roam-ui-open))
 
 #+end_src
 Fix tags https://github.com/org-roam/org-roam-ui/issues/289
@@ -1163,11 +1305,49 @@ Font size default
 #+end_src
 * Todoist
 #+begin_src emacs-lisp
-    (use-package todoist)
+  (use-package transient :ensure nil)
+  (defconst es/org-todoist-url "https://github.com/Lillenne/org-todoist")
+  (defconst es/org-todoist-dir
+    (expand-file-name "site-lisp/org-todoist" user-emacs-directory))
 
-  ;;(defun todoist--get-tasks-to-me ()
-  ;;  "Get the list of all tasks."
-  ;;  (append (todoist--query "GET" "/tasks" (make-hash-table :labels ("to_me"))) nil))
+  (defun es/org-todoist-git-ok-p (&rest args)
+    "Run git with ARGS and return non-nil on success."
+    (zerop (apply #'call-process "git" nil "*org-todoist-bootstrap*" t args)))
+
+  (defun es/ensure-org-todoist-installed ()
+    "Clone or update org-todoist into `user-emacs-directory'."
+    (let ((target-rev "main"))
+      (when (and (file-directory-p es/org-todoist-dir)
+                 (not (file-directory-p (expand-file-name ".git" es/org-todoist-dir))))
+        (delete-directory es/org-todoist-dir t))
+      (cond
+       ((not (executable-find "git"))
+        (message "org-todoist bootstrap skipped: git not found"))
+       ((not (file-directory-p (expand-file-name ".git" es/org-todoist-dir)))
+        (make-directory (file-name-directory es/org-todoist-dir) t)
+        (message "Installing org-todoist...")
+        (if (es/org-todoist-git-ok-p "clone" es/org-todoist-url es/org-todoist-dir)
+            (unless (es/org-todoist-git-ok-p "-C" es/org-todoist-dir "checkout" target-rev)
+              (message "org-todoist checkout failed; see *org-todoist-bootstrap*"))
+          (message "org-todoist clone failed; see *org-todoist-bootstrap*")))
+       (t
+        (es/org-todoist-git-ok-p "-C" es/org-todoist-dir "fetch" "--all" "--tags")
+        (unless (es/org-todoist-git-ok-p "-C" es/org-todoist-dir "checkout" target-rev)
+          (message "org-todoist checkout failed; see *org-todoist-bootstrap*"))
+        (when (string= target-rev "main")
+          (unless (es/org-todoist-git-ok-p "-C" es/org-todoist-dir "pull" "--ff-only" "origin" "main")
+            (message "org-todoist pull failed; see *org-todoist-bootstrap*"))))))
+    (when (file-exists-p (expand-file-name "org-todoist.el" es/org-todoist-dir))
+      (add-to-list 'load-path es/org-todoist-dir)
+      t))
+
+  (require 'transient nil t)
+  (es/ensure-org-todoist-installed)
+  (unless (require 'org-todoist nil t)
+    (message "org-todoist is not available on load-path after bootstrap"))
+
+  (setq org-todoist-api-token (getenv "TODOIST_API_TOKEN"))
+  (setq org-todoist-file (concat es/org-root "/todoist.org"))
 
 #+end_src
   what do I really want?
@@ -1181,11 +1361,8 @@ Font size default
 
 ** general
 #+begin_src emacs-lisp
-(defun es/todoist-close-task ()
-  "Close the task under the cursor, marking it as done or checking it."
-  (interactive)
-  (todoist--query "POST" (format "/tasks/%s/close" (todoist--under-cursor-task-id))))
-(define-key evil-ex-map "dct" 'es/todoist-close-task)
+;; org-todoist handles sync and completion from the synced file.
+;; First-pass migration intentionally leaves the old ex commands disabled.
 
 #+end_src
 ** personal
@@ -1197,53 +1374,53 @@ Maybe I want a todoist file?
     existing thing does deadlines which is nice
 
 #+begin_src emacs-lisp
-  (define-key evil-ex-map "dip" 'todoist--get-insert-today-me)
-  (defun todoist--get-insert-today-me () (interactive)
-         (todoist--insert-today-assigned-to-me (todoist--get-tasks)))
+  ;; (define-key evil-ex-map "dip" 'todoist--get-insert-today-me)
+  ;; (defun todoist--get-insert-today-me () (interactive)
+  ;;        (todoist--insert-today-assigned-to-me (todoist--get-tasks)))
 
-  (defun todoist--is-groceries (task)
-    (equal (todoist--task-project-id task) "2354679563")
-    )
-  (defun todoist--insert-today-assigned-to-me (tasks)
-    "Insert today's tasks that are assigned to me, avoiding duplicates.
-  )
-      TASKS is the list of tasks."
-    (let ((existing-ids (todoist--get-existing-task-ids)))
-      (mapcar
-       (lambda (task) (todoist--insert-task task 2 t))
-       (-filter (lambda (task)
-                  (and (todoist--is-today-and-me task)
-    		     (not (member (format "%s" (todoist--task-id task))
-                                    existing-ids))))
-                tasks))))
+  ;; (defun todoist--is-groceries (task)
+  ;;   (equal (todoist--task-project-id task) "2354679563")
+  ;;   )
+  ;; (defun todoist--insert-today-assigned-to-me (tasks)
+  ;;   "Insert today's tasks that are assigned to me, avoiding duplicates.
+  ;; )
+  ;;     TASKS is the list of tasks."
+  ;;   (let ((existing-ids (todoist--get-existing-task-ids)))
+  ;;     (mapcar
+  ;;      (lambda (task) (todoist--insert-task task 2 t))
+  ;;      (-filter (lambda (task)
+  ;;                 (and (todoist--is-today-and-me task)
+  ;;   		     (not (member (format "%s" (todoist--task-id task))
+  ;;                                   existing-ids))))
+  ;;               tasks))))
 
-  (defun todoist--is-today-and-me (task)
-    "Return non-nil if the tasks is scheduled for today or overdue.
+  ;; (defun todoist--is-today-and-me (task)
+  ;;   "Return non-nil if the tasks is scheduled for today or overdue.
 
-      TASK is the task."
-    (or
-     (todoist--is-inbox task)
-     (and
-      (todoist--is-me task)
-      (todoist--task-date task)
-      (time-less-p (date-to-time
-                    (concat (todoist--task-date task) " 00:00:00"))
-                   (current-time)))))
+  ;;     TASK is the task."
+  ;;   (or
+  ;;    (todoist--is-inbox task)
+  ;;    (and
+  ;;     (todoist--is-me task)
+  ;;     (todoist--task-date task)
+  ;;     (time-less-p (date-to-time
+  ;;                   (concat (todoist--task-date task) " 00:00:00"))
+  ;;                  (current-time)))))
 
-  (defun todoist--is-me (task)
-    (and (equal (todoist--task-assignee task) "4330893")
-         (not (todoist--is-groceries task)))
-    )
+  ;; (defun todoist--is-me (task)
+  ;;   (and (equal (todoist--task-assignee task) "4330893")
+  ;;        (not (todoist--is-groceries task)))
+  ;;   )
 
-  (defun todoist--is-inbox (task)
-    (equal (todoist--task-project-id task) "1484705293"))
+  ;; (defun todoist--is-inbox (task)
+  ;;   (equal (todoist--task-project-id task) "1484705293"))
 
-  (defun todoist--task-assignee (task)
-    "Get the description.
+  ;; (defun todoist--task-assignee (task)
+  ;;   "Get the description.
 
-      TASK is the task object"
+  ;;     TASK is the task object"
 
-    (assoc-default 'assignee_id task))
+  ;;   (assoc-default 'assignee_id task))
 
 
     					;  (defun todoist--insert-assigned-to-me (tasks)
@@ -1265,60 +1442,60 @@ Maybe I want a todoist file?
   - also have a work flavor that pulls things out, dumps them to workinbox.org, AND deletes out of todoist
 
     #+begin_src emacs-lisp
-      (define-key evil-ex-map "diw" 'todoist--get-insert-work)
-      (defun todoist--get-insert-work () (interactive)
-             (todoist--insert-work (todoist--get-tasks)))
+      ;; (define-key evil-ex-map "diw" 'todoist--get-insert-work)
+      ;; (defun todoist--get-insert-work () (interactive)
+      ;;        (todoist--insert-work (todoist--get-tasks)))
 
-      (defun todoist--get-existing-task-ids ()
-        "Get all TODOIST_ID properties in the entire buffer."
-        (save-excursion
-          (let ((existing-ids '()))
-            (org-map-entries
-             (lambda ()
-               (when-let ((id (org-entry-get nil "TODOIST_ID")))
-                 (push id existing-ids)))
-             nil 'file)
-            existing-ids)))
+      ;; (defun todoist--get-existing-task-ids ()
+      ;;   "Get all TODOIST_ID properties in the entire buffer."
+      ;;   (save-excursion
+      ;;     (let ((existing-ids '()))
+      ;;       (org-map-entries
+      ;;        (lambda ()
+      ;;          (when-let ((id (org-entry-get nil "TODOIST_ID")))
+      ;;            (push id existing-ids)))
+      ;;        nil 'file)
+      ;;       existing-ids)))
 
-      (defun todoist--insert-work (tasks)
-        "Insert today's tasks that are assigned to me, avoiding duplicates.
+      ;; (defun todoist--insert-work (tasks)
+      ;;   "Insert today's tasks that are assigned to me, avoiding duplicates.
 
-      TASKS is the list of tasks."
-        (let ((existing-ids (todoist--get-existing-task-ids)))
-          (mapcar
-           (lambda (task) (es/todoist--insert-task task 2 t))
-           (-filter (lambda (task)
-                      (and (todoist--is-work task)
-                           (not (member (format "%s" (todoist--task-id task))
-                                        existing-ids))))
-                    tasks))))
+      ;; TASKS is the list of tasks."
+      ;;   (let ((existing-ids (todoist--get-existing-task-ids)))
+      ;;     (mapcar
+      ;;      (lambda (task) (es/todoist--insert-task task 2 t))
+      ;;      (-filter (lambda (task)
+      ;;                 (and (todoist--is-work task)
+      ;;                      (not (member (format "%s" (todoist--task-id task))
+      ;;                                   existing-ids))))
+      ;;               tasks))))
 
-      (defun todoist--is-work (task)
-        (equal (todoist--task-project-id task) "2354638235")
-        )
+      ;; (defun todoist--is-work (task)
+      ;;   (equal (todoist--task-project-id task) "2354638235")
+      ;;   )
 
-      (defun es/todoist--insert-task (task level todo)
-        "Insert the task as 'org-mode' bullet.
+      ;; (defun es/todoist--insert-task (task level todo)
+      ;;   "Insert the task as 'org-mode' bullet.
 
-      TASK is the task.
-      LEVEL is the ord heading level.
-      PRIORITY is the priority
-      TODO is boolean to show TODO tag."
-        (todoist--insert-heading level (todoist--task-content task) todo)
-        (when (todoist--task-date task)
-          (if todoist-use-scheduled-instead-of-deadline
-      	(org-schedule nil (todoist--task-date task))
-            (org-deadline nil (todoist--task-date task))))
-        (org-set-property "TODOIST_ID" (format "%s" (todoist--task-id task)))
-        (org-set-property "TODOIST_PROJECT_ID" (format "%s" (todoist--task-project-id task)))
-        ;; Fudge priority to A - just how I wo my workflow
-        (org-priority-down)
-        (org-schedule nil "+0d")
-        ;;(org-set-tags ":inbox:")
-        (goto-char (point-max))
-        (when-let ((description (todoist--task-description task))
-                   (not-empty (> (length description) 0)))
-          (insert (replace-regexp-in-string (rx line-start) (make-string level ?\s) description))))
+      ;; TASK is the task.
+      ;; LEVEL is the ord heading level.
+      ;; PRIORITY is the priority
+      ;; TODO is boolean to show TODO tag."
+      ;;   (todoist--insert-heading level (todoist--task-content task) todo)
+      ;;   (when (todoist--task-date task)
+      ;;     (if todoist-use-scheduled-instead-of-deadline
+      ;; 	(org-schedule nil (todoist--task-date task))
+      ;;       (org-deadline nil (todoist--task-date task))))
+      ;;   (org-set-property "TODOIST_ID" (format "%s" (todoist--task-id task)))
+      ;;   (org-set-property "TODOIST_PROJECT_ID" (format "%s" (todoist--task-project-id task)))
+      ;;   ;; Fudge priority to A - just how I wo my workflow
+      ;;   (org-priority-down)
+      ;;   (org-schedule nil "+0d")
+      ;;   ;;(org-set-tags ":inbox:")
+      ;;   (goto-char (point-max))
+      ;;   (when-let ((description (todoist--task-description task))
+      ;;              (not-empty (> (length description) 0)))
+      ;;     (insert (replace-regexp-in-string (rx line-start) (make-string level ?\s) description))))
 
     #+end_src
 ** scratch
