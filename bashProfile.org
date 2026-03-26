@@ -188,6 +188,15 @@ Quick navigation to my org directory.
   alias cdoroot='cd ~/Dropbox/org/'
   alias cdor='cdoroot; cd roam'
   alias cdord='cdor; cd daily'
+  # cd that'll handle files if I accidentally paste them in
+  function cd() {
+      if [[ -f "$1" ]]; then
+  	builtin cd "$(dirname "$1")"
+      else
+  	builtin cd "$@"
+      fi
+  }
+
 #+end_src
 ** Quick backtracking
 [[https://github.com/dusbennett/terminal-commands/blob/master/shell/.profile][Completely stolen from Dustin Bennett]]
