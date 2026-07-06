@@ -1039,6 +1039,9 @@ Known limits:
   (defvar es/org-todoist-id-cache-active nil
     "Non-nil when local org-todoist id lookup caching is active.")
 
+  (defvar es/org-todoist-debug nil
+    "When non-nil, log verbose diagnostics for local org-todoist overrides.")
+
   (defvar es/org-todoist-debug-update-tasks-active nil
     "Non-nil while debugging org-todoist task update internals.")
 
@@ -2735,8 +2738,10 @@ payload and prune those absent task subtrees.
 
         (defun es/org-todoist-progress-update-tasks (orig tasks ast)
           "Report Todoist task update progress."
-          (let ((es/org-todoist-debug-update-tasks-active t))
-            (es/org-todoist-debug-installed-overrides)
+          (if es/org-todoist-debug
+              (let ((es/org-todoist-debug-update-tasks-active t))
+                (es/org-todoist-debug-installed-overrides)
+                (es/org-todoist-response-phase "update-tasks" tasks orig tasks ast))
             (es/org-todoist-response-phase "update-tasks" tasks orig tasks ast)))
 
         (defun es/org-todoist-progress-update-comments (orig comments ast)
@@ -2768,6 +2773,30 @@ payload and prune those absent task subtrees.
           (unless (listp node)
             (message "org-element-extract received non-list node: %S" node))
           (apply orig node args))
+
+        (defun es/org-todoist-remove-debug-advice ()
+          "Remove verbose org-todoist diagnostic advice."
+          (advice-remove 'org-element-extract #'es/org-element-extract-log-non-list)
+          (advice-remove 'org-element-map #'es/org-todoist-debug-org-element-map)
+          (advice-remove 'org-element-lineage-map #'es/org-todoist-debug-org-element-lineage-map))
+
+        (defun es/org-todoist-install-debug-advice ()
+          "Install verbose org-todoist diagnostic advice."
+          (es/org-todoist-remove-debug-advice)
+          (advice-add 'org-element-extract :around #'es/org-element-extract-log-non-list)
+          (advice-add 'org-element-map :around #'es/org-todoist-debug-org-element-map)
+          (advice-add 'org-element-lineage-map :around #'es/org-todoist-debug-org-element-lineage-map))
+
+        (defun es/org-todoist-toggle-debug ()
+          "Toggle verbose org-todoist diagnostics."
+          (interactive)
+          (setq es/org-todoist-debug (not es/org-todoist-debug))
+          (if es/org-todoist-debug
+              (progn
+                (es/org-todoist-install-debug-advice)
+                (message "org-todoist debug logging enabled"))
+            (es/org-todoist-remove-debug-advice)
+            (message "org-todoist debug logging disabled")))
 
         (defun es/org-todoist-progress-handle-display (orig cur-marker)
           "Report file write/display progress around `org-todoist--handle-display'."
@@ -2829,9 +2858,7 @@ payload and prune those absent task subtrees.
         (advice-remove 'org-todoist--set-last-sync-buffer #'es/org-todoist-progress-set-last-sync-buffer)
         (advice-remove 'org-todoist--update-file #'es/org-todoist-progress-update-file)
         (advice-remove 'org-todoist--handle-display #'es/org-todoist-progress-handle-display)
-        (advice-remove 'org-element-extract #'es/org-element-extract-log-non-list)
-        (advice-remove 'org-element-map #'es/org-todoist-debug-org-element-map)
-        (advice-remove 'org-element-lineage-map #'es/org-todoist-debug-org-element-lineage-map)
+        (es/org-todoist-remove-debug-advice)
         (advice-remove 'org-todoist--get-by-id #'es/org-todoist-get-by-id-cached)
         (advice-remove 'org-todoist--update-tasks #'es/org-todoist-update-tasks-with-id-cache)
         (advice-remove 'org-todoist--do-sync-callback #'es/org-todoist-fullsync-clear-active-flag)
@@ -2851,9 +2878,8 @@ payload and prune those absent task subtrees.
         (advice-add 'org-todoist--set-last-sync-buffer :around #'es/org-todoist-progress-set-last-sync-buffer)
         (advice-add 'org-todoist--update-file :around #'es/org-todoist-progress-update-file)
         (advice-add 'org-todoist--handle-display :around #'es/org-todoist-progress-handle-display)
-        (advice-add 'org-element-extract :around #'es/org-element-extract-log-non-list)
-        (advice-add 'org-element-map :around #'es/org-todoist-debug-org-element-map)
-        (advice-add 'org-element-lineage-map :around #'es/org-todoist-debug-org-element-lineage-map)
+        (when es/org-todoist-debug
+          (es/org-todoist-install-debug-advice))
         (advice-add 'org-todoist--get-by-id :around #'es/org-todoist-get-by-id-cached)
         (advice-add 'org-todoist--update-tasks :around #'es/org-todoist-update-tasks-with-id-cache)
         (advice-add 'org-todoist--do-sync-callback :around #'es/org-todoist-fullsync-callback)
@@ -2865,6 +2891,7 @@ payload and prune those absent task subtrees.
           (define-key evil-ex-map "otdr" 'es/org-todoist-pull-remote-changes)
           (define-key evil-ex-map "otdfs" 'es/org-todoist-fullsync)
           (define-key evil-ex-map "otdq" 'es/org-todoist-render-pending-buffer)
+          (define-key evil-ex-map "otdebug" 'es/org-todoist-toggle-debug)
           (define-key evil-ex-map "otda" 'es/org-todoist-assign-task)
           (define-key evil-ex-map "otdu" 'es/org-todoist-unassign-task))
         (es/set-org-agenda-files))
