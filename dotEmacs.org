@@ -494,10 +494,120 @@ Only one change from the default strategy, which is to use effort-up. The orderi
 I think the fact that all my things in "recurring.org" are habits sort of circuvents "habit-down". But I don't mind for now.
 #+begin_src emacs-lisp
   (setq org-agenda-sorting-strategy
-        '((agenda user-defined-up todo-state-down habit-down time-up priority-down effort-up category-keep)
+        '((agenda todo-state-down habit-down time-up priority-down effort-up category-keep)
           (todo priority-down category-keep)
           (tags priority-down category-keep)
           (search category-keep)))
+  (es/init-timer "agenda sorting")
+
+  (defvar es/agenda-phase-start nil)
+  (defvar es/agenda-phase-last nil)
+  (defun es/agenda-phase-timer (label)
+    "Log elapsed time for agenda phase LABEL."
+    (let* ((now (current-time))
+           (total (if es/agenda-phase-start
+                      (float-time (time-subtract now es/agenda-phase-start))
+                    0))
+           (delta (if es/agenda-phase-last
+                      (float-time (time-subtract now es/agenda-phase-last))
+                    total)))
+      (setq es/agenda-phase-last now)
+      (message "agenda-phase: %6.2fs total, %6.2fs delta - %s"
+               total delta label)))
+
+  (defun es/agenda-phase-reset ()
+    "Reset agenda phase timing."
+    (setq es/agenda-phase-start (current-time))
+    (setq es/agenda-phase-last es/agenda-phase-start)
+    (es/agenda-phase-timer "start"))
+
+  (defun es/agenda-phase-file-label (file)
+    "Return a short label for FILE."
+    (cond
+     ((stringp file)
+      (file-name-nondirectory file))
+     ((bufferp file)
+      (buffer-name file))
+     ((symbolp file)
+      (symbol-name file))
+     (t
+      (format "%S" file))))
+
+  (defun es/org-agenda-prepare-timed (orig &rest args)
+    "Time `org-agenda-prepare'."
+    (es/agenda-phase-timer "org-agenda-prepare start")
+    (prog1 (apply orig args)
+      (es/agenda-phase-timer "org-agenda-prepare end")))
+
+  (defun es/org-agenda-prepare-buffers-timed (orig files)
+    "Time `org-agenda-prepare-buffers'."
+    (es/agenda-phase-timer (format "prepare-buffers start (%s files)" (length files)))
+    (prog1 (funcall orig files)
+      (es/agenda-phase-timer "prepare-buffers end")))
+
+  (defun es/org-agenda-get-day-entries-timed (orig file date &rest args)
+    "Time `org-agenda-get-day-entries' for FILE."
+    (es/agenda-phase-timer (format "get-day-entries start %s" (es/agenda-phase-file-label file)))
+    (prog1 (apply orig file date args)
+      (es/agenda-phase-timer (format "get-day-entries end %s" (es/agenda-phase-file-label file)))))
+
+  (defun es/org-agenda-finalize-entries-timed (orig list &optional type)
+    "Time `org-agenda-finalize-entries'."
+    (es/agenda-phase-timer (format "finalize-entries start %s" (or type "unknown")))
+    (prog1 (funcall orig list type)
+      (es/agenda-phase-timer (format "finalize-entries end %s" (or type "unknown")))))
+
+  (defun es/org-agenda-finalize-timed (orig &rest args)
+    "Time `org-agenda-finalize'."
+    (es/agenda-phase-timer "finalize start")
+    (prog1 (apply orig args)
+      (es/agenda-phase-timer "finalize end")))
+
+  (with-eval-after-load 'org-agenda
+    (advice-remove 'org-agenda-prepare #'es/org-agenda-prepare-timed)
+    (advice-remove 'org-agenda-prepare-buffers #'es/org-agenda-prepare-buffers-timed)
+    (advice-remove 'org-agenda-get-day-entries #'es/org-agenda-get-day-entries-timed)
+    (advice-remove 'org-agenda-finalize-entries #'es/org-agenda-finalize-entries-timed)
+    (advice-remove 'org-agenda-finalize #'es/org-agenda-finalize-timed)
+    (advice-add 'org-agenda-prepare :around #'es/org-agenda-prepare-timed)
+    (advice-add 'org-agenda-prepare-buffers :around #'es/org-agenda-prepare-buffers-timed)
+    (advice-add 'org-agenda-get-day-entries :around #'es/org-agenda-get-day-entries-timed)
+    (advice-add 'org-agenda-finalize-entries :around #'es/org-agenda-finalize-entries-timed)
+    (advice-add 'org-agenda-finalize :around #'es/org-agenda-finalize-timed))
+
+  (defun es/org-check-agenda-file-timed (orig file)
+    "Time `org-check-agenda-file'."
+    (es/agenda-phase-timer (format "check-file start %s" (es/agenda-phase-file-label file)))
+    (prog1 (funcall orig file)
+      (es/agenda-phase-timer (format "check-file end %s" (es/agenda-phase-file-label file)))))
+
+  (defun es/org-get-agenda-file-buffer-timed (orig file)
+    "Time `org-get-agenda-file-buffer'."
+    (es/agenda-phase-timer (format "get-buffer start %s" (es/agenda-phase-file-label file)))
+    (prog1 (funcall orig file)
+      (es/agenda-phase-timer (format "get-buffer end %s" (es/agenda-phase-file-label file)))))
+
+  (defun es/org-set-regexps-and-options-timed (orig &rest args)
+    "Time `org-set-regexps-and-options'."
+    (es/agenda-phase-timer "set-regexps-and-options start")
+    (prog1 (apply orig args)
+      (es/agenda-phase-timer "set-regexps-and-options end")))
+
+  (defun es/org-refresh-stats-properties-timed (orig &rest args)
+    "Time `org-refresh-stats-properties'."
+    (es/agenda-phase-timer "refresh-stats start")
+    (prog1 (apply orig args)
+      (es/agenda-phase-timer "refresh-stats end")))
+
+  (with-eval-after-load 'org
+    (advice-remove 'org-check-agenda-file #'es/org-check-agenda-file-timed)
+    (advice-remove 'org-get-agenda-file-buffer #'es/org-get-agenda-file-buffer-timed)
+    (advice-remove 'org-set-regexps-and-options #'es/org-set-regexps-and-options-timed)
+    (advice-remove 'org-refresh-stats-properties #'es/org-refresh-stats-properties-timed)
+    (advice-add 'org-check-agenda-file :around #'es/org-check-agenda-file-timed)
+    (advice-add 'org-get-agenda-file-buffer :around #'es/org-get-agenda-file-buffer-timed)
+    (advice-add 'org-set-regexps-and-options :around #'es/org-set-regexps-and-options-timed)
+    (advice-add 'org-refresh-stats-properties :around #'es/org-refresh-stats-properties-timed))
 #+end_src
 ** Curating todos
 Org agenda todo - filter out things with dates so I schedule any dangling todos. Apparently I need all of these set - I tend to just slap dates on stuff so it'll show on the agenda,
