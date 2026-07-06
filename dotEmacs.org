@@ -1846,7 +1846,55 @@ super agenda
            ((agenda ""
                     ((org-agenda-span 'day)
                      (org-agenda-use-time-grid nil)
-                     (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))))))))
+                     (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))))))
+          ("e" "Daily agenda"
+           ((agenda ""
+                    ((org-agenda-span 'day)))
+            (tags-todo "+TODOIST_TYPE={TASK}"
+                       ((org-agenda-files (es/org-todoist-agenda-files))
+                        (org-agenda-overriding-header "Inbox")
+                        (org-agenda-skip-function
+                         '(or
+                           (es/org-agenda-skip-todoist-noise)
+                           (es/org-agenda-skip-todoist-open-dated-items)))
+                        (org-agenda-tags-todo-honor-ignore-options nil)
+                        (org-agenda-todo-ignore-scheduled nil)
+                        (org-agenda-todo-ignore-deadlines nil)
+                        (org-agenda-todo-ignore-timestamp nil)
+                        (org-agenda-todo-ignore-with-date nil)))))
+          ("T" "Todoist"
+           ((agenda ""
+                    ((org-agenda-files (es/org-todoist-agenda-files))
+                     (org-agenda-span 'day)
+                     (org-agenda-skip-function
+                      'es/org-agenda-skip-todoist-noise)
+                     (org-agenda-overriding-header "Todoist due today / overdue")))
+            (tags-todo "+TODOIST_TYPE={TASK}"
+                       ((org-agenda-files (es/org-todoist-agenda-files))
+                        (org-agenda-overriding-header "Todoist open tasks")
+                        (org-agenda-skip-function
+                         '(or
+                           (es/org-agenda-skip-todoist-noise)
+                           (es/org-agenda-skip-todoist-open-dated-items)))
+                        (org-agenda-tags-todo-honor-ignore-options nil)
+                        (org-agenda-todo-ignore-scheduled nil)
+                        (org-agenda-todo-ignore-deadlines nil)
+                        (org-agenda-todo-ignore-timestamp nil)
+                        (org-agenda-todo-ignore-with-date nil)))))
+          ("I" "Todoist Inbox"
+           ((tags-todo "+TODOIST_TYPE={TASK}"
+                       ((org-agenda-files (es/org-todoist-agenda-files))
+                        (org-agenda-overriding-header "Todoist Inbox")
+                        (org-agenda-skip-function
+                         '(or
+                           (es/org-agenda-skip-unless-todoist-project-id
+                            es/org-todoist-inbox-project-id)
+                           (es/org-agenda-skip-todoist-assigned-to-others)))
+                        (org-agenda-tags-todo-honor-ignore-options nil)
+                        (org-agenda-todo-ignore-scheduled nil)
+                        (org-agenda-todo-ignore-deadlines nil)
+                        (org-agenda-todo-ignore-timestamp nil)
+                        (org-agenda-todo-ignore-with-date nil)))))))
   (defun as/get-daily-agenda (&optional date)
     "Return the agenda for the day as a string."
     (interactive)
