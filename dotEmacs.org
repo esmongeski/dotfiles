@@ -927,7 +927,8 @@ assignment update and a DONE transition can both be pushed."
       "6g8rvP6R8HWgJC5q"
       "6gQwC6v4rcjhgrpH"
       "6cFFxFgjQQ7MMf3V"
-      "6c4wg7HX7Wm8Fc2g"))
+      "6c4wg7HX7Wm8Fc2g"
+      "6h3G57rfGCGHQ7v2"))
 
   (defvar es/org-todoist-work-project-id "6c5f47cR2vvfr7p3")
 
