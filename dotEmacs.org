@@ -619,6 +619,464 @@ which is good enough for me.
   (setq org-agenda-todo-ignore-with-date "all")
   (setq org-agenda-tags-todo-honor-ignore-options t)
 #+end_src
+** Todoist agenda helpers
+#+begin_src emacs-lisp
+  (defvar es/org-todoist-inbox-project-id "6Crfj4VhqRVf8GfG")
+  (defvar es/org-todoist-my-id-cache nil)
+  (defvar es/org-todoist-my-id-cache-set nil)
+  (defvar es/org-todoist-file-paths nil)
+  (defvar es/org-todoist-pending-commands nil)
+  (defvar es/org-todoist-pending-commands-buffer-name "*org-todoist-pending*")
+  (defvar es/org-todoist-pending-sync-active nil)
+  (defvar es/org-todoist-pending-sync-clear nil)
+  (defvar es/org-todoist-fullsync-active nil)
+
+  (defun es/org-todoist-buffer-p ()
+    "Return non-nil when the current buffer visits the Todoist mirror."
+    (when buffer-file-name
+      (let ((paths (delq nil
+                         (list buffer-file-name
+                               (when (file-exists-p buffer-file-name)
+                                 (file-truename buffer-file-name))))))
+        (cl-some (lambda (path)
+                   (member path es/org-todoist-file-paths))
+                 paths))))
+
+  (defun es/org-todoist-pending-command-id (command)
+    "Return the Todoist id referenced by COMMAND, if any."
+    (when-let* ((args (assoc-default "args" command))
+                (id (or (assoc-default "id" args)
+                        (assoc-default "item_id" args))))
+      id))
+
+  (defun es/org-todoist-pending-command-type (command)
+    "Return the Todoist command type string for COMMAND."
+    (assoc-default "type" command))
+
+  (defun es/org-todoist-items-do (fn items)
+    "Call FN for each Todoist item in ITEMS.
+Todoist responses may use either JSON vectors or lists depending on the parser."
+    (cond
+     ((vectorp items)
+      (dotimes (idx (length items))
+        (funcall fn (aref items idx))))
+     ((listp items)
+      (dolist (item items)
+        (funcall fn item)))))
+
+  (defun es/org-todoist-item-id-table (items)
+    "Return a hash table of Todoist item ids from ITEMS."
+    (let ((ids (make-hash-table :test 'equal)))
+      (es/org-todoist-items-do
+       (lambda (item)
+         (when-let ((id (alist-get 'id item)))
+           (puthash id t ids)))
+       items)
+      ids))
+
+  (defun es/org-todoist-fullsync-active-task-ids ()
+    "Return a hash table of task ids present in the last Todoist response."
+    (let ((file (and (fboundp 'org-todoist--storage-file)
+                     (org-todoist--storage-file "last-response.json"))))
+      (when (and file (file-exists-p file))
+        (let* ((json-object-type 'alist)
+               (json-array-type 'list)
+               (json-null nil)
+               (json-false :json-false)
+               (response (if (fboundp 'json-parse-file)
+                             (json-parse-file file :object-type 'alist :array-type 'list :null-object nil :false-object :json-false)
+                           (let ((json-object-type 'alist)
+                                 (json-array-type 'list)
+                                 (json-null nil)
+                                 (json-false :json-false))
+                             (json-read-file file)))))
+          (es/org-todoist-item-id-table (alist-get 'items response))))))
+
+  (defun es/org-todoist-prune-missing-task-headings (&optional active-ids)
+    "Remove Todoist task headings absent from ACTIVE-IDS or the last response."
+    (when-let ((active-ids (or active-ids
+                               (es/org-todoist-fullsync-active-task-ids))))
+      (with-current-buffer (find-file-noselect (org-todoist-file))
+        (save-restriction
+          (widen)
+          (let ((deletions nil))
+            (org-element-map (org-element-parse-buffer) 'headline
+              (lambda (hl)
+                (when (string= (org-entry-get (org-element-property :begin hl) "TODOIST_TYPE") "TASK")
+                  (when-let ((id (org-entry-get (org-element-property :begin hl) "tid")))
+                    (unless (gethash id active-ids)
+                      (push (cons (org-element-property :begin hl)
+                                  (org-element-property :end hl))
+                            deletions))))))
+            (message "org-todoist: pruning %d local task(s) missing from %d active Todoist item(s)"
+                     (length deletions)
+                     (hash-table-count active-ids))
+            (dolist (range (sort deletions (lambda (a b)
+                                             (> (car a) (car b)))))
+              (delete-region (car range) (cdr range)))
+            (save-buffer)
+            (when (fboundp 'org-todoist--set-last-sync-buffer)
+              (org-todoist--set-last-sync-buffer (org-element-parse-buffer)))
+            (when (fboundp 'es/reset-org-agenda-files-cache)
+              (es/reset-org-agenda-files-cache)))))))
+
+  (defun es/org-todoist-fullsync-callback (orig response ast cur-marker)
+    "Clear fullsync state after ORIG sync callback finishes."
+    (unwind-protect
+        (funcall orig response ast cur-marker)
+      (setq es/org-todoist-fullsync-active nil)))
+
+  (defun es/org-todoist-fullsync ()
+    "Run a full Todoist refresh, then prune items missing from the fetched payload."
+    (interactive)
+    (setq es/org-todoist-fullsync-active t)
+    (condition-case err
+        (org-todoist-reset '(4))
+      (error
+       (setq es/org-todoist-fullsync-active nil)
+       (signal (car err) (cdr err)))))
+
+  (defun es/org-todoist-render-pending-buffer ()
+    "Render the local Todoist command queue."
+    (with-current-buffer (get-buffer-create es/org-todoist-pending-commands-buffer-name)
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert (format "Pending Todoist commands: %s\n\n"
+                        (length es/org-todoist-pending-commands)))
+        (if es/org-todoist-pending-commands
+            (pp es/org-todoist-pending-commands (current-buffer))
+          (insert "No pending commands.\n"))
+        (goto-char (point-min))
+        (special-mode))))
+
+  (defun es/org-todoist-clear-pending-commands ()
+    "Clear the local Todoist command queue."
+    (setq es/org-todoist-pending-commands nil)
+    (es/org-todoist-render-pending-buffer))
+
+  (defun es/org-todoist-pending-command-kind (command)
+    "Return the dedupe kind for COMMAND.
+State commands are mutually exclusive for a task. Updates are separate so an
+assignment update and a DONE transition can both be pushed."
+    (let ((type (es/org-todoist-pending-command-type command)))
+      (cond
+       ((member type '("item_complete" "item_uncomplete" "item_delete"))
+        "item_state")
+       (t type))))
+
+  (defun es/org-todoist-pending-command-key (command)
+    "Return the queue dedupe key for COMMAND."
+    (when-let ((id (es/org-todoist-pending-command-id command)))
+      (cons id (es/org-todoist-pending-command-kind command))))
+
+  (defun es/org-todoist-queue-command (command)
+    "Queue COMMAND for the next Todoist push."
+    (let ((key (es/org-todoist-pending-command-key command)))
+      (when key
+        (setq es/org-todoist-pending-commands
+              (append (cl-remove-if
+                       (lambda (existing)
+                         (equal key (es/org-todoist-pending-command-key existing)))
+                       es/org-todoist-pending-commands)
+                      (list command)))
+        (es/org-todoist-render-pending-buffer))))
+
+  (defun es/org-todoist-queue-assignee-change ()
+    "Queue the current task assignment change."
+    (when-let* ((id (org-entry-get nil "tid")))
+      (es/org-todoist-queue-command
+       `(("uuid" . ,(org-id-uuid))
+         ("type" . "item_update")
+         ("args" . (("id" . ,id)
+                    ("responsible_uid" . ,(or (org-entry-get nil "responsible_uid")
+                                              (org-entry-get nil "RESPONSIBLE_UID")))))))))
+
+  (defun es/org-todoist-task-id-at-point ()
+    "Return the Todoist task id at point, if point is on a Todoist task."
+    (when (and (derived-mode-p 'org-mode)
+               (es/org-todoist-buffer-p))
+      (save-excursion
+        (org-back-to-heading t)
+        (when (string= (org-entry-get nil "TODOIST_TYPE") "TASK")
+          (org-entry-get nil "tid")))))
+
+  (defun es/org-todoist-current-agenda-task-id ()
+    "Return the source Todoist task id for the current agenda entry."
+    (when (and (derived-mode-p 'org-agenda-mode)
+               (fboundp 'org-agenda-with-point-at-orig-entry))
+      (let (id)
+        (org-agenda-with-point-at-orig-entry nil
+          (setq id (es/org-todoist-task-id-at-point)))
+        id)))
+
+  (defun es/org-todoist-refile-source-task-id ()
+    "Return the Todoist task id that `org-refile' would move from point."
+    (or (es/org-todoist-task-id-at-point)
+        (es/org-todoist-current-agenda-task-id)))
+
+  (defun es/org-todoist-nearest-parent-id (type)
+    "Return nearest ancestor Todoist id of TYPE above point."
+    (save-excursion
+      (let (id)
+        (while (and (not id) (org-up-heading-safe))
+          (when (string= (org-entry-get nil "TODOIST_TYPE") type)
+            (setq id (org-entry-get nil "tid"))))
+        id)))
+
+  (defun es/org-todoist-normalize-section-id (id)
+    "Return Todoist section ID unless it is the package's default section id."
+    (unless (or (null id)
+                (string= id "")
+                (and (boundp 'org-todoist--default-id)
+                     (string= id org-todoist--default-id)))
+      id))
+
+  (defun es/org-todoist-move-command-at-point (id)
+    "Build a Todoist item_move command for task ID at point."
+    (let ((parent-task (es/org-todoist-nearest-parent-id "TASK"))
+          (section (es/org-todoist-normalize-section-id
+                    (es/org-todoist-nearest-parent-id "SECTION")))
+          (project (es/org-todoist-nearest-parent-id "PROJECT")))
+      (cond
+       (parent-task
+        `(("uuid" . ,(org-id-uuid))
+          ("type" . "item_move")
+          ("args" . (("id" . ,id)
+                     ("parent_id" . ,parent-task)))))
+       ((and project (not section))
+        `(("uuid" . ,(org-id-uuid))
+          ("type" . "item_move")
+          ("args" . (("id" . ,id)
+                     ("project_id" . ,project)))))
+       (section
+        `(("uuid" . ,(org-id-uuid))
+          ("type" . "item_move")
+          ("args" . (("id" . ,id)
+                     ("section_id" . ,section))))))))
+
+  (defun es/org-todoist-goto-task-id (id)
+    "Move point to Todoist task ID in the current buffer."
+    (goto-char (point-min))
+    (let ((case-fold-search nil))
+      (when (re-search-forward
+             (format "^:tid:[[:space:]]+%s$" (regexp-quote id))
+             nil t)
+        (org-back-to-heading t)
+        (point))))
+
+  (defun es/org-todoist-queue-refile-move (id)
+    "Queue a Todoist move for refiled task ID when it remains in todoist.org."
+    (when (and id
+               (boundp 'org-todoist-file)
+               org-todoist-file)
+      (with-current-buffer (find-file-noselect org-todoist-file)
+        (if (es/org-todoist-goto-task-id id)
+            (if-let ((command (es/org-todoist-move-command-at-point id)))
+                (progn
+                  (es/org-todoist-queue-command command)
+                  (save-buffer)
+                  (message "org-todoist queued local move; push with :otdp"))
+              (message "org-todoist: refiled task has no Todoist project/section target; no move queued"))
+          (message "org-todoist: refiled task is no longer in todoist.org; no Todoist move queued")))))
+
+  (defun es/org-refile-queue-todoist-move (orig &rest args)
+    "Queue Todoist item_move commands for normal Todoist refiles."
+    (let* ((arg (car args))
+           (copy-or-jump (member arg '(3 (3) 4 (4) 16 (16))))
+           (todoist-id (unless copy-or-jump
+                         (es/org-todoist-refile-source-task-id))))
+      (prog1 (apply orig args)
+        (when todoist-id
+          (es/org-todoist-queue-refile-move todoist-id)))))
+
+  (defun es/org-todoist-queue-todo-state-change ()
+    "Queue completion or reopen commands for Todoist tasks."
+    (when-let* ((id (org-entry-get nil "tid"))
+                (state (and (boundp 'org-state) org-state)))
+      (let ((command
+             (cond
+              ((string= state org-todoist-deleted-keyword)
+               `(("uuid" . ,(org-id-uuid))
+                 ("type" . "item_delete")
+                 ("args" . (,(org-todoist--id-arg id "item_delete")))))
+              ((string= state org-todoist-done-keyword)
+               `(("uuid" . ,(org-id-uuid))
+                 ("type" . "item_complete")
+                 ("args" . (,(org-todoist--id-arg id "item_complete")))))
+              ((string= state org-todoist-todo-keyword)
+               `(("uuid" . ,(org-id-uuid))
+                 ("type" . "item_uncomplete")
+                 ("args" . (,(org-todoist--id-arg id "item_uncomplete"))))))))
+        (when command
+          (es/org-todoist-queue-command command)))))
+
+  (defvar es/org-todoist-agenda-excluded-project-ids
+    '("6cFhGWfRv3PwGm25"
+      "6c5cW3FV6VfGRcC7"
+      "6c5cWGjMWX7wQpQW"
+      "6f5jfRWPQPw7q9qF"
+      "6f8G54FRcXvF8Px6"
+      "6f8WrP59mPFFvMqX"
+      "6g8rvP6R8HWgJC5q"
+      "6gQwC6v4rcjhgrpH"
+      "6cFFxFgjQQ7MMf3V"
+      "6c4wg7HX7Wm8Fc2g"))
+
+  (defvar es/org-todoist-work-project-id "6c5f47cR2vvfr7p3")
+
+  (defun es/org-todoist-project-id-at-point ()
+    "Return the nearest Todoist project id above point."
+    (when (and (fboundp 'org-todoist-file)
+               (es/org-todoist-buffer-p))
+      (save-excursion
+        (let ((project-id nil))
+          (while (and (not project-id) (org-up-heading-safe))
+            (when (string= (org-entry-get nil "TODOIST_TYPE") "PROJECT")
+              (setq project-id (org-entry-get nil "tid"))))
+          project-id))))
+
+  (defun es/org-todoist-normalize-uid (uid)
+    "Return UID as a meaningful string, or nil for empty/null values."
+    (when (and uid
+               (not (member uid '("nil" "null" ""))))
+      uid))
+
+  (defun es/org-todoist-my-id ()
+    "Return the current Todoist user id, cached for agenda generation.
+Do not cache misses permanently; collaborator metadata may not be ready on the
+first agenda build after startup."
+    (or es/org-todoist-my-id-cache
+        (let ((uid (es/org-todoist-normalize-uid
+                    (or (and (boundp 'org-todoist-my-id)
+                             org-todoist-my-id)
+                        (when (fboundp 'org-todoist-my-id)
+                          (org-todoist-my-id))
+                        (org-entry-get nil "user_id")
+                        (org-entry-get nil "USER_ID")))))
+          (when uid
+            (setq es/org-todoist-my-id-cache uid)
+            (setq es/org-todoist-my-id-cache-set t)
+            (setq org-todoist-my-id uid))
+          uid)))
+
+  (defun es/org-agenda-skip-unless-todoist-project-id (project-id)
+    "Skip current agenda entry unless it belongs to Todoist PROJECT-ID."
+    (unless (string= (es/org-todoist-project-id-at-point) project-id)
+      (save-excursion
+        (or (outline-next-heading) (point-max)))))
+
+  (defun es/org-todoist-agenda-excluded-project-p (project-id)
+    "Return non-nil when PROJECT-ID should be hidden from the current agenda."
+    (and project-id
+         (or (member project-id es/org-todoist-agenda-excluded-project-ids)
+             (and es/no-work-agenda
+                  (string= project-id es/org-todoist-work-project-id)))))
+
+  (defun es/org-agenda-skip-excluded-todoist-projects ()
+    "Skip current agenda entry when it belongs to an excluded Todoist project."
+    (when (es/org-todoist-agenda-excluded-project-p
+           (es/org-todoist-project-id-at-point))
+      (save-excursion
+        (or (outline-next-heading) (point-max)))))
+
+  (defun es/org-agenda-skip-todoist-assigned-to-others ()
+    "Skip Todoist tasks explicitly assigned to someone else."
+    (when (and (fboundp 'org-todoist-file)
+               (es/org-todoist-buffer-p))
+      (let ((assignee (es/org-todoist-normalize-uid
+                       (or (org-entry-get nil "responsible_uid")
+                           (org-entry-get nil "RESPONSIBLE_UID")))))
+        (when (and assignee
+                 (let ((my-id (es/org-todoist-my-id)))
+                   (and my-id
+                          (not (string= assignee my-id)))))
+          (save-excursion
+            (or (outline-next-heading) (point-max)))))))
+
+  (defun es/org-agenda-skip-todoist-noise ()
+    "Skip Todoist entries that should not appear in agenda views."
+    (when (es/org-todoist-buffer-p)
+      (or (es/org-agenda-skip-excluded-todoist-projects)
+          (es/org-agenda-skip-todoist-assigned-to-others))))
+
+  (defun es/org-agenda-skip-todoist-open-dated-items ()
+    "Skip Todoist tasks that already belong in the date-based agenda section."
+    (when (es/org-todoist-buffer-p)
+      (org-agenda-skip-entry-if 'scheduled 'deadline 'timestamp)))
+
+  (setq org-agenda-skip-function 'es/org-agenda-skip-todoist-noise)
+  (es/init-timer "todoist agenda helpers")
+#+end_src
+** Todoist performance overrides
+These are local overrides for =org-todoist= internals, not upstream API
+surface. They should be treated as deliberately brittle: if upstream changes
+=org-todoist--update-tasks= or =org-todoist--get-by-id=, remove this section
+first and re-profile before debugging sync correctness.
+
+The goal is narrow: while =org-todoist--update-tasks= is applying a Todoist
+response, avoid repeatedly scanning the whole Org AST for IDs. We build a
+temporary hash table once for that update pass and let the original upstream
+mutation code keep doing the real work.
+
+Known limits:
+- The default Todoist section id is reused under multiple projects, so this
+  cache intentionally does not answer lookups for that id.
+- Misses fall back to upstream lookup and are then cached. This keeps newly
+  created nodes discoverable during the same sync pass.
+- This is advice, not a fork. It is easy to remove if upstream catches up or
+  the internal function contracts change.
+#+begin_src emacs-lisp
+  (defvar es/org-todoist-id-cache nil
+    "Temporary id lookup cache used only during org-todoist task updates.")
+
+  (defvar es/org-todoist-id-cache-active nil
+    "Non-nil when local org-todoist id lookup caching is active.")
+
+  (defun es/org-todoist-id-cache-default-id-p (id)
+    "Return non-nil when ID is org-todoist's repeated default section id."
+    (and id
+         (boundp 'org-todoist--default-id)
+         (string= id org-todoist--default-id)))
+
+  (defun es/org-todoist-id-cache-key (type id)
+    "Return a cache key for TYPE and ID, or nil when the lookup is unsafe."
+    (when (and id
+               (not (es/org-todoist-id-cache-default-id-p id)))
+      (cons type id)))
+
+  (defun es/org-todoist-build-id-cache (ast)
+    "Build an id lookup cache for org-todoist AST."
+    (let ((cache (make-hash-table :test 'equal)))
+      (org-element-map ast 'headline
+        (lambda (hl)
+          (when-let ((id (org-todoist--get-prop hl org-todoist--id-property)))
+            (unless (es/org-todoist-id-cache-default-id-p id)
+              (let ((type (org-todoist--get-todoist-type hl t)))
+                (puthash (cons type id) hl cache)
+                (puthash (cons nil id) hl cache))))))
+      cache))
+
+  (defun es/org-todoist-get-by-id-cached (orig type id ast)
+    "Use a temporary id cache around `org-todoist--get-by-id'."
+    (if-let* ((active es/org-todoist-id-cache-active)
+              (cache es/org-todoist-id-cache)
+              (key (es/org-todoist-id-cache-key type id))
+              (node (gethash key cache)))
+        node
+      (let ((node (funcall orig type id ast)))
+        (when-let* ((cache es/org-todoist-id-cache)
+                    (key (es/org-todoist-id-cache-key type id))
+                    (node node))
+          (puthash key node cache)
+          (puthash (cons nil id) node cache))
+        node)))
+
+  (defun es/org-todoist-update-tasks-with-id-cache (orig tasks ast)
+    "Run `org-todoist--update-tasks' with a temporary id cache."
+    (let ((es/org-todoist-id-cache (es/org-todoist-build-id-cache ast))
+          (es/org-todoist-id-cache-active t))
+      (funcall orig tasks ast)))
+#+end_src
 ** Agenda shortcuts
 Just a command to bring up agenda view
 #+begin_src emacs-lisp
@@ -634,6 +1092,10 @@ Just a command to bring up agenda view
               `(;; Each group has an implicit boolean OR operator between its selectors.
                 (:name "Inbox"
                        :tag "inbox"
+                       :and (:file-path "todoist.org"
+                                        :todo ("TODO" "IN-PROGRESS" "SOMEDAY")
+                                        :not (:scheduled t)
+                                        :not (:deadline t))
                        )
                 (:name "Habits Overdue"
                        :and(:file-path "recurring.org" :deadline  past :not(:tag "eodroutine"))
@@ -684,13 +1146,51 @@ Just a command to bring up agenda view
                             )
                        )))
         (setq org-super-agenda-header-map (make-sparse-keymap)))
+      (with-eval-after-load 'org-super-agenda
+        (defun es/org-super-agenda-filter-finalize-entries-timed (orig string)
+          "Time `org-super-agenda--filter-finalize-entries'."
+          (es/agenda-phase-timer "org-super-agenda filter start")
+          (prog1 (funcall orig string)
+            (es/agenda-phase-timer "org-super-agenda filter end")))
+        (defun es/org-super-agenda-group-items-timed (orig items)
+          "Time `org-super-agenda--group-items'."
+          (es/agenda-phase-timer "org-super-agenda group start")
+          (prog1 (funcall orig items)
+            (es/agenda-phase-timer "org-super-agenda group end")))
+        (advice-remove 'org-super-agenda--filter-finalize-entries #'es/org-super-agenda-filter-finalize-entries-timed)
+        (advice-remove 'org-super-agenda--group-items #'es/org-super-agenda-group-items-timed)
+        (advice-add 'org-super-agenda--filter-finalize-entries :around #'es/org-super-agenda-filter-finalize-entries-timed)
+        (advice-add 'org-super-agenda--group-items :around #'es/org-super-agenda-group-items-timed))
+      (es/init-timer "org-super-agenda")
 #+end_src
 ** Agenda evil shortcut
 #+begin_src emacs-lisp
+  (defvar es/agenda-timer-start nil)
+  (defvar es/agenda-timer-last nil)
+  (defun es/agenda-timer (label)
+    "Log elapsed time for agenda command LABEL."
+    (let* ((now (current-time))
+           (total (if es/agenda-timer-start
+                      (float-time (time-subtract now es/agenda-timer-start))
+                    0))
+           (delta (if es/agenda-timer-last
+                      (float-time (time-subtract now es/agenda-timer-last))
+                    total)))
+      (setq es/agenda-timer-last now)
+      (message "agenda-timer: %6.2fs total, %6.2fs delta - %s"
+               total delta label)))
+
   (defun org-agenda-list-day () (interactive)
          "Wrapper for org-agenda-list that just lists a single day"
+         (es/agenda-phase-reset)
+         (setq es/agenda-timer-start (current-time))
+         (setq es/agenda-timer-last es/agenda-timer-start)
+         (es/agenda-timer "start")
+         (es/agenda-timer "setting agenda files")
          (es/set-org-agenda-files)
-         (org-agenda-list 1)
+         (es/agenda-timer "building agenda")
+         (org-agenda nil "e")
+         (es/agenda-timer "rendered agenda")
          )
   (with-eval-after-load 'evil
     (define-key evil-ex-map "a" 'org-agenda-list-day)
