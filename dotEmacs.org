@@ -722,9 +722,16 @@ Todoist responses may use either JSON vectors or lists depending on the parser."
 
   (defun es/org-todoist-fullsync-callback (orig response ast cur-marker)
     "Clear fullsync state after ORIG sync callback finishes."
-    (unwind-protect
-        (funcall orig response ast cur-marker)
-      (setq es/org-todoist-fullsync-active nil)))
+    (condition-case err
+        (unwind-protect
+            (funcall orig response ast cur-marker)
+          (setq es/org-todoist-fullsync-active nil))
+      (error
+       (setq es/org-todoist-fullsync-active nil)
+       (when (fboundp 'es/org-todoist-progress-end)
+         (es/org-todoist-progress-end))
+       (message "org-todoist callback failed: %S" err)
+       (signal (car err) (cdr err)))))
 
   (defun es/org-todoist-fullsync ()
     "Run a full Todoist refresh, then prune items missing from the fetched payload."
@@ -1044,12 +1051,18 @@ Known limits:
                (not (es/org-todoist-id-cache-default-id-p id)))
       (cons type id)))
 
+  (defun es/org-todoist-headline-node-p (node)
+    "Return non-nil when NODE is an Org headline element."
+    (and (listp node)
+         (eq (org-element-type node) 'headline)))
+
   (defun es/org-todoist-build-id-cache (ast)
     "Build an id lookup cache for org-todoist AST."
     (let ((cache (make-hash-table :test 'equal)))
       (org-element-map ast 'headline
         (lambda (hl)
-          (when-let ((id (org-todoist--get-prop hl org-todoist--id-property)))
+          (when-let* ((headline (es/org-todoist-headline-node-p hl))
+                      (id (org-todoist--get-prop hl org-todoist--id-property)))
             (unless (es/org-todoist-id-cache-default-id-p id)
               (let ((type (org-todoist--get-todoist-type hl t)))
                 (puthash (cons type id) hl cache)
@@ -1061,12 +1074,13 @@ Known limits:
     (if-let* ((active es/org-todoist-id-cache-active)
               (cache es/org-todoist-id-cache)
               (key (es/org-todoist-id-cache-key type id))
-              (node (gethash key cache)))
+              (node (gethash key cache))
+              (headline (es/org-todoist-headline-node-p node)))
         node
       (let ((node (funcall orig type id ast)))
         (when-let* ((cache es/org-todoist-id-cache)
                     (key (es/org-todoist-id-cache-key type id))
-                    (node node))
+                    (headline (es/org-todoist-headline-node-p node)))
           (puthash key node cache)
           (puthash (cons nil id) node cache))
         node)))
