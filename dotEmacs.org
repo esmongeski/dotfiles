@@ -1,4 +1,17 @@
 * Package things!
+#+begin_src emacs-lisp
+  (defvar es/init-timer-start (current-time))
+  (defvar es/init-timer-last es/init-timer-start)
+  (defun es/init-timer (label)
+    "Log elapsed init time for LABEL."
+    (let* ((now (current-time))
+           (total (float-time (time-subtract now es/init-timer-start)))
+           (delta (float-time (time-subtract now es/init-timer-last))))
+      (setq es/init-timer-last now)
+      (message "init-timer: %6.2fs total, %6.2fs delta - %s"
+               total delta label)))
+  (es/init-timer "start")
+#+end_src
 This is a bit of fumbling to try and get this all to work on a new computer from zero with minimal manual intervention.
 #+begin_src emacs-lisp
   (require 'package)
@@ -21,6 +34,7 @@ This is a bit of fumbling to try and get this all to work on a new computer from
 
   (when (not package-archive-contents)
     (package-refresh-contents))
+  (es/init-timer "package initialize")
 #+end_src
 #+BEGIN_SRC emacs-lisp
   (defconst es/minimum-org-version "9.7.19")
@@ -109,6 +123,7 @@ This is a bit of fumbling to try and get this all to work on a new computer from
   (es/ensure-transient-package)
   (require 'transient)
   (package-activate-all)
+  (es/init-timer "package version checks and org/transient load")
 #+END_SRC
 Make use package always install if package is not installed.
 #+begin_src emacs-lisp
@@ -124,6 +139,7 @@ Ubuntu specific (hopefully this doesn't break mac!) - this forces org to update 
 This brings back the old "<s" shortcut for source blocks. Unfortunately it has different casing than before, but that's not worth the time to fix (probably easy though).
 #+begin_src emacs-lisp
   (require 'org-tempo)
+  (es/init-timer "org base setup")
 #+end_src
 
 * Extra Plugins
@@ -146,6 +162,7 @@ Load Helm before the Evil blocks so `M-x` is still rebound even if an Evil packa
           helm-move-to-line-cycle-in-source t)
     (helm-mode 1)
     (global-set-key (kbd "M-x") 'helm-M-x))
+  (es/init-timer "helm")
 #+end_src
 *** Use package wih org bindings
 Set up org bindings first. Honestly not sure if this needs to come before use evil, but not worth figuring out.
@@ -163,6 +180,7 @@ Set up org bindings first. Honestly not sure if this needs to come before use ev
     :config
     (require 'evil-org-agenda)
     (evil-org-agenda-set-keys))
+  (es/init-timer "evil and evil-org")
 #+END_SRC
 *** Bar cursor
 Change cursor to a bar in insert mode.
@@ -214,6 +232,7 @@ Doesn't quite work yet - Maybe I'll get it going some day.
 Definitely pronounced "muh git", much like "muh queen". Certainly not "mahjit", despite what the top hat and wand would make you think.
 #+begin_src emacs-lisp
   (use-package magit)
+  (es/init-timer "magit")
 #+end_src
 *** Evil magit
 Get keybindings for evil in magit mode.
@@ -222,6 +241,7 @@ Not sure what else evil-collection has, but some day I want to move this elsewhe
   (use-package evil-collection
     :config
     (evil-collection-init 'magit))
+  (es/init-timer "evil-collection magit")
 #+end_src
 *** Forge
 To work with github
@@ -239,6 +259,7 @@ I could have sworn I had this installed at one point, but oh well!
     (global-set-key (kbd "C-x C-u") 'undo-tree-visualize)
     (with-eval-after-load 'evil
       (define-key evil-ex-map "xu" 'undo-tree-visualize)))
+  (es/init-timer "undo-tree")
 #+end_src
 Force undo tree files into local emacs d.
 #+begin_src emacs-lisp
@@ -251,6 +272,7 @@ All the other deps with the funked up deps
   (use-package s)
   (use-package dash)
   (use-package helm-org-rifle)
+  (es/init-timer "rifle deps")
 #+end_src
 ** Nice autocompletion things
 Much of this I just followed [[https://org-roam.discourse.group/t/how-to-to-get-title-of-the-target-note-working-with-inline-autocomplete-in-org-roam/782][this guide while trying to configure Roam]]
@@ -269,6 +291,7 @@ Company
     (setq company-minimum-prefix-length 2)
     (setq company-idle-delay 0.25)
     (add-to-list 'company-backends 'company-capf))
+  (es/init-timer "company")
 
 #+end_src
 Completion config
@@ -292,6 +315,7 @@ Not using k8s a ton day to day, but a magit-like k8s buffer seems great. Going t
   :ensure t
   :after kubernetes)
   (fset 'k8s 'kubernetes-overview)
+  (es/init-timer "kubernetes")
 
 #+end_src
 * Custom variables (I don't really remember what this is)
@@ -592,6 +616,7 @@ https://github.com/syl20bnr/spacemacs/issues/16575#issuecomment-2354153927
     :init
     (add-hook 'org-mode-hook (lambda ()
                                (org-bullets-mode 1))))
+  (es/init-timer "theme and org-bullets")
 #+END_SRC
 Line numbering - absolute and relative.
 #+begin_src emacs-lisp
@@ -938,6 +963,7 @@ Also add =pp= to do visual paste, since =pc= overrides it.
   (with-eval-after-load 'evil
     (define-key evil-visual-state-map "cl" 'org-insert-link)
     (define-key evil-visual-state-map "cc" 'evil-change))
+  (es/init-timer "custom keybindings")
 #+end_src
 * Debugging
 Trying to see what this does on startup so I can optimize my init/dotfiles.
@@ -987,6 +1013,7 @@ Capture templates
            "* TODO %?\n" )
           ("s" "Stuff" entry (file (concat es/org-root "/projects/stuff.org"))
            "* TODO %?\n")))
+  (es/init-timer "org capture")
 #+end_src
 * Powerline
 #+begin_src emacs-lisp
@@ -1086,6 +1113,7 @@ Use sensible defaults from the git submodule.
   (load-file (concat (getenv "PATH_TO_DOTFILES_REPO") "/sensible-defaults.el/sensible-defaults.el"))
   (sensible-defaults/use-all-settings)
   (sensible-defaults/use-all-keybindings)
+  (es/init-timer "sensible defaults")
 #+end_src
 * Exit hooks/config
 Trim whitespace
@@ -1143,6 +1171,7 @@ Probably need to change the viewer per OS.
     (org-roam-setup)
     ;; If using org-roam-protocol
     (require 'org-roam-protocol))
+  (es/init-timer "org-roam setup")
 #+end_src
 Roam ex map bindings
 #+begin_src emacs-lisp
@@ -1171,11 +1200,13 @@ Capture templates for roam
 #+end_src
 #+begin_src emacs-lisp
   (setq org-roam-node-display-template "${title:30}")
+  (es/init-timer "org-roam capture templates")
 
 #+end_src
 Synchronize cache on startup
 #+begin_src emacs-lisp
   (org-roam-db-sync)
+  (es/init-timer "org-roam db sync")
 #+end_src
 
 *** TODO Custom roam subdirectories - for use with org roam ui to trim the graph to a specific section.
@@ -1297,6 +1328,7 @@ Quick jump to work or personal daily node.
   (with-eval-after-load 'evil
     (define-key evil-ex-map "oru" 'org-roam-ui-open))
 
+  (es/init-timer "org-roam-ui")
 #+end_src
 Fix tags https://github.com/org-roam/org-roam-ui/issues/289
 #+begin_src emacs-lisp
@@ -1306,6 +1338,7 @@ Fix tags https://github.com/org-roam/org-roam-ui/issues/289
 ** Fish
 #+begin_src emacs-lisp
   (use-package fish-mode)
+  (es/init-timer "languages start")
 #+end_src
 ** Graphql
 #+begin_src emacs-lisp
@@ -1318,6 +1351,7 @@ Fix tags https://github.com/org-roam/org-roam-ui/issues/289
 ** Protobuf
 #+begin_src emacs-lisp
   (use-package protobuf-mode)
+  (es/init-timer "languages")
 #+end_src
 ** TODO Ts, react, all the frontend stuff
 Probably do something like [[https://gist.github.com/CodyReichert/9dbc8bd2a104780b64891d8736682cea][this]]
@@ -1559,4 +1593,8 @@ Next, I need to format a payload with local secrets (api key) and hit the api. I
            (notion-todo-state (org-todo-to-notion-todo todo-state)))
       (message notion-todo-state)))
 
+#+end_src
+* Init timing end
+#+begin_src emacs-lisp
+  (es/init-timer "end")
 #+end_src
