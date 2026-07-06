@@ -2216,29 +2216,228 @@ payload and prune those absent task subtrees.
 
   (require 'transient nil t)
   (es/ensure-org-todoist-installed)
-  (unless (require 'org-todoist nil t)
+  (if (require 'org-todoist nil t)
+      (progn
+        (setq org-todoist-api-token (getenv "TODOIST_API_TOKEN"))
+        (setq org-todoist-file (concat es/org-root "/todoist.org"))
+        (setq es/org-todoist-agenda-file (org-todoist-file))
+        (setq es/org-todoist-file-paths
+              (delq nil
+                    (delete-dups
+                     (list org-todoist-file
+                           (when (file-exists-p org-todoist-file)
+                             (file-truename org-todoist-file))))))
+
+        (defun es/org-todoist-queue-after-todo-state-change ()
+          "Queue Todoist changes after task state changes in `org-todoist-file'."
+          (when (and (es/org-todoist-buffer-p)
+                     (boundp 'org-state)
+                     (member org-state (list org-todoist-todo-keyword
+                                             org-todoist-done-keyword
+                                             org-todoist-deleted-keyword)))
+            (es/org-todoist-queue-todo-state-change)
+            (message "org-todoist queued local Todoist change; push with :otdp")))
+
+        (defun es/org-todoist-enable-sync-on-state-change ()
+          "Enable local queueing for the Todoist mirror buffer."
+          (when (es/org-todoist-buffer-p)
+            (add-hook 'org-after-todo-state-change-hook
+                      #'es/org-todoist-queue-after-todo-state-change nil t)))
+
+        (defun es/org-todoist-queue-assignee-change-when-needed (fn)
+          "Queue an assignee change after org-todoist command FN when needed."
+          (when (and (es/org-todoist-buffer-p)
+                     (memq fn '(org-todoist-assign-task
+                                org-todoist-unassign-task)))
+            (es/org-todoist-queue-assignee-change)
+            (message "org-todoist queued local assignment change; push with :otdp")))
+
+        (defun es/org-todoist-call-at-entry-and-refresh-agenda (fn)
+          "Call org-todoist command FN at the source entry, then refresh agenda."
+          (if (derived-mode-p 'org-agenda-mode)
+              (progn
+                (es/org-todoist-progress-message "updating source heading")
+                (org-agenda-with-point-at-orig-entry nil
+                  (call-interactively fn)
+                  (es/org-todoist-queue-assignee-change-when-needed fn)
+                  (when (es/org-todoist-buffer-p)
+                    (save-buffer)))
+                (es/org-todoist-progress-message "refreshing agenda")
+                (org-agenda-redo))
+            (call-interactively fn)
+            (es/org-todoist-queue-assignee-change-when-needed fn)
+            (when (es/org-todoist-buffer-p)
+              (save-buffer))))
+
+        (defvar es/org-todoist-progress-active nil)
+        (defvar es/org-todoist-progress-start nil)
+
+        (defun es/org-todoist-progress-message (format-string &rest args)
+          "Show an org-todoist progress message."
+          (when es/org-todoist-progress-active
+            (let ((elapsed (if es/org-todoist-progress-start
+                               (float-time (time-subtract (current-time)
+                                                          es/org-todoist-progress-start))
+                             0)))
+              (message "org-todoist: %.1fs: %s"
+                       elapsed
+                       (apply #'format format-string args)))))
+
+        (defun es/org-todoist-progress-begin ()
+          "Start an org-todoist progress sequence."
+          (setq es/org-todoist-progress-active t)
+          (setq es/org-todoist-progress-start (current-time)))
+
+        (defun es/org-todoist-progress-end ()
+          "End an org-todoist progress sequence."
+          (setq es/org-todoist-progress-active nil))
+
+        (defun es/org-todoist-assign-task ()
+          "Assign Todoist task at point and refresh agenda if needed."
+          (interactive)
+          (es/org-todoist-progress-begin)
+          (unwind-protect
+              (progn
+                (es/org-todoist-progress-message "assigning locally")
+                (es/org-todoist-call-at-entry-and-refresh-agenda #'org-todoist-assign-task)
+                (es/org-todoist-progress-message "local assignment complete; run :otdp to push"))
+            (es/org-todoist-progress-end)))
+
+        (defun es/org-todoist-unassign-task ()
+          "Unassign Todoist task at point and refresh agenda if needed."
+          (interactive)
+          (es/org-todoist-progress-begin)
+          (unwind-protect
+              (progn
+                (es/org-todoist-progress-message "unassigning locally")
+                (es/org-todoist-call-at-entry-and-refresh-agenda #'org-todoist-unassign-task)
+                (es/org-todoist-progress-message "local unassignment complete; run :otdp to push"))
+            (es/org-todoist-progress-end)))
+
+        (defun es/org-todoist-progress-do-sync (orig token open)
+          "Report progress around `org-todoist--do-sync'."
+          (es/org-todoist-progress-begin)
+          (condition-case err
+              (progn
+                (es/org-todoist-progress-message "starting sync")
+                (funcall orig token open))
+            (error
+             (es/org-todoist-progress-end)
+             (signal (car err) (cdr err)))))
+
+        (defun es/org-todoist-progress-file-ast (orig &rest args)
+          "Report local org parse progress around `org-todoist--file-ast'."
+          (es/org-todoist-progress-message "parsing local todoist.org")
+          (prog1 (apply orig args)
+            (es/org-todoist-progress-message "finished parsing local todoist.org")))
+
+        (defun es/org-todoist-progress-push (orig ast old)
+          "Report local queue or diff progress around `org-todoist--push'."
+          (if es/org-todoist-pending-sync-active
+              (progn
+                (es/org-todoist-progress-message "using queued local changes")
+                (prog1 (or es/org-todoist-pending-commands nil)
+                  (es/org-todoist-progress-message "finished preparing queued local changes")))
+            (es/org-todoist-progress-message "diffing local changes")
+            (prog1 (funcall orig ast old)
+              (es/org-todoist-progress-message "finished diffing local changes"))))
+
+        (defun es/org-todoist-progress-api-call (orig request-data callback-fn &optional callback-args sync-request)
+          "Report API progress around `org-todoist--api-call'."
+          (es/org-todoist-progress-message "fetching Todoist API")
+          (funcall orig request-data callback-fn callback-args sync-request))
+
+        (defun es/org-todoist-progress-parse-response (orig response ast)
+          "Report response application progress around `org-todoist--parse-response'."
+          (es/org-todoist-progress-message "applying Todoist response")
+          (prog1 (funcall orig response ast)
+            (when (and es/org-todoist-fullsync-active response)
+              (if-let ((items-entry (assq 'items response)))
+                  (progn
+                    (es/org-todoist-progress-message "pruning completed Todoist items")
+                    (es/org-todoist-prune-missing-task-headings
+                     (es/org-todoist-item-id-table (cdr items-entry))))
+                (message "org-todoist: skipping fullsync prune; response did not include items")))
+            (es/org-todoist-progress-message "finished applying Todoist response")))
+
+        (defun es/org-todoist-progress-handle-display (orig cur-marker)
+          "Report file write/display progress around `org-todoist--handle-display'."
+          (es/org-todoist-progress-message "saving todoist.org")
+          (prog1 (funcall orig cur-marker)
+            (when (fboundp 'es/reset-org-agenda-files-cache)
+              (es/reset-org-agenda-files-cache))
+            (when es/org-todoist-pending-sync-clear
+              (es/org-todoist-clear-pending-commands))
+            (es/org-todoist-progress-message "sync complete")
+            (setq es/org-todoist-pending-sync-active nil)
+            (setq es/org-todoist-pending-sync-clear nil)
+            (es/org-todoist-progress-end)))
+
+        (defun es/org-todoist-push-queued-changes ()
+          "Push queued local Todoist changes and pull remote updates."
+          (interactive)
+          (es/org-todoist-progress-begin)
+          (setq es/org-todoist-pending-sync-active t)
+          (setq es/org-todoist-pending-sync-clear t)
+          (unwind-protect
+              (progn
+                (if es/org-todoist-pending-commands
+                    (es/org-todoist-progress-message "pushing %s queued local command(s)"
+                                                     (length es/org-todoist-pending-commands))
+                  (es/org-todoist-progress-message "pulling remote Todoist changes"))
+                (org-todoist-sync t))
+            (es/org-todoist-progress-end)))
+
+        (defun es/org-todoist-pull-remote-changes ()
+          "Pull remote Todoist changes without pushing local queued changes."
+          (interactive)
+          (when es/org-todoist-pending-commands
+            (user-error "Pending local Todoist commands exist; push them first with :otdp"))
+          (es/org-todoist-progress-begin)
+          (setq es/org-todoist-pending-sync-active t)
+          (setq es/org-todoist-pending-sync-clear nil)
+          (unwind-protect
+              (progn
+                (es/org-todoist-progress-message "pulling remote Todoist changes")
+                (org-todoist-sync t))
+            (es/org-todoist-progress-end)))
+
+        (advice-remove 'org-todoist--do-sync #'es/org-todoist-progress-do-sync)
+        (advice-remove 'org-todoist--file-ast #'es/org-todoist-progress-file-ast)
+        (advice-remove 'org-todoist--push #'es/org-todoist-progress-push)
+        (advice-remove 'org-todoist--api-call #'es/org-todoist-progress-api-call)
+        (advice-remove 'org-todoist--parse-response #'es/org-todoist-progress-parse-response)
+        (advice-remove 'org-todoist--handle-display #'es/org-todoist-progress-handle-display)
+        (advice-remove 'org-todoist--get-by-id #'es/org-todoist-get-by-id-cached)
+        (advice-remove 'org-todoist--update-tasks #'es/org-todoist-update-tasks-with-id-cache)
+        (advice-remove 'org-todoist--do-sync-callback #'es/org-todoist-fullsync-clear-active-flag)
+        (advice-remove 'org-todoist--do-sync-callback #'es/org-todoist-fullsync-callback)
+        (advice-remove 'org-refile #'es/org-refile-queue-todoist-move)
+        (advice-add 'org-todoist--do-sync :around #'es/org-todoist-progress-do-sync)
+        (advice-add 'org-todoist--file-ast :around #'es/org-todoist-progress-file-ast)
+        (advice-add 'org-todoist--push :around #'es/org-todoist-progress-push)
+        (advice-add 'org-todoist--api-call :around #'es/org-todoist-progress-api-call)
+        (advice-add 'org-todoist--parse-response :around #'es/org-todoist-progress-parse-response)
+        (advice-add 'org-todoist--handle-display :around #'es/org-todoist-progress-handle-display)
+        (advice-add 'org-todoist--get-by-id :around #'es/org-todoist-get-by-id-cached)
+        (advice-add 'org-todoist--update-tasks :around #'es/org-todoist-update-tasks-with-id-cache)
+        (advice-add 'org-todoist--do-sync-callback :around #'es/org-todoist-fullsync-callback)
+        (advice-add 'org-refile :around #'es/org-refile-queue-todoist-move)
+
+        (add-hook 'org-todoist-mode-hook #'es/org-todoist-enable-sync-on-state-change)
+        (with-eval-after-load 'evil
+          (define-key evil-ex-map "otdp" 'es/org-todoist-push-queued-changes)
+          (define-key evil-ex-map "otdr" 'es/org-todoist-pull-remote-changes)
+          (define-key evil-ex-map "otdfs" 'es/org-todoist-fullsync)
+          (define-key evil-ex-map "otdq" 'es/org-todoist-render-pending-buffer)
+          (define-key evil-ex-map "otda" 'es/org-todoist-assign-task)
+          (define-key evil-ex-map "otdu" 'es/org-todoist-unassign-task))
+        (es/set-org-agenda-files))
     (message "org-todoist is not available on load-path after bootstrap"))
-
-  (setq org-todoist-api-token (getenv "TODOIST_API_TOKEN"))
-  (setq org-todoist-file (concat es/org-root "/todoist.org"))
+  (es/init-timer "todoist")
 
 #+end_src
-  what do I really want?
-  move tasks that are assigned to me into agenda
-  so they need to go in a personal file somewhere, that's fine
-  keep the todoist metadata so I can toggle todoist mode and mark them done from emacs
-
-  i probably want a work project in todoist so pull that down too
-
-  ideally would be something like
-
-** general
-#+begin_src emacs-lisp
-;; org-todoist handles sync and completion from the synced file.
-;; First-pass migration intentionally leaves the old ex commands disabled.
-
-#+end_src
-** personal
+** Old todoist.el notes
 :dip will slup in todoist tasks assigned to me
 Maybe I want a todoist file?
 
