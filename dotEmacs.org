@@ -1170,6 +1170,46 @@ org-todoist uses in the functions overridden here."
       (when prop
         (org-element-extract prop))))
 
+  (defun es/org-todoist-normalize-headline-title (node text)
+    "Set NODE's headline title to TEXT using parsed Org element shape.
+org-todoist upstream writes `:title' as a scalar string. Org 9.8 can later
+walk that scalar as if it were an element and fail with errors like
+`(wrong-type-argument listp \"Work\")'. Parsed headlines keep the string in
+`:raw-value' and a list in `:title'."
+    (when (and (listp node)
+               (eq (org-element-type node) 'headline))
+      (org-element-put-property node :raw-value text)
+      (org-element-put-property node :title (list text)))
+    node)
+
+  (defun es/org-todoist-create-node
+      (type text description &optional properties parent skip)
+    "Org 9.8-safe replacement for `org-todoist--create-node'."
+    (let ((node (org-element-create
+                 'headline
+                 `(:raw-value ,text
+                   :title (,text)
+                   :level ,(+ 1 (org-todoist--get-headline-level parent))))))
+      (org-todoist--insert-identifier node type)
+      (org-todoist--add-all-properties node properties skip)
+      (when description
+        (org-todoist--add-description node description))
+      (when parent
+        (org-element-adopt parent node))
+      node))
+
+  (defun es/org-todoist-get-or-create-node
+      (parent type id text description properties &optional skip source)
+    "Org 9.8-safe replacement for `org-todoist--get-or-create-node'."
+    (if-let* ((found (org-todoist--get-by-id nil id (or source parent)))
+              (updated (org-todoist--add-all-properties found properties skip)))
+        (progn
+          (org-todoist--insert-identifier updated type)
+          (es/org-todoist-normalize-headline-title updated text)
+          (org-todoist--replace-description updated description)
+          updated)
+      (org-todoist--create-node type text description properties parent skip)))
+
   (defun es/org-todoist-adopt-drawer-regular (hl drawer)
     "Scalar-safe replacement for `org-todoist--adopt-drawer-regular'."
     (let ((description (org-todoist--get-description-elements hl)))
@@ -1248,6 +1288,9 @@ public API."
     (defalias 'org-todoist--set-prop-in-place
       #'es/org-todoist-set-prop-in-place)
     (defalias 'org-todoist--remove-prop #'es/org-todoist-remove-prop)
+    (defalias 'org-todoist--create-node #'es/org-todoist-create-node)
+    (defalias 'org-todoist--get-or-create-node
+      #'es/org-todoist-get-or-create-node)
     (defalias 'org-todoist--adopt-drawer-regular
       #'es/org-todoist-adopt-drawer-regular)
     (defalias 'org-todoist--get-tasks #'es/org-todoist-get-tasks)
@@ -1274,6 +1317,8 @@ public API."
                       org-todoist--get-prop
                       org-todoist--set-prop-in-place
                       org-todoist--remove-prop
+                      org-todoist--create-node
+                      org-todoist--get-or-create-node
                       org-todoist--first-direct-descendant-of-type
                       org-todoist--adopt-drawer-regular
                       org-todoist--get-tasks
