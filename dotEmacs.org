@@ -1476,8 +1476,6 @@ Shortcut to make a link called "thread". Useful for when I want to stamp a link 
   (fset 'thread
    (kmacro-lambda-form [?: ?c ?l ?\C-m ?t ?h ?r ?e ?a ?d ?\C-m] 0 "%d"))
 
-  (with-eval-after-load 'evil
-    (define-key evil-ex-map "ctl" 'thread))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -2023,8 +2021,162 @@ Starting to play with this and see how it works.
 Font size default
 #+begin_src emacs-lisp
 (set-face-attribute 'default nil :height 140)
+  (es/init-timer "gui emacs")
+
+  (defvar es/emacs-flicker-debug nil
+    "When non-nil, log GC and window/frame churn that can cause GUI flicker.")
+
+  (defvar es/emacs-flicker-debug--hook-installed nil)
+
+  (defun es/emacs-flicker-debug-log (label)
+    "Log LABEL with a timestamp when flicker debugging is enabled."
+    (when es/emacs-flicker-debug
+      (message "flicker-debug: %s | frame=%s | windows=%d"
+               label
+               (frame-parameter nil 'name)
+               (length (window-list)))))
+
+  (defun es/emacs-flicker-debug-post-gc ()
+    "Log that a GC just finished."
+    (es/emacs-flicker-debug-log "post-gc"))
+
+  (defun es/emacs-flicker-debug-window-change (&rest _)
+    "Log window configuration churn."
+    (es/emacs-flicker-debug-log "window-configuration-change"))
+
+  (defun es/enable-emacs-flicker-debug ()
+    "Enable logging for GC and window churn."
+    (interactive)
+    (setq es/emacs-flicker-debug t
+          garbage-collection-messages t)
+    (unless es/emacs-flicker-debug--hook-installed
+      (add-hook 'post-gc-hook #'es/emacs-flicker-debug-post-gc)
+      (add-hook 'window-configuration-change-hook #'es/emacs-flicker-debug-window-change)
+      (setq es/emacs-flicker-debug--hook-installed t))
+    (message "Flicker debug enabled"))
+
+  (defun es/disable-emacs-flicker-debug ()
+    "Disable logging for GC and window churn."
+    (interactive)
+    (setq es/emacs-flicker-debug nil
+          garbage-collection-messages nil)
+    (when es/emacs-flicker-debug--hook-installed
+      (remove-hook 'post-gc-hook #'es/emacs-flicker-debug-post-gc)
+      (remove-hook 'window-configuration-change-hook #'es/emacs-flicker-debug-window-change)
+      (setq es/emacs-flicker-debug--hook-installed nil))
+    (message "Flicker debug disabled"))
 #+end_src
 * Todoist
+Todoist is the shared household input surface. Org remains my personal planning
+surface. The integration boundary is a single Todoist-owned Org mirror at
+=org-todoist-file=, currently =$ORG_ROOT/todoist.org=.
+
+Do not refile synced Todoist headings into arbitrary Org files. Wrangle them
+with agenda views and org-super-agenda instead.
+
+** Workflow
+*** Setup and sync
+- Make sure =TODOIST_API_TOKEN= is set in the shell environment Emacs inherits.
+- First-time full sync: =M-x org-todoist-reset=.
+- Normal manual sync: =M-x org-todoist-sync=.
+- Optional continuous sync: =M-x org-todoist-background-sync=.
+- Stop background sync: =M-x org-todoist-cancel-background-sync=.
+- Open the Todoist mirror directly: =M-x org-todoist-goto=.
+
+After the first reset creates =todoist.org=, it is included in
+=org-agenda-files= by =es/set-org-agenda-files=.
+
+Accept the file-local variable prompt for =org-list-indent-offset= when opening
+=todoist.org=; =org-todoist= needs that for Todoist markdown list indentation.
+
+*** Agenda entry points
+- =:a= opens my normal one-day agenda.
+- =C-c a T= also opens the Todoist agenda command through =org-agenda=.
+- =C-c a I= opens the Todoist Inbox agenda command.
+
+The Todoist agenda command has two sections:
+- =Todoist due today / overdue=: date-based agenda for the Todoist mirror.
+- =Todoist open tasks=: open Todoist tasks that do not already have a scheduled
+  date, deadline, or timestamp.
+
+This keeps each Todoist task in one section only. Date-bearing tasks stay in the
+agenda section instead of being repeated in the open-task section.
+
+The broad Todoist view excludes grocery/store projects listed in
+=es/org-todoist-agenda-excluded-project-ids=.
+The same exclusion function is also the default =org-agenda-skip-function=, so
+the normal =:a= agenda excludes those Todoist projects too.
+Todoist tasks explicitly assigned to another collaborator are also hidden from
+agenda views.
+=:nw= also hides the Todoist work project; =:yw= includes it again.
+
+This intentionally does not make =SCHEDULED= mean "created date".
+=org-todoist= maps Todoist's due date to Org =SCHEDULED=, and Todoist's deadline
+field to Org =DEADLINE=. New/incoming tasks show up because the Todoist agenda
+command includes a =tags-todo= block for all Todoist tasks.
+
+The Todoist Inbox command shows open tasks whose nearest Todoist project id
+matches =es/org-todoist-inbox-project-id=. Use this as the triage view for shared tasks that still need a real
+project, priority, or schedule.
+
+*** Processing tasks
+From =todoist.org= or the agenda buffer:
+- Mark done with normal Org/Evil todo commands, for example =t= in agenda or
+  =C-c C-t= in an Org buffer.
+- Reschedule with normal Org scheduling commands, for example =:cs= /
+  =org-schedule=.
+- Raise priority with normal Org priority commands.
+- Add native Todoist subtasks by creating nested TODO headings under the parent
+  Todoist task.
+- Move tasks between Todoist projects/sections by refiling within =todoist.org=.
+  This config queues a Todoist =item_move= for normal refiles that keep the task
+  inside =todoist.org=; =:otdp= pushes that queued move back to Todoist.
+- Assign a Todoist task to another collaborator with =:otda= or
+  =M-x org-todoist-assign-task=. Unassign with =:otdu= or
+  =M-x org-todoist-unassign-task=. From an agenda buffer, =:otda= and =:otdu=
+  update the source heading, queue the change locally, and refresh the agenda.
+- =:otdp= pushes the queued local Todoist commands and then pulls remote
+  updates in the same API round trip.
+- =:otdfs= runs a full Todoist refresh and prunes task headings that are no
+  longer present in the fetched remote payload.
+- =:otdr= pulls remote Todoist changes without pushing the queue.
+- =:otdq= opens the local Todoist command queue buffer.
+
+Example:
+
+#+begin_src org
+** TODO Clean basement [0/3]
+*** TODO Move boxes
+*** TODO Sweep floor
+*** TODO Take donations out
+#+end_src
+
+Use nested TODO headings for synced subtasks. Plain Org checkbox lists under a
+task are better treated as description text, not trackable Todoist subtasks.
+
+*** Completion sync
+=org-todoist-mode= still handles the Todoist metadata and file rewrite. This
+config adds a buffer-local =org-after-todo-state-change-hook= for
+=todoist.org= that queues state changes instead of diffing the whole file.
+
+Practical result: marking a Todoist task =DONE= from =todoist.org= or from an
+agenda view queues the completion locally, and =:otdp= pushes it when you are
+ready.
+
+If Todoist has already completed or dropped a task and it is still sitting in
+the mirror as =TODO=, use =:otdfs= to rebuild the mirror from the current remote
+payload and prune those absent task subtrees.
+
+*** Safety rules
+- Keep =org-todoist-delete-remote-items= disabled unless deliberately testing
+  deletion behavior.
+- Do not use =org-refile= to move synced Todoist headings out of =todoist.org=.
+  Refiling from =Inbox= to another Todoist project/section inside =todoist.org=
+  is fine.
+- If sync behavior looks surprising, run =M-x org-todoist-ediff-snapshot= before
+  doing destructive cleanup.
+
+** Config
 #+begin_src emacs-lisp
   (use-package transient :ensure nil)
   (defconst es/org-todoist-url "https://github.com/Lillenne/org-todoist")
