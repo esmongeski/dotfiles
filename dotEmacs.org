@@ -1056,6 +1056,31 @@ Known limits:
     (and (listp node)
          (eq (org-element-type node) 'headline)))
 
+  (defun es/org-todoist-node-children (node)
+    "Return element children of NODE without walking plist values."
+    (when (listp node)
+      (cddr node)))
+
+  (defun es/org-todoist-get-by-id-manual (type id ast)
+    "Find Todoist node TYPE with ID in AST without using `org-element-map'."
+    (when (and id (listp ast))
+      (catch 'found
+        (cl-labels
+            ((walk
+              (node)
+              (when (listp node)
+                (when (and (es/org-todoist-headline-node-p node)
+                           (or (null type)
+                               (string= (org-todoist--get-prop node org-todoist--type)
+                                        type))
+                           (string= (org-todoist--get-prop node org-todoist--id-property)
+                                    id))
+                  (throw 'found node))
+                (dolist (child (es/org-todoist-node-children node))
+                  (walk child)))))
+          (walk ast)
+          nil))))
+
   (defun es/org-todoist-build-id-cache (ast)
     "Build an id lookup cache for org-todoist AST."
     (let ((cache (make-hash-table :test 'equal)))
@@ -1071,19 +1096,40 @@ Known limits:
 
   (defun es/org-todoist-get-by-id-cached (orig type id ast)
     "Use a temporary id cache around `org-todoist--get-by-id'."
-    (if-let* ((active es/org-todoist-id-cache-active)
-              (cache es/org-todoist-id-cache)
-              (key (es/org-todoist-id-cache-key type id))
-              (node (gethash key cache))
-              (headline (es/org-todoist-headline-node-p node)))
-        node
-      (let ((node (funcall orig type id ast)))
-        (when-let* ((cache es/org-todoist-id-cache)
-                    (key (es/org-todoist-id-cache-key type id))
-                    (headline (es/org-todoist-headline-node-p node)))
-          (puthash key node cache)
-          (puthash (cons nil id) node cache))
-        node)))
+    (if (not (listp ast))
+        (progn
+          (message "org-todoist get-by-id skipped non-list AST for type=%S id=%S ast=%S"
+                   type id ast)
+          nil)
+      (if-let* ((active es/org-todoist-id-cache-active)
+                (cache es/org-todoist-id-cache)
+                (key (es/org-todoist-id-cache-key type id))
+                (node (gethash key cache))
+                (headline (es/org-todoist-headline-node-p node)))
+          node
+        (let ((node (condition-case err
+                        (funcall orig type id ast)
+                      (error
+                       (message "org-todoist get-by-id upstream failed for type=%S id=%S: %S"
+                                type id err)
+                       nil))))
+          (if (or (null node)
+                  (es/org-todoist-headline-node-p node))
+              (progn
+                (when-let* ((cache es/org-todoist-id-cache)
+                            (key (es/org-todoist-id-cache-key type id))
+                            (headline node))
+                  (puthash key node cache)
+                  (puthash (cons nil id) node cache))
+                node)
+            (message "org-todoist get-by-id ignored non-headline result for type=%S id=%S result=%S"
+                     type id node)
+            (when-let ((manual-node (es/org-todoist-get-by-id-manual type id ast)))
+              (when-let* ((cache es/org-todoist-id-cache)
+                          (key (es/org-todoist-id-cache-key type id)))
+                (puthash key manual-node cache)
+                (puthash (cons nil id) manual-node cache))
+              manual-node))))))
 
   (defun es/org-todoist-update-tasks-with-id-cache (orig tasks ast)
     "Run `org-todoist--update-tasks' with a temporary id cache."
