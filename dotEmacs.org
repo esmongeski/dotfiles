@@ -1039,6 +1039,9 @@ Known limits:
   (defvar es/org-todoist-id-cache-active nil
     "Non-nil when local org-todoist id lookup caching is active.")
 
+  (defvar es/org-todoist-debug-update-tasks-active nil
+    "Non-nil while debugging org-todoist task update internals.")
+
   (defun es/org-todoist-id-cache-default-id-p (id)
     "Return non-nil when ID is org-todoist's repeated default section id."
     (and id
@@ -1254,6 +1257,55 @@ public API."
       #'es/org-todoist-sort-by-child-order)
     (defalias 'org-todoist--get-description-elements
       #'es/org-todoist-get-description-elements))
+
+  (defun es/org-todoist-debug-symbol-target (symbol)
+    "Return a compact description of SYMBOL's current function."
+    (let ((fn (symbol-function symbol)))
+      (cond
+       ((symbolp fn) (symbol-name fn))
+       ((subrp fn) (format "#<subr %S>" symbol))
+       ((byte-code-function-p fn) "#<byte-code>")
+       ((functionp fn) "#<function>")
+       (t (format "%S" fn)))))
+
+  (defun es/org-todoist-debug-installed-overrides ()
+    "Log the org-todoist internals currently replaced by local overrides."
+    (dolist (symbol '(org-todoist--get-property-drawer
+                      org-todoist--get-prop
+                      org-todoist--set-prop-in-place
+                      org-todoist--remove-prop
+                      org-todoist--first-direct-descendant-of-type
+                      org-todoist--adopt-drawer-regular
+                      org-todoist--get-tasks
+                      org-todoist--get-tasks-all
+                      org-todoist--get-sections
+                      org-todoist--sort-by-child-order
+                      org-todoist--get-description-elements
+                      org-todoist--get-by-id))
+      (message "org-todoist debug: %S -> %s"
+               symbol
+               (es/org-todoist-debug-symbol-target symbol))))
+
+  (defun es/org-todoist-debug-log-scalar-org-call (fn-name data &rest args)
+    "Log an Org helper call that received scalar DATA during task update."
+    (when (and es/org-todoist-debug-update-tasks-active
+               (not (listp data)))
+      (message "org-todoist debug: %s scalar first arg=%S args=%S"
+               fn-name data args)
+      (message "org-todoist debug backtrace:\n%s" (with-output-to-string
+                                                    (backtrace)))))
+
+  (defun es/org-todoist-debug-org-element-map (orig data &rest args)
+    "Log scalar `org-element-map' inputs during org-todoist task updates."
+    (apply #'es/org-todoist-debug-log-scalar-org-call
+           'org-element-map data args)
+    (apply orig data args))
+
+  (defun es/org-todoist-debug-org-element-lineage-map (orig data &rest args)
+    "Log scalar `org-element-lineage-map' inputs during org-todoist task updates."
+    (apply #'es/org-todoist-debug-log-scalar-org-call
+           'org-element-lineage-map data args)
+    (apply orig data args))
 
   (defun es/org-todoist-get-by-id-manual (type id ast)
     "Find Todoist node TYPE with ID in AST without using `org-element-map'."
@@ -2635,7 +2687,9 @@ payload and prune those absent task subtrees.
 
         (defun es/org-todoist-progress-update-tasks (orig tasks ast)
           "Report Todoist task update progress."
-          (es/org-todoist-response-phase "update-tasks" tasks orig tasks ast))
+          (let ((es/org-todoist-debug-update-tasks-active t))
+            (es/org-todoist-debug-installed-overrides)
+            (es/org-todoist-response-phase "update-tasks" tasks orig tasks ast)))
 
         (defun es/org-todoist-progress-update-comments (orig comments ast)
           "Report Todoist comment update progress."
@@ -2728,6 +2782,8 @@ payload and prune those absent task subtrees.
         (advice-remove 'org-todoist--update-file #'es/org-todoist-progress-update-file)
         (advice-remove 'org-todoist--handle-display #'es/org-todoist-progress-handle-display)
         (advice-remove 'org-element-extract #'es/org-element-extract-log-non-list)
+        (advice-remove 'org-element-map #'es/org-todoist-debug-org-element-map)
+        (advice-remove 'org-element-lineage-map #'es/org-todoist-debug-org-element-lineage-map)
         (advice-remove 'org-todoist--get-by-id #'es/org-todoist-get-by-id-cached)
         (advice-remove 'org-todoist--update-tasks #'es/org-todoist-update-tasks-with-id-cache)
         (advice-remove 'org-todoist--do-sync-callback #'es/org-todoist-fullsync-clear-active-flag)
@@ -2748,6 +2804,8 @@ payload and prune those absent task subtrees.
         (advice-add 'org-todoist--update-file :around #'es/org-todoist-progress-update-file)
         (advice-add 'org-todoist--handle-display :around #'es/org-todoist-progress-handle-display)
         (advice-add 'org-element-extract :around #'es/org-element-extract-log-non-list)
+        (advice-add 'org-element-map :around #'es/org-todoist-debug-org-element-map)
+        (advice-add 'org-element-lineage-map :around #'es/org-todoist-debug-org-element-lineage-map)
         (advice-add 'org-todoist--get-by-id :around #'es/org-todoist-get-by-id-cached)
         (advice-add 'org-todoist--update-tasks :around #'es/org-todoist-update-tasks-with-id-cache)
         (advice-add 'org-todoist--do-sync-callback :around #'es/org-todoist-fullsync-callback)
