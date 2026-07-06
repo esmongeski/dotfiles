@@ -1084,14 +1084,19 @@ Known limits:
   (defun es/org-todoist-build-id-cache (ast)
     "Build an id lookup cache for org-todoist AST."
     (let ((cache (make-hash-table :test 'equal)))
-      (org-element-map ast 'headline
-        (lambda (hl)
-          (when-let* ((headline (es/org-todoist-headline-node-p hl))
-                      (id (org-todoist--get-prop hl org-todoist--id-property)))
-            (unless (es/org-todoist-id-cache-default-id-p id)
-              (let ((type (org-todoist--get-todoist-type hl t)))
-                (puthash (cons type id) hl cache)
-                (puthash (cons nil id) hl cache))))))
+      (cl-labels
+          ((walk
+            (node)
+            (when (listp node)
+              (when-let* ((headline (es/org-todoist-headline-node-p node))
+                          (id (org-todoist--get-prop node org-todoist--id-property)))
+                (unless (es/org-todoist-id-cache-default-id-p id)
+                  (let ((type (org-todoist--get-todoist-type node t)))
+                    (puthash (cons type id) node cache)
+                    (puthash (cons nil id) node cache))))
+              (dolist (child (es/org-todoist-node-children node))
+                (walk child)))))
+        (walk ast))
       cache))
 
   (defun es/org-todoist-get-by-id-cached (orig type id ast)
