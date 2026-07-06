@@ -1061,6 +1061,200 @@ Known limits:
     (when (listp node)
       (cddr node)))
 
+  (defun es/org-todoist-element-type-p (node type)
+    "Return non-nil when NODE's Org element type matches TYPE.
+TYPE may be a symbol or a list of symbols, matching `org-element-map'."
+    (and (listp node)
+         (let ((node-type (org-element-type node)))
+           (if (listp type)
+               (memq node-type type)
+             (eq node-type type)))))
+
+  (defun es/org-todoist-collect-descendants (node predicate)
+    "Collect descendants of NODE matching PREDICATE without `org-element-map'.
+This walks only element children, not plist values such as raw headline titles.
+That matters on Org 9.8, where some org-todoist `org-element-map' calls can
+try to treat a title string like \"Work\" as an element node."
+    (let (matches)
+      (cl-labels
+          ((walk
+            (candidate)
+            (when (listp candidate)
+              (when (funcall predicate candidate)
+                (push candidate matches))
+              (dolist (child (es/org-todoist-node-children candidate))
+                (walk child)))))
+        (walk node))
+      (nreverse matches)))
+
+  (defun es/org-todoist-direct-child-p (child parent &optional parent-type)
+    "Return non-nil when CHILD is directly under PARENT.
+PARENT-TYPE defaults to `headline', which is the only direct-parent check
+org-todoist uses in the functions overridden here."
+    (and (listp child)
+         (listp parent)
+         (eq (org-todoist--first-parent-of-type child (or parent-type 'headline))
+             parent)))
+
+  (defun es/org-todoist-first-direct-descendant-of-type (node type)
+    "Scalar-safe replacement for `org-todoist--first-direct-descendant-of-type'."
+    (let ((parent-type (org-element-type node)))
+      (catch 'found
+        (dolist (candidate (es/org-todoist-collect-descendants
+                            node
+                            (lambda (child)
+                              (es/org-todoist-element-type-p child type))))
+          (when (eq (org-todoist--first-parent-of-type candidate parent-type)
+                    node)
+            (throw 'found candidate)))
+        nil)))
+
+  (defun es/org-todoist-direct-descendants-of-type (node type)
+    "Return direct descendants of NODE with Org element TYPE."
+    (let ((parent-type (org-element-type node)))
+      (es/org-todoist-collect-descendants
+       node
+       (lambda (candidate)
+         (and (es/org-todoist-element-type-p candidate type)
+              (eq (org-todoist--first-parent-of-type candidate parent-type)
+                  node))))))
+
+  (defun es/org-todoist-get-property-drawer (node)
+    "Scalar-safe replacement for `org-todoist--get-property-drawer'."
+    (car (es/org-todoist-direct-descendants-of-type node 'property-drawer)))
+
+  (defun es/org-todoist-drawer-node-properties (drawer)
+    "Return direct node-property children of DRAWER."
+    (when (listp drawer)
+      (es/org-todoist-direct-descendants-of-type drawer 'node-property)))
+
+  (defun es/org-todoist-get-prop (node key)
+    "Scalar-safe replacement for `org-todoist--get-prop'."
+    (let ((drawer (if (equal (org-element-type node) 'property-drawer)
+                      node
+                    (org-todoist--get-property-drawer node)))
+          (key (org-todoist--get-key key)))
+      (catch 'found
+        (dolist (np (es/org-todoist-drawer-node-properties drawer))
+          (when (org-todoist--is-property np key)
+            (throw 'found (org-element-property :value np))))
+        nil)))
+
+  (defun es/org-todoist-set-prop-in-place (drawer key value)
+    "Scalar-safe replacement for `org-todoist--set-prop-in-place'."
+    (when (not (eq (org-element-type drawer) 'property-drawer))
+      (error "Expected property drawer"))
+    (let ((existing (catch 'found
+                      (dolist (prop (es/org-todoist-drawer-node-properties drawer))
+                        (when (org-todoist--is-property prop key)
+                          (throw 'found prop)))
+                      nil)))
+      (if existing
+          (org-element-put-property existing :value value)
+        (org-element-adopt drawer (org-todoist--create-property key value)))))
+
+  (defun es/org-todoist-remove-prop (node key)
+    "Scalar-safe replacement for `org-todoist--remove-prop'."
+    (let* ((key (org-todoist--get-key key))
+           (drawer (if (equal (org-element-type node) 'property-drawer)
+                       node
+                     (org-todoist--get-property-drawer node)))
+           (prop (catch 'found
+                   (dolist (candidate (es/org-todoist-drawer-node-properties drawer))
+                     (when (org-todoist--is-property candidate key)
+                       (throw 'found candidate)))
+                   nil)))
+      (when prop
+        (org-element-extract prop))))
+
+  (defun es/org-todoist-adopt-drawer-regular (hl drawer)
+    "Scalar-safe replacement for `org-todoist--adopt-drawer-regular'."
+    (let ((description (org-todoist--get-description-elements hl)))
+      (if description
+          (org-element-insert-before drawer (car description))
+        (let ((child-hl (org-todoist--first-direct-descendant-of-type hl 'headline)))
+          (if child-hl
+              (org-element-insert-before drawer child-hl)
+            (org-element-adopt hl drawer))))))
+
+  (defun es/org-todoist-get-tasks (item)
+    "Scalar-safe replacement for `org-todoist--get-tasks'."
+    (es/org-todoist-collect-descendants
+     item
+     (lambda (hl)
+       (and (es/org-todoist-headline-node-p hl)
+            (equal (org-todoist--get-todoist-type hl) org-todoist--task-type)
+            (es/org-todoist-direct-child-p hl item)))))
+
+  (defun es/org-todoist-get-tasks-all (item)
+    "Scalar-safe replacement for `org-todoist--get-tasks-all'."
+    (es/org-todoist-collect-descendants
+     item
+     (lambda (hl)
+       (and (es/org-todoist-headline-node-p hl)
+            (equal (org-todoist--get-todoist-type hl) org-todoist--task-type)))))
+
+  (defun es/org-todoist-get-sections (project)
+    "Scalar-safe replacement for `org-todoist--get-sections'."
+    (es/org-todoist-collect-descendants
+     project
+     (lambda (hl)
+       (and (es/org-todoist-headline-node-p hl)
+            (equal (org-todoist--get-todoist-type hl) org-todoist--section-type)
+            (eq (org-todoist--get-parent-of-type org-todoist--project-type hl t)
+                project)))))
+
+  (defun es/org-todoist-sort-by-child-order (node property &optional type)
+    "Scalar-safe replacement for `org-todoist--sort-by-child-order'."
+    (let* ((children (es/org-todoist-collect-descendants
+                      node
+                      (lambda (hl)
+                        (and (es/org-todoist-headline-node-p hl)
+                             (es/org-todoist-direct-child-p hl node)
+                             (org-todoist--get-prop hl property)
+                             (or (not type)
+                                 (equal (org-todoist--get-todoist-type hl)
+                                        type))))))
+           (sorted (cl-sort (copy-sequence children)
+                            (lambda (a b)
+                              (< (org-todoist--get-position a property)
+                                 (org-todoist--get-position b property))))))
+      (dolist (child children)
+        (org-element-extract child))
+      (dolist (child sorted)
+        (org-element-adopt node child))))
+
+  (defun es/org-todoist-get-description-elements (node)
+    "Scalar-safe replacement for `org-todoist--get-description-elements'."
+    (es/org-todoist-collect-descendants
+     node
+     (lambda (candidate)
+       (and (memq (org-element-type candidate) '(paragraph plain-list))
+            (org-todoist--is-description-element candidate node)))))
+
+  (defun es/org-todoist-install-scalar-safe-overrides ()
+    "Install local org-todoist overrides for Org versions with stricter AST walks.
+These are intentionally local patches for org-todoist internals. Re-check this
+section before upgrading org-todoist, because the upstream contracts are not a
+public API."
+    (defalias 'org-todoist--first-direct-descendant-of-type
+      #'es/org-todoist-first-direct-descendant-of-type)
+    (defalias 'org-todoist--get-property-drawer
+      #'es/org-todoist-get-property-drawer)
+    (defalias 'org-todoist--get-prop #'es/org-todoist-get-prop)
+    (defalias 'org-todoist--set-prop-in-place
+      #'es/org-todoist-set-prop-in-place)
+    (defalias 'org-todoist--remove-prop #'es/org-todoist-remove-prop)
+    (defalias 'org-todoist--adopt-drawer-regular
+      #'es/org-todoist-adopt-drawer-regular)
+    (defalias 'org-todoist--get-tasks #'es/org-todoist-get-tasks)
+    (defalias 'org-todoist--get-tasks-all #'es/org-todoist-get-tasks-all)
+    (defalias 'org-todoist--get-sections #'es/org-todoist-get-sections)
+    (defalias 'org-todoist--sort-by-child-order
+      #'es/org-todoist-sort-by-child-order)
+    (defalias 'org-todoist--get-description-elements
+      #'es/org-todoist-get-description-elements))
+
   (defun es/org-todoist-get-by-id-manual (type id ast)
     "Find Todoist node TYPE with ID in AST without using `org-element-map'."
     (when (and id (listp ast))
@@ -2271,6 +2465,7 @@ payload and prune those absent task subtrees.
                      (list org-todoist-file
                            (when (file-exists-p org-todoist-file)
                              (file-truename org-todoist-file))))))
+        (es/org-todoist-install-scalar-safe-overrides)
 
         (defun es/org-todoist-queue-after-todo-state-change ()
           "Queue Todoist changes after task state changes in `org-todoist-file'."
