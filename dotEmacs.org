@@ -1617,10 +1617,13 @@ Make it so I can quickly reload emacs config.
 #+begin_src emacs-lisp
 
   (defun quick-refresh-dot-emacs ()
-    "Quickly reload emacs config"
+    "Retangle and reload the literate Emacs config."
     (interactive)
-    (load-file user-init-file)
-    )
+    (let* ((repo-dir (file-name-directory user-init-file))
+           (org-file (expand-file-name "dotEmacs.org" repo-dir))
+           (el-file (expand-file-name "dotEmacs.el" repo-dir)))
+      (org-babel-tangle-file org-file el-file "emacs-lisp")
+      (load-file user-init-file)))
   (global-set-key (kbd "C-r C-e") 'quick-refresh-dot-emacs)
   (with-eval-after-load 'evil
     (define-key evil-ex-map "re" 'quick-refresh-dot-emacs))
