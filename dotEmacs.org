@@ -788,6 +788,27 @@ assignment update and a DONE transition can both be pushed."
                       (list command)))
         (es/org-todoist-render-pending-buffer))))
 
+  (defun es/org-todoist-drop-pending-commands-for-id (id)
+    "Drop queued Todoist commands for task ID."
+    (setq es/org-todoist-pending-commands
+          (cl-remove-if
+           (lambda (command)
+             (equal id (es/org-todoist-pending-command-id command)))
+           es/org-todoist-pending-commands))
+    (es/org-todoist-render-pending-buffer))
+
+  (defun es/org-todoist-complete-command (id)
+    "Build a Todoist item_complete command for task ID."
+    `(("uuid" . ,(org-id-uuid))
+      ("type" . "item_complete")
+      ("args" . (,(org-todoist--id-arg id "item_complete")))))
+
+  (defun es/org-todoist-queue-complete-and-detach (id)
+    "Queue remote Todoist completion for ID after refiling out of the mirror."
+    (es/org-todoist-drop-pending-commands-for-id id)
+    (es/org-todoist-queue-command (es/org-todoist-complete-command id))
+    (message "org-todoist queued remote completion for refiled-out task; push with :otdp"))
+
   (defun es/org-todoist-queue-assignee-change ()
     "Queue the current task assignment change."
     (when-let* ((id (org-entry-get nil "tid")))
@@ -872,7 +893,10 @@ assignment update and a DONE transition can both be pushed."
         (point))))
 
   (defun es/org-todoist-queue-refile-move (id)
-    "Queue a Todoist move for refiled task ID when it remains in todoist.org."
+    "Queue Todoist effects for a refiled task ID.
+Refiles that remain in `todoist.org' queue `item_move'. Refiles out of the
+mirror queue `item_complete', leaving the moved Org heading as the new source
+of truth."
     (when (and id
                (boundp 'org-todoist-file)
                org-todoist-file)
@@ -884,7 +908,7 @@ assignment update and a DONE transition can both be pushed."
                   (save-buffer)
                   (message "org-todoist queued local move; push with :otdp"))
               (message "org-todoist: refiled task has no Todoist project/section target; no move queued"))
-          (message "org-todoist: refiled task is no longer in todoist.org; no Todoist move queued")))))
+          (es/org-todoist-queue-complete-and-detach id)))))
 
   (defun es/org-refile-queue-todoist-move (orig &rest args)
     "Queue Todoist item_move commands for normal Todoist refiles."
@@ -907,9 +931,7 @@ assignment update and a DONE transition can both be pushed."
                  ("type" . "item_delete")
                  ("args" . (,(org-todoist--id-arg id "item_delete")))))
               ((string= state org-todoist-done-keyword)
-               `(("uuid" . ,(org-id-uuid))
-                 ("type" . "item_complete")
-                 ("args" . (,(org-todoist--id-arg id "item_complete")))))
+               (es/org-todoist-complete-command id))
               ((string= state org-todoist-todo-keyword)
                `(("uuid" . ,(org-id-uuid))
                  ("type" . "item_uncomplete")
@@ -928,7 +950,8 @@ assignment update and a DONE transition can both be pushed."
       "6gQwC6v4rcjhgrpH"
       "6cFFxFgjQQ7MMf3V"
       "6c4wg7HX7Wm8Fc2g"
-      "6h3G57rfGCGHQ7v2"))
+      "6h3G57rfGCGHQ7v2"
+      "6Crfj4Vhqvh8fpwh"))
 
   (defvar es/org-todoist-work-project-id "6c5f47cR2vvfr7p3")
 
@@ -1174,6 +1197,55 @@ org-todoist uses in the functions overridden here."
       (when prop
         (org-element-extract prop))))
 
+  (defun es/org-todoist-markdown-links-to-org (text)
+    "Convert Todoist Markdown links in TEXT to Org links.
+Todoist returns inline links as [display](https://example.com). Org does not
+treat that as a native link, so convert it to [[https://example.com][display]]
+on import. This intentionally handles the common Todoist/API shape rather than
+trying to implement a full Markdown parser."
+    (when text
+      (let ((result text)
+            (start 0)
+            (pattern "\\(^\\|[^!]\\)\\[\\([^]\n]+\\)\\](\\(https?://[^)\n]+\\))"))
+        (while (string-match pattern result start)
+          (let* ((begin (match-beginning 0))
+                 (replacement (concat (match-string 1 result)
+                                     "[[" (match-string 3 result) "]["
+                                     (match-string 2 result) "]]")))
+            (setq result (replace-match replacement t t result))
+            (setq start (+ begin (length replacement)))))
+        result)))
+
+  (defun es/org-todoist-org-links-to-markdown (text)
+    "Convert Org links with descriptions in TEXT to Todoist Markdown links.
+Only convert [[https://example.com][display]] links. Bare Org links such as
+[[https://example.com]] are intentionally left alone."
+    (when text
+      (let ((result text)
+            (start 0)
+            (pattern "\\[\\[\\(https?://[^]\n]+\\)\\]\\[\\([^]\n]+\\)\\]\\]"))
+        (while (string-match pattern result start)
+          (let* ((begin (match-beginning 0))
+                 (replacement (concat "[" (match-string 2 result) "]("
+                                      (match-string 1 result) ")")))
+            (setq result (replace-match replacement t t result))
+            (setq start (+ begin (length replacement)))))
+        result)))
+
+  (defun es/org-todoist-markdownize-command-text (command)
+    "Convert Org links to Markdown in Todoist COMMAND text fields."
+    (when-let ((args (cdr (assoc "args" command))))
+      (dolist (key '("content" "description"))
+        (when-let ((cell (assoc key args)))
+          (when (stringp (cdr cell))
+            (setcdr cell (es/org-todoist-org-links-to-markdown (cdr cell)))))))
+    command)
+
+  (defun es/org-todoist-markdownize-push-commands (orig ast old)
+    "Convert Org links in outbound Todoist commands produced by ORIG."
+    (mapcar #'es/org-todoist-markdownize-command-text
+            (funcall orig ast old)))
+
   (defun es/org-todoist-normalize-headline-title (node text)
     "Set NODE's headline title to TEXT using parsed Org element shape.
 org-todoist upstream writes `:title' as a scalar string. Org 9.8 can later
@@ -1189,11 +1261,13 @@ walk that scalar as if it were an element and fail with errors like
   (defun es/org-todoist-create-node
       (type text description &optional properties parent skip)
     "Org 9.8-safe replacement for `org-todoist--create-node'."
-    (let ((node (org-element-create
-                 'headline
-                 `(:raw-value ,text
-                   :title (,text)
-                   :level ,(+ 1 (org-todoist--get-headline-level parent))))))
+    (let* ((text (es/org-todoist-markdown-links-to-org text))
+           (description (es/org-todoist-markdown-links-to-org description))
+           (node (org-element-create
+                  'headline
+                  `(:raw-value ,text
+                    :title (,text)
+                    :level ,(+ 1 (org-todoist--get-headline-level parent))))))
       (org-todoist--insert-identifier node type)
       (org-todoist--add-all-properties node properties skip)
       (when description
@@ -1205,14 +1279,16 @@ walk that scalar as if it were an element and fail with errors like
   (defun es/org-todoist-get-or-create-node
       (parent type id text description properties &optional skip source)
     "Org 9.8-safe replacement for `org-todoist--get-or-create-node'."
-    (if-let* ((found (org-todoist--get-by-id nil id (or source parent)))
+    (let ((text (es/org-todoist-markdown-links-to-org text))
+          (description (es/org-todoist-markdown-links-to-org description)))
+      (if-let* ((found (org-todoist--get-by-id nil id (or source parent)))
               (updated (org-todoist--add-all-properties found properties skip)))
-        (progn
-          (org-todoist--insert-identifier updated type)
-          (es/org-todoist-normalize-headline-title updated text)
-          (org-todoist--replace-description updated description)
-          updated)
-      (org-todoist--create-node type text description properties parent skip)))
+          (progn
+            (org-todoist--insert-identifier updated type)
+            (es/org-todoist-normalize-headline-title updated text)
+            (org-todoist--replace-description updated description)
+            updated)
+        (org-todoist--create-node type text description properties parent skip))))
 
   (defun es/org-todoist-adopt-drawer-regular (hl drawer)
     "Scalar-safe replacement for `org-todoist--adopt-drawer-regular'."
@@ -2413,8 +2489,9 @@ Todoist is the shared household input surface. Org remains my personal planning
 surface. The integration boundary is a single Todoist-owned Org mirror at
 =org-todoist-file=, currently =$ORG_ROOT/todoist.org=.
 
-Do not refile synced Todoist headings into arbitrary Org files. Wrangle them
-with agenda views and org-super-agenda instead.
+Refiling a synced Todoist task out of =todoist.org= is an intentional handoff:
+Todoist is completed remotely, and the moved Org heading becomes the source of
+truth.
 
 ** Workflow
 *** Setup and sync
@@ -2473,6 +2550,9 @@ From =todoist.org= or the agenda buffer:
 - Move tasks between Todoist projects/sections by refiling within =todoist.org=.
   This config queues a Todoist =item_move= for normal refiles that keep the task
   inside =todoist.org=; =:otdp= pushes that queued move back to Todoist.
+- Move a task out of =todoist.org= when it should stop being tracked in
+  Todoist. This queues a Todoist =item_complete=; after =:otdp=, the moved Org
+  heading is the source of truth.
 - Assign a Todoist task to another collaborator with =:otda= or
   =M-x org-todoist-assign-task=. Unassign with =:otdu= or
   =M-x org-todoist-unassign-task=. From an agenda buffer, =:otda= and =:otdu=
@@ -2512,9 +2592,9 @@ payload and prune those absent task subtrees.
 *** Safety rules
 - Keep =org-todoist-delete-remote-items= disabled unless deliberately testing
   deletion behavior.
-- Do not use =org-refile= to move synced Todoist headings out of =todoist.org=.
-  Refiling from =Inbox= to another Todoist project/section inside =todoist.org=
-  is fine.
+- Refiling from =Inbox= to another Todoist project/section inside =todoist.org=
+  moves the task Todoist-side. Refiling out of =todoist.org= completes the
+  Todoist task and detaches the moved Org heading from the shared list.
 - If sync behavior looks surprising, run =M-x org-todoist-ediff-snapshot= before
   doing destructive cleanup.
 
@@ -2848,6 +2928,7 @@ payload and prune those absent task subtrees.
         (advice-remove 'org-todoist--do-sync #'es/org-todoist-progress-do-sync)
         (advice-remove 'org-todoist--file-ast #'es/org-todoist-progress-file-ast)
         (advice-remove 'org-todoist--push #'es/org-todoist-progress-push)
+        (advice-remove 'org-todoist--push #'es/org-todoist-markdownize-push-commands)
         (advice-remove 'org-todoist--api-call #'es/org-todoist-progress-api-call)
         (advice-remove 'org-todoist--parse-response #'es/org-todoist-progress-parse-response)
         (advice-remove 'org-todoist--temp-id-mapping #'es/org-todoist-progress-temp-id-mapping)
@@ -2868,6 +2949,7 @@ payload and prune those absent task subtrees.
         (advice-add 'org-todoist--do-sync :around #'es/org-todoist-progress-do-sync)
         (advice-add 'org-todoist--file-ast :around #'es/org-todoist-progress-file-ast)
         (advice-add 'org-todoist--push :around #'es/org-todoist-progress-push)
+        (advice-add 'org-todoist--push :around #'es/org-todoist-markdownize-push-commands)
         (advice-add 'org-todoist--api-call :around #'es/org-todoist-progress-api-call)
         (advice-add 'org-todoist--parse-response :around #'es/org-todoist-progress-parse-response)
         (advice-add 'org-todoist--temp-id-mapping :around #'es/org-todoist-progress-temp-id-mapping)
