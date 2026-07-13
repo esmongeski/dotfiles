@@ -1291,6 +1291,80 @@ walk that scalar as if it were an element and fail with errors like
             updated)
         (org-todoist--create-node type text description properties parent skip))))
 
+  (defun es/org-todoist-task-in-target-location-p (task project section)
+    "Return non-nil when TASK is already under target PROJECT and SECTION.
+Todoist reuses the synthetic default section id across every project. Upstream
+only compares section ids, so moving an item from one project's default section
+to another project's default section can be missed. Compare project position as
+well."
+    (and project
+         section
+         (cl-equalp (org-todoist--get-project-id-position task)
+                    (org-todoist--id-or-temp-id project))
+         (cl-equalp (org-todoist--get-section-id-position task)
+                    (org-todoist--id-or-temp-id section))))
+
+  (defun es/org-todoist-update-tasks (tasks ast)
+    "Update all tasks in AST using TASKS, with default-section move fixes."
+    (cl-loop for data across tasks do
+             (let* ((id (assoc-default 'id data))
+                    (proj (org-todoist--get-by-id org-todoist--project-type
+                                                  (assoc-default 'project_id data)
+                                                  ast))
+                    (section-id (assoc-default 'section_id data))
+                    (section (if section-id
+                                 (org-todoist--get-by-id org-todoist--section-type
+                                                         section-id proj)
+                               (org-todoist--get-by-id org-todoist--section-type
+                                                       org-todoist--default-id
+                                                       proj)))
+                    (title (assoc-default 'content data))
+                    (description (assoc-default 'description data))
+                    (parent-id (assoc-default 'parent_id data))
+                    (deleted (eq t (assoc-default 'is_deleted data)))
+                    (task (if deleted
+                              (org-todoist--get-by-id org-todoist--task-type id ast)
+                            (org-todoist--get-or-create-node
+                             section org-todoist--task-type id title description data
+                             org-todoist--task-skip-list ast)))
+                    (tags (assoc-default 'labels data)))
+               (when task
+                 (if deleted
+                     (org-todoist--handle-deletion task)
+                   (unless (or section parent-id)
+                     (setq section
+                           (org-todoist--get-by-id org-todoist--section-type
+                                                   org-todoist--default-id
+                                                   proj)))
+                   (unless (or parent-id
+                               (es/org-todoist-task-in-target-location-p
+                                task proj section))
+                     (org-element-extract task)
+                     (org-element-adopt section task))
+                   (dotimes (i (length tags))
+                     (org-todoist--add-tag task (aref tags i)))
+                   (org-todoist--schedule task data)
+                   (org-todoist--set-effort task data)
+                   (org-todoist--set-priority task (assoc-default 'priority data))
+                   (org-todoist--set-todo task
+                                          (assoc-default 'checked data)
+                                          (assoc-default 'is_deleted data))))))
+    (let ((with-child nil))
+      (cl-loop for data across tasks do
+               (when-let* ((parenttaskid (assoc-default 'parent_id data))
+                           (task (org-todoist--get-by-id
+                                  org-todoist--task-type
+                                  (assoc-default 'id data)
+                                  ast))
+                           (parenttask (org-todoist--get-by-id
+                                        org-todoist--task-type parenttaskid ast))
+                           (wrong-spot
+                            (not (cl-equalp parenttaskid
+                                            (org-todoist--get-task-id-position
+                                             task)))))
+                 (push parenttask with-child)
+                 (org-todoist--adopt-sub parenttask task)))))
+
   (defun es/org-todoist-adopt-drawer-regular (hl drawer)
     "Scalar-safe replacement for `org-todoist--adopt-drawer-regular'."
     (let ((description (org-todoist--get-description-elements hl)))
@@ -1372,6 +1446,7 @@ public API."
     (defalias 'org-todoist--create-node #'es/org-todoist-create-node)
     (defalias 'org-todoist--get-or-create-node
       #'es/org-todoist-get-or-create-node)
+    (defalias 'org-todoist--update-tasks #'es/org-todoist-update-tasks)
     (defalias 'org-todoist--adopt-drawer-regular
       #'es/org-todoist-adopt-drawer-regular)
     (defalias 'org-todoist--get-tasks #'es/org-todoist-get-tasks)
