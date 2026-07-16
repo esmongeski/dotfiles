@@ -738,7 +738,7 @@ Todoist responses may use either JSON vectors or lists depending on the parser."
     (interactive)
     (setq es/org-todoist-fullsync-active t)
     (condition-case err
-        (org-todoist-reset '(4))
+        (org-todoist--do-sync "*" nil)
       (error
        (setq es/org-todoist-fullsync-active nil)
        (signal (car err) (cdr err)))))
@@ -1365,6 +1365,22 @@ well."
                  (push parenttask with-child)
                  (org-todoist--adopt-sub parenttask task)))))
 
+  (defun es/org-todoist-set-todo (node checked &optional deleted)
+    "Set NODE TODO state from Todoist CHECKED and DELETED values.
+Upstream changes `:todo-type' for unchecked tasks but leaves an existing
+`DONE' keyword in place. That creates a visibly DONE heading for a live
+Todoist task. Always set the keyword to match the remote state."
+    (cond
+     ((eql t deleted)
+      (org-element-put-property node :todo-keyword org-todoist-deleted-keyword)
+      (org-element-put-property node :todo-type 'done))
+     ((eql t checked)
+      (org-element-put-property node :todo-keyword org-todoist-done-keyword)
+      (org-element-put-property node :todo-type 'done))
+     (t
+      (org-element-put-property node :todo-keyword org-todoist-todo-keyword)
+      (org-element-put-property node :todo-type 'todo))))
+
   (defun es/org-todoist-adopt-drawer-regular (hl drawer)
     "Scalar-safe replacement for `org-todoist--adopt-drawer-regular'."
     (let ((description (org-todoist--get-description-elements hl)))
@@ -1447,6 +1463,7 @@ public API."
     (defalias 'org-todoist--get-or-create-node
       #'es/org-todoist-get-or-create-node)
     (defalias 'org-todoist--update-tasks #'es/org-todoist-update-tasks)
+    (defalias 'org-todoist--set-todo #'es/org-todoist-set-todo)
     (defalias 'org-todoist--adopt-drawer-regular
       #'es/org-todoist-adopt-drawer-regular)
     (defalias 'org-todoist--get-tasks #'es/org-todoist-get-tasks)
@@ -2635,8 +2652,8 @@ From =todoist.org= or the agenda buffer:
   update the source heading, queue the change locally, and refresh the agenda.
 - =:otdp= pushes the queued local Todoist commands and then pulls remote
   updates in the same API round trip.
-- =:otdfs= runs a full Todoist refresh and prunes task headings that are no
-  longer present in the fetched remote payload.
+- =:otdfs= runs a full Todoist refresh using the Todoist full-sync token and
+  prunes task headings that are no longer present in the fetched remote payload.
 - =:otdr= pulls remote Todoist changes without pushing the queue.
 - =:otdq= opens the local Todoist command queue buffer.
 
